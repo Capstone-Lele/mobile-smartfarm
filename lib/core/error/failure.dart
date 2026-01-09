@@ -1,0 +1,29 @@
+abstract class Failure implements Exception {
+  final String? message;
+
+  Failure(this.message);
+}
+
+class FetchFailure extends Failure {
+  FetchFailure(super.message);
+}
+
+class UnauthorizedFailure extends Failure {
+  UnauthorizedFailure(super.message);
+}
+
+class ForbiddenFailure extends Failure {
+  ForbiddenFailure(super.message);
+}
+
+class InvalidInputFailure extends Failure {
+  InvalidInputFailure(super.message);
+}
+
+class NotFoundFailure extends Failure {
+  NotFoundFailure(super.message);
+}
+
+class ServerFailure extends Failure {
+  ServerFailure(super.message);
+}
