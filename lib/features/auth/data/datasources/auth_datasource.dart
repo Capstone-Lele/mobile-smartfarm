@@ -11,7 +11,7 @@ class AuthDatasource {
     String email,
     String password,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/login');
+    Uri url = Uri.parse('${AppConstants.baseURL}/auth/login');
     try {
       final response = await http
           .post(
