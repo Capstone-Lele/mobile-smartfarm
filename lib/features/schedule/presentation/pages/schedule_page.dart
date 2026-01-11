@@ -62,7 +62,7 @@ class SchedulePage extends ConsumerWidget {
                 _buildSectionTitle('Hari ini'),
                 ScheduleCard(
                   title: "Kolam 1",
-                  description: "Pembersihan Kolam",
+                  description: "Pakan",
                   time: "Senin, 28 Okt 2025, 08:00",
                   officer: "Adib Firmansyah",
                   statusLabel: "Hari Ini",
@@ -71,7 +71,7 @@ class SchedulePage extends ConsumerWidget {
                 _buildSectionTitle('Jadwal Mendatang'),
                 ScheduleCard(
                   title: "Kolam 2",
-                  description: "Pembersihan Kolam",
+                  description: "Pakan",
                   time: "Selasa, 29 Okt 2025, 08:00",
                   officer: "Dandy maulana",
                   statusLabel: "Mendatang",
