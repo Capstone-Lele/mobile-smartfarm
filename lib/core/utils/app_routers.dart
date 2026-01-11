@@ -1,5 +1,5 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_bottom_bar.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/login_page.dart';
-import 'package:budidaya_lele_mobile/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -10,7 +10,7 @@ class AppRoutes {
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
-      dashboard: (context) => const DashboardPage(),
+      dashboard: (context) => const AppBottomBar(),
       login: (context) => const LoginPage(),
     };
   }
