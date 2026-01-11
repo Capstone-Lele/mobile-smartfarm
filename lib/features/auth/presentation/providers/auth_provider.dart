@@ -1,4 +1,5 @@
 import 'package:budidaya_lele_mobile/core/utils/app_session.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../data/datasources/auth_datasource.dart';
@@ -24,8 +25,10 @@ final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
 // StateNotifier untuk mengelola State UI
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {
   final LoginUseCase _loginUseCase;
+  final Ref _ref;
 
-  AuthNotifier(this._loginUseCase) : super(const AsyncValue.data(null));
+  AuthNotifier(this._loginUseCase, this._ref)
+    : super(const AsyncValue.data(null));
 
   Future<bool> login(String email, String password) async {
     state = const AsyncValue.loading();
@@ -49,11 +52,26 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
       },
     );
   }
+
+  Future<void> logout() async {
+    state = const AsyncValue.loading();
+    try {
+      // Hapus token dari penyimpanan lokal
+      await AppSession.clearSession();
+
+      // Reset global user provider menjadi null
+      _ref.read(userProvider.notifier).state = null;
+
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e.toString(), stack);
+    }
+  }
 }
 
 // Provider Utama
 final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
       final loginUseCase = ref.watch(loginUseCaseProvider);
-      return AuthNotifier(loginUseCase);
+      return AuthNotifier(loginUseCase, ref);
     });
