@@ -1,17 +1,21 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_bottom_bar.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/login_page.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
+  static const String splash = '/';
   static const String dashboard = '/dashboard';
   static const String login = '/login';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
+      splash: (context) => const SplashPage(),
       dashboard: (context) => const AppBottomBar(),
       login: (context) => const LoginPage(),
+      
     };
   }
 

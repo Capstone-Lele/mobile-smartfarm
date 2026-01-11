@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await AppSession.init();
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: OverlaySupport(child: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.dashboard,
+      initialRoute: AppRoutes.splash,
       routes: AppRoutes.getRoutes(),
     );
   }

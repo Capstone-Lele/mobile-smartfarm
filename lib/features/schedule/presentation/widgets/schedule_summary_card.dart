@@ -17,7 +17,6 @@ class ScheduleSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.28,
-      height: MediaQuery.of(context).size.width * 0.22,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -29,7 +28,7 @@ class ScheduleSummaryCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.black,
             ),

@@ -39,11 +39,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ref.listen<AsyncValue<void>>(authNotifierProvider, (previous, next) {
       next.whenOrNull(
         data: (_) {
-          AppSnackbar.success(context, 'Login berhasil!');
+          AppSnackbar.success('Login berhasil!');
           AppRoutes.pushNamed(context, AppRoutes.dashboard);
         },
         error: (error, _) {
-          AppSnackbar.error(context, error.toString());
+          AppSnackbar.error(error.toString());
         },
       );
     });
@@ -51,73 +51,86 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isLoading = ref.watch(authNotifierProvider).isLoading;
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset("assets/images/logo.png", height: 50, width: 50),
-              const SizedBox(height: 16),
-              Text(
-                "Masuk ke Akun Anda",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Silakan login menggunakan email dan password",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.darkGray,
-                ),
-              ),
-              Text(
-                "yang sudah terdaftar untuk melanjutkan.",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.darkGray,
-                ),
-              ),
-              const SizedBox(height: 50),
-              AppInputText(
-                label: 'Email Address',
-                hint: 'alex@gmail.com',
-                controller: _emailCtrl,
-                type: FieldType.email,
-                requiredField: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email harus diisi';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Masukkan format email yang benar';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              AppInputText(
-                label: 'Password',
-                hint: '#Sn123hsn@',
-                controller: _passwordCtrl,
-                type: FieldType.password,
-                requiredField: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password harus diisi';
-                  }
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/images/logo.png",
+                      height: 50,
+                      width: 50,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Masuk ke Akun Anda",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Silakan login menggunakan email dan password",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.darkGray,
+                      ),
+                    ),
+                    Text(
+                      "yang sudah terdaftar untuk melanjutkan.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.darkGray,
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+                    AppInputText(
+                      label: 'Email Address',
+                      hint: 'alex@gmail.com',
+                      controller: _emailCtrl,
+                      type: FieldType.email,
+                      requiredField: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email harus diisi';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Masukkan format email yang benar';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    AppInputText(
+                      label: 'Password',
+                      hint: '#Sn123hsn@',
+                      controller: _passwordCtrl,
+                      type: FieldType.password,
+                      requiredField: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password harus diisi';
+                        }
 
-                  return null;
-                },
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    isLoading
+                        ? const CircularProgressIndicator()
+                        : AppButton(label: 'Login', onPressed: _onSubmit),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : AppButton(label: 'Login', onPressed: _onSubmit),
-            ],
+            ),
           ),
         ),
       ),

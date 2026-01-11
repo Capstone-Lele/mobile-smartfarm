@@ -19,7 +19,7 @@ class AppSession {
   static bool isTokenValid() {
     final token = getBearerToken();
 
-    if (token == null) return false;
+    if (token == null || token.isEmpty) return false;
 
     try {
       return !JwtDecoder.isExpired(token);
@@ -28,7 +28,7 @@ class AppSession {
     }
   }
 
-  static bool get isUserLoggedIn => (getBearerToken()?.isNotEmpty ?? false);
+  static bool get isUserLoggedIn => isTokenValid();
 
   static Future<void> clearSession() async {
     await _prefs?.clear();

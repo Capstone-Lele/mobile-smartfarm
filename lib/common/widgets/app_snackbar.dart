@@ -1,77 +1,81 @@
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class AppSnackbar {
-  static void show(
-    BuildContext context, {
+  static void _showNotification({
     required String message,
-    Color? backgroundColor,
-    IconData? icon,
-    Duration duration = const Duration(seconds: 3),
+    required Color backgroundColor,
+    required IconData icon,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            if (icon != null) ...[
-              Icon(icon, color: Colors.white),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+    showOverlayNotification((context) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, color: Colors.white, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-        backgroundColor: backgroundColor ?? AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height - 150,
-          right: 20,
-          left: 20,
-        ),
-        duration: duration,
-      ),
-    );
+      );
+    }, duration: const Duration(seconds: 3));
   }
 
-  static void success(BuildContext context, String message) {
-    show(
-      context,
+  static void success(String message) {
+    _showNotification(
       message: message,
       backgroundColor: AppColors.green,
       icon: Icons.check_circle_outline,
     );
   }
 
-  static void error(BuildContext context, String message) {
-    show(
-      context,
+  static void error(String message) {
+    _showNotification(
       message: message,
       backgroundColor: AppColors.red,
       icon: Icons.error_outline,
     );
   }
 
-  static void info(BuildContext context, String message) {
-    show(
-      context,
+  static void info(String message) {
+    _showNotification(
       message: message,
       backgroundColor: AppColors.primary,
       icon: Icons.info_outline,
     );
   }
 
-  static void warning(BuildContext context, String message) {
-    show(
-      context,
+  static void warning(String message) {
+    _showNotification(
       message: message,
       backgroundColor: Colors.orange,
       icon: Icons.warning_amber_outlined,

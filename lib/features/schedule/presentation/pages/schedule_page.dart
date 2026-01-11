@@ -1,5 +1,7 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/providers/schedule_provider.dart';
+import 'package:budidaya_lele_mobile/features/schedule/presentation/widgets/schedule_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
@@ -57,6 +59,24 @@ class SchedulePage extends ConsumerWidget {
                     ref.read(scheduleTabProvider.notifier).state = index;
                   },
                 ),
+                _buildSectionTitle('Hari ini'),
+                ScheduleCard(
+                  title: "Kolam 1",
+                  description: "Pembersihan Kolam",
+                  time: "Senin, 28 Okt 2025, 08:00",
+                  officer: "Adib Firmansyah",
+                  statusLabel: "Hari Ini",
+                  statusType: BadgeType.success,
+                ),
+                _buildSectionTitle('Jadwal Mendatang'),
+                ScheduleCard(
+                  title: "Kolam 2",
+                  description: "Pembersihan Kolam",
+                  time: "Selasa, 29 Okt 2025, 08:00",
+                  officer: "Dandy maulana",
+                  statusLabel: "Mendatang",
+                  statusType: BadgeType.warning,
+                ),
               ],
             ),
           ),
@@ -67,6 +87,20 @@ class SchedulePage extends ConsumerWidget {
         backgroundColor: AppColors.secondary,
         onPressed: () {},
         child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.darkGray,
+        ),
       ),
     );
   }

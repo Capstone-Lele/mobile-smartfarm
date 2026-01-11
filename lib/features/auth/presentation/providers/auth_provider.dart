@@ -44,9 +44,11 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
         return false;
       },
       (user) async {
+        print("User: $user");
         // Simpan token ke session storage
         await AppSession.setBearerToken(user.token);
 
+        print("Token disimpan: ${AppSession.getBearerToken()}");
         state = const AsyncValue.data(null);
         return true;
       },

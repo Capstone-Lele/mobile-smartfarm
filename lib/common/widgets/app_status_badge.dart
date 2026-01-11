@@ -13,19 +13,23 @@ class AppStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color backgroundColor;
     Color textColor;
+    Color borderColor;
 
     switch (type) {
       case BadgeType.success:
-        backgroundColor = AppColors.badgeSuccess.withValues(alpha: 0.2);
+        backgroundColor = AppColors.badgeSuccess.withValues(alpha: 0.1);
         textColor = AppColors.badgeTextSuccess;
+        borderColor = AppColors.badgeSuccess.withValues(alpha: 0.2);
         break;
       case BadgeType.warning:
-        backgroundColor = AppColors.badgeWarning.withValues(alpha: 0.2);
+        backgroundColor = AppColors.badgeWarning.withValues(alpha: 0.1);
         textColor = AppColors.badgeTextWarning;
+        borderColor = AppColors.badgeWarning.withValues(alpha: 0.2);
         break;
       case BadgeType.danger:
-        backgroundColor = AppColors.badgeDanger.withValues(alpha: 0.2);
+        backgroundColor = AppColors.badgeDanger.withValues(alpha: 0.1);
         textColor = AppColors.badgeTextDanger;
+        borderColor = AppColors.badgeDanger.withValues(alpha: 0.2);
         break;
     }
 
@@ -33,14 +37,15 @@ class AppStatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: textColor,
           fontSize: 10,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.normal,
         ),
       ),
     );
