@@ -1,3 +1,4 @@
+import 'package:budidaya_lele_mobile/core/utils/app_session.dart';
 import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/auth/domain/usecases/get_user_info_usecase.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -17,6 +18,10 @@ class UserNotifier extends StateNotifier<AsyncValue<void>> {
   UserNotifier(this._useCase, this._ref) : super(const AsyncValue.data(null));
 
   Future<void> fetchUserInfo() async {
+    if (!AppSession.isTokenValid()) {
+      state = AsyncValue.error('Sesi berakhir', StackTrace.current);
+      return;
+    }
     state = const AsyncValue.loading();
 
     final result = await _useCase.execute();

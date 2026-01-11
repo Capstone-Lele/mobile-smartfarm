@@ -39,7 +39,7 @@ class AppSegmentedControl extends StatelessWidget {
                   child: Text(
                     children[index],
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
