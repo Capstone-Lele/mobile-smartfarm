@@ -275,13 +275,7 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
           const SizedBox(height: 16),
           Text('Error: $error', textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _initialData(),
-            child: const Text(
-              'Coba Lagi',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+          AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
         ],
       ),
     );
