@@ -7,6 +7,7 @@ import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/seed_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/vitamin_report_page.dart';
+import 'package:budidaya_lele_mobile/features/feeding-report/presentation/feeding_report_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -21,6 +22,7 @@ class AppRoutes {
   static const String seedReport = '/seed-report';
   static const String mortalityReport = '/mortality-report';
   static const String vitaminReport = '/vitamin-report';
+  static const String feedingReport = '/feeding-report';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -53,6 +55,7 @@ class AppRoutes {
       seedReport: (context) => const SeedReportPage(),
       mortalityReport: (context) => const MortalityReportPage(),
       vitaminReport: (context) => const VitaminReportPage(),
+      feedingReport: (context) => const FeedingReportPage(),
     };
   }
 
