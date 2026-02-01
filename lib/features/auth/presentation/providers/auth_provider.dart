@@ -7,32 +7,31 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 
-// Provider untuk Datasource
+// Provider Datasource
 final authDatasourceProvider = Provider((ref) => AuthDatasource());
 
-// Provider untuk Repository
+// Provider Repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final datasource = ref.watch(authDatasourceProvider);
+  final datasource = ref.read(authDatasourceProvider);
   return AuthRepositoryImpl(datasource);
 });
 
-// Provider untuk UseCase
+// Provider UseCase
 final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
+  final repository = ref.read(authRepositoryProvider);
   return LoginUseCase(repository);
 });
 
-// StateNotifier untuk mengelola State UI
-class AuthNotifier extends StateNotifier<AsyncValue<void>> {
+// Notifier Provider
+class LoginNotifier extends StateNotifier<AsyncValue<void>> {
   final LoginUseCase _loginUseCase;
   final Ref _ref;
 
-  AuthNotifier(this._loginUseCase, this._ref)
+  LoginNotifier(this._loginUseCase, this._ref)
     : super(const AsyncValue.data(null));
 
   Future<bool> login(String email, String password) async {
     state = const AsyncValue.loading();
-
     final result = await _loginUseCase.execute(email, password);
 
     return result.fold(
@@ -44,36 +43,42 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
         return false;
       },
       (user) async {
-        print("User: $user");
         // Simpan token ke session storage
         await AppSession.setBearerToken(user.token);
-
-        print("Token disimpan: ${AppSession.getBearerToken()}");
+        await _ref.read(userInfoNotifierProvider.notifier).getUserInfo();
         state = const AsyncValue.data(null);
         return true;
       },
     );
   }
+}
 
-  Future<void> logout() async {
+class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
+  final Ref _ref;
+
+  LogoutNotifier(this._ref) : super(const AsyncValue.data(null));
+
+  Future<bool> logout() async {
     state = const AsyncValue.loading();
     try {
-      // Hapus token dari penyimpanan lokal
       await AppSession.clearSession();
-
-      // Reset global user provider menjadi null
-      _ref.read(userProvider.notifier).state = null;
-
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e.toString(), stack);
+      _ref.invalidate(userProvider);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }
 
 // Provider Utama
-final authNotifierProvider =
-    StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
-      final loginUseCase = ref.watch(loginUseCaseProvider);
-      return AuthNotifier(loginUseCase, ref);
+final loginNotifierProvider =
+    StateNotifierProvider.autoDispose<LoginNotifier, AsyncValue<void>>((ref) {
+      final loginUseCase = ref.read(loginUseCaseProvider);
+
+      return LoginNotifier(loginUseCase, ref);
+    });
+
+final logoutNotifierProvider =
+    StateNotifierProvider<LogoutNotifier, AsyncValue<void>>((ref) {
+      return LogoutNotifier(ref);
     });

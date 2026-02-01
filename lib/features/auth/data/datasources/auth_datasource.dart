@@ -24,7 +24,8 @@ class AuthDatasource {
           .timeout(const Duration(seconds: 10));
 
       final data = AppResponse.data(response);
-      return Right(Map<String, dynamic>.from(data));
+      final result = data['data'];
+      return Right(result);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));
@@ -44,7 +45,8 @@ class AuthDatasource {
       );
 
       final data = AppResponse.data(response);
-      return Right(Map<String, dynamic>.from(data));
+      final result = data['data'];
+      return Right(result);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

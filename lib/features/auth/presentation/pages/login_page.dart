@@ -29,18 +29,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void _onSubmit() {
     if (_formKey.currentState!.validate()) {
       ref
-          .read(authNotifierProvider.notifier)
+          .read(loginNotifierProvider.notifier)
           .login(_emailCtrl.text.trim(), _passwordCtrl.text.trim());
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(authNotifierProvider, (previous, next) {
+    ref.listen<AsyncValue<void>>(loginNotifierProvider, (previous, next) {
       next.whenOrNull(
         data: (_) {
           AppSnackbar.success('Login berhasil!');
-          AppRoutes.pushNamed(context, AppRoutes.dashboard);
+          AppRoutes.pushNamedAndRemoveUntil(context, AppRoutes.dashboard);
         },
         error: (error, _) {
           AppSnackbar.error(error.toString());
@@ -48,7 +48,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
     });
 
-    final isLoading = ref.watch(authNotifierProvider).isLoading;
+    final isLoading = ref.watch(loginNotifierProvider).isLoading;
 
     return Scaffold(
       body: SafeArea(

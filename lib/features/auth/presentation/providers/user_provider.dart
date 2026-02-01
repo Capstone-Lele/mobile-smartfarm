@@ -5,33 +5,32 @@ import 'package:budidaya_lele_mobile/features/auth/presentation/providers/auth_p
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-// Provider untuk UseCase
+// Provider UseCase
 final getUserInfoUseCaseProvider = Provider<GetUserInfoUsecase>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
+  final repository = ref.read(authRepositoryProvider);
   return GetUserInfoUsecase(repository);
 });
 
+// Notifier Provider
 class UserNotifier extends StateNotifier<AsyncValue<void>> {
-  final GetUserInfoUsecase _useCase;
+  final GetUserInfoUsecase _getUserInfoUsecase;
   final Ref _ref;
 
-  UserNotifier(this._useCase, this._ref) : super(const AsyncValue.data(null));
+  UserNotifier(this._getUserInfoUsecase, this._ref)
+    : super(const AsyncValue.data(null));
 
-  Future<void> fetchUserInfo() async {
+  Future<void> getUserInfo() async {
     if (!AppSession.isTokenValid()) {
       state = AsyncValue.error('Sesi berakhir', StackTrace.current);
       return;
     }
     state = const AsyncValue.loading();
 
-    final result = await _useCase.execute();
+    final result = await _getUserInfoUsecase.execute();
 
     result.fold(
       (failure) {
-        state = AsyncValue.error(
-          failure.message ?? 'Gagal memuat profil',
-          StackTrace.current,
-        );
+        state = AsyncValue.error(failure, StackTrace.current);
       },
       (user) {
         _ref.read(userProvider.notifier).state = user;
@@ -47,6 +46,6 @@ final userProvider = StateProvider<User?>((ref) => null);
 // Provider Utama
 final userInfoNotifierProvider =
     StateNotifierProvider<UserNotifier, AsyncValue<void>>((ref) {
-      final useCase = ref.watch(getUserInfoUseCaseProvider);
-      return UserNotifier(useCase, ref);
+      final getUserInfoUsecase = ref.read(getUserInfoUseCaseProvider);
+      return UserNotifier(getUserInfoUsecase, ref);
     });

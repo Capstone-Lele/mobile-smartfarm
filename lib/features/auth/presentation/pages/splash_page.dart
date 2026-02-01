@@ -21,7 +21,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
   void _checkAuthStatus() async {
     await Future.delayed(const Duration(seconds: 2));
-    ref.read(userInfoNotifierProvider.notifier).fetchUserInfo();
+    ref.read(userInfoNotifierProvider.notifier).getUserInfo();
   }
 
   @override
