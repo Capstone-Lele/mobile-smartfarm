@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.seedReport,
+      initialRoute: AppRoutes.mortalityReport,
       routes: AppRoutes.getRoutes(),
     );
   }
