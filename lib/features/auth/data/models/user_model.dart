@@ -3,6 +3,7 @@ import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
 class UserModel extends User {
   UserModel({
     required super.id,
+    required super.name,
     required super.email,
     required super.role,
     required super.image,
@@ -10,10 +11,11 @@ class UserModel extends User {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] ?? '',
-      email: json['email'] ?? '',
-      role: json['role'] ?? '',
-      image: json['image'] ?? '',
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      role: json['role'],
+      image: json['image'],
     );
   }
 }

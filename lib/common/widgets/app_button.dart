@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
+  final Color color;
   final bool enabled;
   final bool isOutlined;
 
@@ -11,52 +12,54 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.color = AppColors.primary,
     this.enabled = true,
     this.isOutlined = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = label == 'Hapus' ? AppColors.red : AppColors.primary;
-
     return SizedBox(
       width: double.infinity,
       child: isOutlined
           ? OutlinedButton(
               onPressed: enabled ? onPressed : null,
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: baseColor),
+                side: BorderSide(color: color),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 0,
               ),
-              child: _buildText(baseColor),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: color,
+                ),
+              ),
             )
           : ElevatedButton(
               onPressed: enabled ? onPressed : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: baseColor,
+                backgroundColor: color,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 0,
               ),
-              child: _buildText(AppColors.white),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: AppColors.white,
+                ),
+              ),
             ),
-    );
-  }
-
-  Widget _buildText(Color textColor) {
-    return Text(
-      label,
-      style: TextStyle(
-        fontWeight: FontWeight.w700,
-        fontSize: 14,
-        color: textColor,
-      ),
     );
   }
 }

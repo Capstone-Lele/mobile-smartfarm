@@ -3,7 +3,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_header.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/providers/auth_provider.dart';
-// import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,88 +12,95 @@ class SettingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final user = ref.watch(userProvider);
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AppHeader(
-                subtitle: "Penanggung Jawab",
-                title: "Selamat Datang, Pak Adib",
-              ),
-              const SizedBox(height: 20),
-              _buildSectionTitle("Pengaturan Utama"),
-              _buildMenuGroup([
-                _buildMenuItem(
-                  Icons.person_outline,
-                  "Ubah Profil",
-                  onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppHeader(
+                  subtitle: user?.roleLabel ?? 'User',
+                  title: "Selamat Datang, ${user?.name ?? 'Pengguna'}",
                 ),
-                _buildMenuItem(
-                  Icons.lock_outline,
-                  "Ubah Password",
-                  isLast: true,
-                  onTap: () {},
-                ),
-              ]),
-              const SizedBox(height: 20),
-              _buildSectionTitle("Pengaturan Lainnya"),
-              _buildMenuGroup([
-                _buildMenuItem(
-                  Icons.verified_user_outlined,
-                  "Kebijakan Privasi",
-                  onTap: () {},
-                ),
-                _buildMenuItem(Icons.help_outline, "Bantuan", onTap: () {}),
-                _buildMenuItem(Icons.sensors, "Status Alat", onTap: () {}),
-                _buildMenuItem(
-                  Icons.local_parking,
-                  "Manajemen Parameter",
-                  onTap: () {},
-                ),
-                _buildMenuItem(
-                  Icons.notifications_none,
-                  "Riwayat Notifikasi",
-                  isLast: true,
-                  onTap: () {},
-                ),
-              ]),
-              const SizedBox(height: 20),
-              _buildSectionTitle("Keluar"),
-              _buildMenuGroup([
-                _buildMenuItem(
-                  Icons.logout,
-                  "Logout",
-                  isLast: true,
-                  showTrailing: false,
-                  onTap: () {
-                    AppDialog.showConfirmationDialog(
-                      context: context,
-                      title: "Keluar",
-                      message: "Apakah anda yakin ingin keluar?",
-                      confirmText: "Keluar",
-                      cancelText: "Tidak",
-                      onConfirm: () async {
-                        // Proses Logout
-                        await ref.read(authNotifierProvider.notifier).logout();
+                const SizedBox(height: 20),
+                _buildSectionTitle("Pengaturan Utama"),
+                _buildMenuGroup([
+                  _buildMenuItem(
+                    Icons.person_outline,
+                    "Ubah Profil",
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    Icons.lock_outline,
+                    "Ubah Password",
+                    isLast: true,
+                    onTap: () {},
+                  ),
+                ]),
+                const SizedBox(height: 20),
+                _buildSectionTitle("Pengaturan Lainnya"),
+                _buildMenuGroup([
+                  _buildMenuItem(
+                    Icons.verified_user_outlined,
+                    "Kebijakan Privasi",
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(Icons.help_outline, "Bantuan", onTap: () {}),
+                  _buildMenuItem(Icons.sensors, "Status Alat", onTap: () {}),
+                  if (user?.role == 'pic') ...[
+                    _buildMenuItem(
+                      Icons.local_parking,
+                      "Manajemen Parameter",
+                      onTap: () {},
+                    ),
+                  ],
+                  _buildMenuItem(
+                    Icons.notifications_none,
+                    "Riwayat Notifikasi",
+                    isLast: true,
+                    onTap: () {},
+                  ),
+                ]),
+                const SizedBox(height: 20),
+                _buildSectionTitle("Keluar"),
+                _buildMenuGroup([
+                  _buildMenuItem(
+                    Icons.logout,
+                    "Logout",
+                    isLast: true,
+                    showTrailing: false,
+                    onTap: () {
+                      AppDialog.showConfirmationDialog(
+                        context: context,
+                        title: "Keluar",
+                        message: "Apakah anda yakin ingin keluar?",
+                        confirmText: "Keluar",
+                        cancelText: "Tidak",
+                        onConfirm: () async {
+                          // Proses Logout
+                          final success = await ref
+                              .read(logoutNotifierProvider.notifier)
+                              .logout();
 
-                        if (context.mounted) {
-                          AppRoutes.pushNamedAndRemoveUntil(
-                            context,
-                            AppRoutes.login,
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-              ]),
-              const SizedBox(height: 30),
-            ],
+                          if (context.mounted && success) {
+                            AppRoutes.pushNamedAndRemoveUntil(
+                              context,
+                              AppRoutes.login,
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ]),
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
@@ -102,7 +109,7 @@ class SettingPage extends ConsumerWidget {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
         style: const TextStyle(
@@ -116,7 +123,6 @@ class SettingPage extends ConsumerWidget {
 
   Widget _buildMenuGroup(List<Widget> items) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),

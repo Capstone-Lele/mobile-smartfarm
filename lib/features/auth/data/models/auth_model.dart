@@ -9,9 +9,9 @@ class AuthModel extends Auth {
 
   factory AuthModel.fromJson(Map<String, dynamic> json) {
     return AuthModel(
-      expiresAt: json['expires_at'] ?? '',
-      token: json['token'] ?? '',
-      type: json['type'] ?? 'Bearer',
+      expiresAt: json['expires_at'],
+      token: json['token'],
+      type: json['type'],
     );
   }
 }

@@ -13,6 +13,9 @@ class AppInputText extends StatefulWidget {
 
   final String? Function(String?)? validator;
   final AutovalidateMode? autovalidateMode;
+  final ValueChanged<String>? onChanged;
+  final int? maxLength;
+  final bool readOnly;
 
   const AppInputText({
     super.key,
@@ -24,6 +27,9 @@ class AppInputText extends StatefulWidget {
     this.prefix,
     this.validator,
     this.autovalidateMode,
+    this.onChanged,
+    this.maxLength,
+    this.readOnly = false,
   });
 
   @override
@@ -72,15 +78,15 @@ class _AppInputState extends State<AppInputText> {
           controller: widget.controller,
           keyboardType: _keyboardType,
           obscureText: _isPassword ? _obscure : false,
-
+          readOnly: widget.readOnly,
           validator: widget.validator,
           autovalidateMode:
               widget.autovalidateMode ?? AutovalidateMode.onUserInteraction,
-
+          onChanged: widget.onChanged,
+          maxLength: widget.maxLength,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: TextStyle(fontSize: 14, color: AppColors.darkGray),
-
             errorStyle: const TextStyle(
               color: AppColors.red,
               fontSize: 12,
@@ -101,7 +107,10 @@ class _AppInputState extends State<AppInputText> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.darkGray, width: 2),
+              borderSide: BorderSide(
+                color: widget.readOnly ? AppColors.gray : AppColors.darkGray,
+                width: widget.readOnly ? 1 : 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -116,7 +125,7 @@ class _AppInputState extends State<AppInputText> {
               minWidth: 12,
               minHeight: 0,
             ),
-            suffixIcon: _isPassword
+            suffixIcon: _isPassword && !widget.readOnly
                 ? IconButton(
                     icon: Icon(
                       _obscure
