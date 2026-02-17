@@ -9,6 +9,7 @@ import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_p
 import 'package:budidaya_lele_mobile/features/report/presentation/providers/report_provider.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_activity_item.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_menu_card.dart';
+import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_quick_action_bottom_sheet.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_quick_action_card.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_statistics_card.dart';
 import 'package:flutter/material.dart';
@@ -207,7 +208,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 description:
                     'Tambahkan laporan kegiatan kolam hari ini, mulai dari pakan, vitamin, hingga kondisi ikan.',
                 backgroundColor: AppColors.primary,
-                onTap: () {},
+                onTap: () => _showBottomSheet(context, 'daily'),
               ),
             ),
             const SizedBox(width: 12),
@@ -217,12 +218,21 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 description:
                     'Tambahkan laporan kegiatan penting seperti tebar benih, panen, atau inventori.',
                 backgroundColor: AppColors.secondary,
-                onTap: () {},
+                onTap: () => _showBottomSheet(context, 'special'),
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  void _showBottomSheet(BuildContext context, String type) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => ReportQuickActionBottomSheet(type: type),
     );
   }
 
