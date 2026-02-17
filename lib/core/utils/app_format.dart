@@ -12,11 +12,18 @@ class AppFormat {
     }
   }
 
+  static String currentDateTime() {
+    final now = DateTime.now();
+    final dayName = DateFormat('EEEE', 'id_ID').format(now);
+    final formatted = DateFormat('d MMMM yyyy HH:mm', 'id_ID').format(now);
+    return '$dayName, $formatted';
+  }
+
   /// Format to UI Date: dd-MM-yyyy
   static String toUiDate(String? apiDate) {
     if (apiDate == null || apiDate.isEmpty) return '';
     try {
-      final date = DateTime.parse(apiDate);
+      final date = DateTime.parse(apiDate).toLocal();
       return DateFormat('dd-MM-yyyy').format(date);
     } catch (e) {
       return apiDate;

@@ -1,5 +1,5 @@
 // Datasource Provider
-import 'package:budidaya_lele_mobile/features/schedule/data/datasource/sampling_datasource.dart';
+import 'package:budidaya_lele_mobile/features/schedule/data/datasources/sampling_datasource.dart';
 import 'package:budidaya_lele_mobile/features/schedule/data/repositories/sampling_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/schedule.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/repositories/sampling_repository.dart';

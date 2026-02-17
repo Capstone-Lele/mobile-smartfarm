@@ -1,5 +1,5 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
-import 'package:budidaya_lele_mobile/features/schedule/data/datasource/feeding_datasource.dart';
+import 'package:budidaya_lele_mobile/features/schedule/data/datasources/feeding_datasource.dart';
 import 'package:budidaya_lele_mobile/features/schedule/data/models/schedule_model.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/schedule.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/repositories/feeding_repository.dart';

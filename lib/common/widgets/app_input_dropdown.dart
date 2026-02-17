@@ -3,7 +3,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 class AppInputDropdown<T> extends StatefulWidget {
-  final String label;
+  final String? label;
   final String hint;
   final T? value;
   final List<T> items;
@@ -16,7 +16,7 @@ class AppInputDropdown<T> extends StatefulWidget {
 
   const AppInputDropdown({
     super.key,
-    required this.label,
+    this.label,
     required this.hint,
     required this.items,
     required this.itemLabel,
@@ -56,22 +56,24 @@ class _AppInputDropdownState<T> extends State<AppInputDropdown<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              widget.label,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-            ),
-            if (widget.requiredField) ...[
-              const SizedBox(width: 4),
-              const Text(
-                '*',
-                style: TextStyle(color: Colors.red, fontSize: 14),
+        if (widget.label != null) ...[
+          Row(
+            children: [
+              Text(
+                widget.label!,
+                style: const TextStyle(fontSize: 14, color: Colors.black),
               ),
+              if (widget.requiredField) ...[
+                const SizedBox(width: 4),
+                const Text(
+                  '*',
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ],
             ],
-          ],
-        ),
-        const SizedBox(height: 8),
+          ),
+          const SizedBox(height: 8),
+        ],
         DropdownButtonFormField2<T?>(
           isExpanded: true,
           decoration: InputDecoration(

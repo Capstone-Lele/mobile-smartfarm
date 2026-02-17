@@ -51,10 +51,6 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
 
   Future<void> _initialData() async {
     try {
-      setState(() {
-        _isInitialLoading = true;
-      });
-
       await ref.read(poolListNotifierProvider.notifier).getPools();
 
       switch (widget.scheduleType) {
@@ -106,7 +102,7 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
               foundAutoFill ?? (autofills.isNotEmpty ? autofills.first : null);
         }
 
-        _scheduleDateCtrl.text = schedule.scheduleDate;
+        _scheduleDateCtrl.text = AppFormat.toUiDateTime(schedule.scheduleDate);
       }
     } catch (e) {
       debugPrint('Error loading initial data: $e');
@@ -150,7 +146,6 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedPool == null || _selectedAutoFill == null) return;
 
     final dateApi = AppFormat.toApiDateTime(_scheduleDateCtrl.text);
 
