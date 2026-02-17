@@ -4,6 +4,7 @@ import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_pag
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/create_schedule_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/schedule_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update_schedule_page.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -15,6 +16,8 @@ class AppRoutes {
   static const String scheduleDetail = '/schedule/detail';
   static const String createSchedule = '/schedule/create';
   static const String updateSchedule = '/schedule/update';
+
+  static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -44,6 +47,7 @@ class AppRoutes {
           scheduleType: args?['scheduleType'] as String? ?? '',
         );
       },
+      changePassword: (context) => const ChangePasswordPage(),
     };
   }
 

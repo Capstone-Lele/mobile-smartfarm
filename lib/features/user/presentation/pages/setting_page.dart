@@ -39,7 +39,9 @@ class SettingPage extends ConsumerWidget {
                     Icons.lock_outline,
                     "Ubah Password",
                     isLast: true,
-                    onTap: () {},
+                    onTap: () {
+                      AppRoutes.pushNamed(context, AppRoutes.changePassword);
+                    },
                   ),
                 ]),
                 const SizedBox(height: 20),
