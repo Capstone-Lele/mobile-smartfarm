@@ -4,6 +4,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/schedule.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/providers/cleaning_provider.dart';
@@ -175,7 +176,8 @@ class _ScheduleDetailPageState extends ConsumerState<ScheduleDetailPage> {
                   label: 'Tanggal Jadwal',
                   hint: 'Pilih Tanggal',
                   type: DateFieldType.dateTime,
-                  controller: _scheduleDateCtrl..text = schedule.scheduleDate,
+                  controller: _scheduleDateCtrl
+                    ..text = AppFormat.toUiDateTime(schedule.scheduleDate),
                   requiredField: true,
                   readOnly: true,
                 ),

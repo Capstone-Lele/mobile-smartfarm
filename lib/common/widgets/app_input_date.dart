@@ -71,7 +71,9 @@ class _AppInputDateState extends State<AppInputDate> {
       final formatted = _formatDate(parsed);
       if (currentText != formatted) {
         _selectedDate = parsed;
-        widget.controller?.text = formatted;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          widget.controller?.text = formatted;
+        });
       } else if (_selectedDate != parsed) {
         _selectedDate = parsed;
       }
