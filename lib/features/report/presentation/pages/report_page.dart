@@ -312,7 +312,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.trending_up,
             label: 'Laporan Sampling',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.samplingReport,
+                arguments: {
+                  'cycleId': 'cycle-1',
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
         ],
       );
