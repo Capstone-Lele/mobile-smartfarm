@@ -108,7 +108,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     AppInputText(
                       label: 'Password',
                       hint: '#Sn123hsn@',
@@ -123,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     isLoading
                         ? const CircularProgressIndicator()
                         : AppButton(label: 'Login', onPressed: _onSubmit),
