@@ -4,6 +4,10 @@ import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_pag
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/create_harvest_report_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_page.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/create_mortality_report_page.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_page.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/update_mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/create_pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
@@ -31,6 +35,11 @@ class AppRoutes {
   static const String updateSchedule = '/schedule/update';
   // User
   static const String changePassword = '/change-password';
+  // Mortality Report
+  static const String mortalityReport = '/mortality-report';
+  static const String createMortalityReport = '/mortality-report/create';
+  static const String mortalityReportDetail = '/mortality-report/detail';
+  static const String updateMortalityReport = '/mortality-report/update';
   // Pool Cleaning Report
   static const String poolCleaningReport = '/pool-cleaning-report';
   static const String createPoolCleaningReport = '/pool-cleaning-report/create';
@@ -78,6 +87,45 @@ class AppRoutes {
       },
       // User
       changePassword: (context) => const ChangePasswordPage(),
+      // Mortality Report
+      mortalityReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return MortalityReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createMortalityReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateMortalityReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      mortalityReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return MortalityReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      updateMortalityReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return UpdateMortalityReportPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
       // Pool Cleaning Report
       poolCleaningReport: (context) {
         final args =

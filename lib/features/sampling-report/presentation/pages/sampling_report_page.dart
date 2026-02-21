@@ -66,7 +66,7 @@ class _SamplingReportPageState extends State<SamplingReportPage> {
                 AppHintBoard(
                   title: '📌 Petunjuk Laporan Sampling',
                   desc:
-                      '• Tekan + untuk tambah laporan kalau anda melakukan sampling Kolam.\n• Ketuk laporan untuk lihat detailnya.',
+                      '• Tekan + untuk tambah laporan kalau anda melakukan sampling.\n• Ketuk laporan untuk lihat detailnya.',
                 ),
                 SizedBox(height: 16),
                 AppDateRangeFilter(
