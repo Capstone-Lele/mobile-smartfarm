@@ -343,7 +343,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.agriculture,
             label: 'Laporan Panen',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.harvestReport,
+                arguments: {
+                  'cycleId': 'cycle-1',
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
           ReportMenuCard(
             icon: Icons.swap_horiz,

@@ -1,6 +1,9 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_bottom_bar.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/create_harvest_report_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/create_pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
@@ -38,6 +41,10 @@ class AppRoutes {
   static const String createSamplingReport = '/sampling-report/create';
   static const String samplingReportDetail = '/sampling-report/detail';
   static const String updateSamplingReport = '/sampling-report/update';
+  // Harvest Report
+  static const String harvestReport = '/harvest-report';
+  static const String createHarvestReport = '/harvest-report/create';
+  static const String harvestReportDetail = '/harvest-report/detail';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -139,6 +146,35 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return UpdateSamplingReportPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Harvest Report
+      harvestReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return HarvestReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createHarvestReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateHarvestReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      harvestReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return HarvestReportDetailPage(
           reportId: args?['reportId'] as String? ?? '',
           cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
