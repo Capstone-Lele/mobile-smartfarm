@@ -41,7 +41,7 @@ class _AppHintBoardState extends State<AppHintBoard> {
                 Text(
                   widget.desc,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: AppColors.lightGray,
                     fontWeight: FontWeight.w500,
                   ),
@@ -53,7 +53,7 @@ class _AppHintBoardState extends State<AppHintBoard> {
                     return Text(
                       AppFormat.currentDateTime(),
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: AppColors.lightGray,
                       ),
                     );

@@ -3,6 +3,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
@@ -297,7 +298,16 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.water_drop,
             label: 'Laporan Pembersihan',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.poolCleaningReport,
+                arguments: {
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
           ReportMenuCard(
             icon: Icons.trending_up,
@@ -307,7 +317,6 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         ],
       );
     } else {
-      // Laporan Khusus
       return GridView.count(
         crossAxisCount: 4,
         shrinkWrap: true,

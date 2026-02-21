@@ -16,6 +16,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _confirmPasswordCtrl = TextEditingController();
 
   @override
+  void dispose() {
+    _oldPasswordCtrl.dispose();
+    _newPasswordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
   }
@@ -66,7 +74,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Password Baru',
                 hint: 'Password Baru',
@@ -81,7 +89,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Konfirmasi Password',
                 hint: 'Konfirmasi Password',
