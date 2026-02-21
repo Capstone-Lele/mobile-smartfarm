@@ -104,7 +104,7 @@ class _UpdateSamplingReportPageState extends State<UpdateSamplingReportPage> {
 
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
-                    return 'Jumlah Sampling harus berupa angka positif';
+                    return 'Jumlah harus berupa angka positif';
                   }
 
                   return null;
