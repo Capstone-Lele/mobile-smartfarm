@@ -28,45 +28,14 @@ class _UpdatePoolCleaningReportPageState
   XFile? _selectedImage;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+  void dispose() {
+    _reportDateCtrl.dispose();
+    super.dispose();
   }
 
-  SafeArea _buildFormState() {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppInputDate(
-                label: 'Tanggal Pembersihan Kolam',
-                hint: 'Tanggal Pembersihan Kolam',
-                type: DateFieldType.date,
-                controller: _reportDateCtrl,
-                requiredField: true,
-              ),
-              SizedBox(height: 16),
-              AppInputImage(
-                label: 'Foto',
-                hint: 'Tambahkan foto pembersihan kolam',
-                requiredField: true,
-                imageUrl: 'https://picsum.photos/200',
-                onChanged: (image) {
-                  setState(() {
-                    _selectedImage = image;
-                  });
-                },
-              ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
-            ],
-          ),
-        ),
-      ),
-    );
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -89,6 +58,49 @@ class _UpdatePoolCleaningReportPageState
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFormState() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppInputDate(
+                label: 'Tanggal Pembersihan Kolam',
+                hint: 'Tanggal Pembersihan Kolam',
+                type: DateFieldType.date,
+                controller: _reportDateCtrl,
+                requiredField: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Tanggal pembersihan kolam harus dipilih';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              AppInputImage(
+                label: 'Foto',
+                hint: 'Tambahkan foto pembersihan kolam',
+                requiredField: true,
+                imageUrl: 'https://picsum.photos/200',
+                onChanged: (image) {
+                  setState(() {
+                    _selectedImage = image;
+                  });
+                },
+              ),
+              SizedBox(height: 24),
+              AppButton(label: 'Submit', onPressed: () {}),
+            ],
+          ),
+        ),
       ),
     );
   }

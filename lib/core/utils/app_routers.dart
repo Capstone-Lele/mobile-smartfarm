@@ -5,6 +5,10 @@ import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/update_pool_cleaning_report_page.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/create_sampling_report_page.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/sampling_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/sampling_report_page.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/update_sampling_report_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/create_schedule_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/schedule_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update_schedule_page.dart';
@@ -30,7 +34,10 @@ class AppRoutes {
   static const String poolCleaningReportDetail = '/pool-cleaning-report/detail';
   static const String updatePoolCleaningReport = '/pool-cleaning-report/update';
   // Sampling Report
-  
+  static const String samplingReport = '/sampling-report';
+  static const String createSamplingReport = '/sampling-report/create';
+  static const String samplingReportDetail = '/sampling-report/detail';
+  static const String updateSamplingReport = '/sampling-report/update';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -95,6 +102,45 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return UpdatePoolCleaningReportPage(
           reportId: args?['reportId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Sampling Report
+      samplingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SamplingReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createSamplingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateSamplingReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      samplingReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SamplingReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      updateSamplingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return UpdateSamplingReportPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
