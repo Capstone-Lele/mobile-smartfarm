@@ -27,6 +27,10 @@ import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/update_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_page.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/presentation/pages/create_feeding_report_page.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/presentation/pages/feeding_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/presentation/pages/feeding_report_page.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/presentation/pages/update_feeding_report_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -56,6 +60,11 @@ class AppRoutes {
   static const String createVitaminReport = '/vitamin-report/create';
   static const String vitaminReportDetail = '/vitamin-report/detail';
   static const String updateVitaminReport = '/vitamin-report/update';
+  // Feeding Report
+  static const String feedingReport = '/feeding-report';
+  static const String createFeedingReport = '/feeding-report/create';
+  static const String feedingReportDetail = '/feeding-report/detail';
+  static const String updateFeedingReport = '/feeding-report/update';
   // Pool Cleaning Report
   static const String poolCleaningReport = '/pool-cleaning-report';
   static const String createPoolCleaningReport = '/pool-cleaning-report/create';
@@ -201,6 +210,45 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return UpdateVitaminReportPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Feeding Report
+      feedingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return FeedingReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createFeedingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateFeedingReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      feedingReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return FeedingReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      updateFeedingReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return UpdateFeedingReportPage(
           reportId: args?['reportId'] as String? ?? '',
           cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
