@@ -53,7 +53,9 @@ class SettingPage extends ConsumerWidget {
                     onTap: () {},
                   ),
                   _buildMenuItem(Icons.help_outline, "Bantuan", onTap: () {}),
-                  _buildMenuItem(Icons.sensors, "Status Alat", onTap: () {}),
+                  _buildMenuItem(Icons.sensors, "Status Alat", onTap: () {
+                    AppRoutes.pushNamed(context, AppRoutes.statusDevice);
+                  }),
                   if (user?.role == 'pic') ...[
                     _buildMenuItem(
                       Icons.local_parking,

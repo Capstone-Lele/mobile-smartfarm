@@ -22,6 +22,7 @@ import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/create_seed_report_page.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_page.dart';
+import 'package:budidaya_lele_mobile/features/status-device/presentation/status_device_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/update_vitamin_report_page.dart';
@@ -79,6 +80,8 @@ class AppRoutes {
   static const String harvestReport = '/harvest-report';
   static const String createHarvestReport = '/harvest-report/create';
   static const String harvestReportDetail = '/harvest-report/detail';
+  // Status Device
+  static const String statusDevice = '/status-device';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -358,6 +361,8 @@ class AppRoutes {
           poolName: args?['poolName'] as String? ?? '',
         );
       },
+      // Status Device
+      statusDevice: (context) => const StatusDevicePage(),
     };
   }
 
