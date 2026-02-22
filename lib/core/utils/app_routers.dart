@@ -19,6 +19,9 @@ import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/create_schedule_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/schedule_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update_schedule_page.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/create_seed_report_page.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +43,10 @@ class AppRoutes {
   static const String createMortalityReport = '/mortality-report/create';
   static const String mortalityReportDetail = '/mortality-report/detail';
   static const String updateMortalityReport = '/mortality-report/update';
+  // Seed Report
+  static const String seedReport = '/seed-report';
+  static const String createSeedReport = '/seed-report/create';
+  static const String seedReportDetail = '/seed-report/detail';
   // Pool Cleaning Report
   static const String poolCleaningReport = '/pool-cleaning-report';
   static const String createPoolCleaningReport = '/pool-cleaning-report/create';
@@ -122,6 +129,32 @@ class AppRoutes {
         return UpdateMortalityReportPage(
           reportId: args?['reportId'] as String? ?? '',
           cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Seed Report
+      seedReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SeedReportPage(
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createSeedReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateSeedReportPage(
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      seedReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SeedReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
