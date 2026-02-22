@@ -283,7 +283,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.medical_services,
             label: 'Laporan Vitamin',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.vitaminReport,
+                arguments: {
+                  'cycleId': 'cycle-1',
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
           ReportMenuCard(
             icon: Icons.dangerous,
