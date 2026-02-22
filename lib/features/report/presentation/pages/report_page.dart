@@ -348,7 +348,16 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.add_circle_outline,
             label: 'Laporan Tebar Benih',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.seedReport,
+                arguments: {
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
           ReportMenuCard(
             icon: Icons.agriculture,
