@@ -23,6 +23,10 @@ import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/cre
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/update_vitamin_report_page.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -47,6 +51,11 @@ class AppRoutes {
   static const String seedReport = '/seed-report';
   static const String createSeedReport = '/seed-report/create';
   static const String seedReportDetail = '/seed-report/detail';
+  // Vitamin Report
+  static const String vitaminReport = '/vitamin-report';
+  static const String createVitaminReport = '/vitamin-report/create';
+  static const String vitaminReportDetail = '/vitamin-report/detail';
+  static const String updateVitaminReport = '/vitamin-report/update';
   // Pool Cleaning Report
   static const String poolCleaningReport = '/pool-cleaning-report';
   static const String createPoolCleaningReport = '/pool-cleaning-report/create';
@@ -155,6 +164,45 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return SeedReportDetailPage(
           reportId: args?['reportId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Vitamin Report
+      vitaminReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return VitaminReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createVitaminReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateVitaminReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      vitaminReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return VitaminReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      updateVitaminReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return UpdateVitaminReportPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
