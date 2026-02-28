@@ -34,7 +34,7 @@ class SeedReportRepositoryImpl implements SeedReportRepository {
   }
 
   @override
-  Future<Either<Failure, SeedReport>> createSeedReport(
+  Future<Either<Failure, Map<String, dynamic>>> createSeedReport(
     String poolId,
     String userId,
     String reportDate,
@@ -54,8 +54,7 @@ class SeedReportRepositoryImpl implements SeedReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final seedReport = SeedReportModel.fromJson(data);
-      return Right(seedReport);
+      return Right(data);
     });
   }
 

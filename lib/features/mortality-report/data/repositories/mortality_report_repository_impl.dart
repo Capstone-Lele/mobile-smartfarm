@@ -34,7 +34,7 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
   }
 
   @override
-  Future<Either<Failure, MortalityReport>> createMortalityReport(
+  Future<Either<Failure, Map<String, dynamic>>> createMortalityReport(
     String cycleId,
     String userId,
     String reportDate,
@@ -50,13 +50,12 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final mortalityReport = MortalityReportModel.fromJson(data);
-      return Right(mortalityReport);
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, MortalityReport>> updateMortalityReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateMortalityReport(
     String id,
     String reportDate,
     int quantity,
@@ -70,8 +69,7 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final mortalityReport = MortalityReportModel.fromJson(data);
-      return Right(mortalityReport);
+      return Right(data);
     });
   }
 

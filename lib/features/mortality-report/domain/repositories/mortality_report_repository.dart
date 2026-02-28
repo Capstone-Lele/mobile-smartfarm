@@ -6,14 +6,14 @@ import 'package:image_picker/image_picker.dart';
 abstract class MortalityReportRepository {
   Future<Either<Failure, List<MortalityReport>>> getMortalityReports();
   Future<Either<Failure, MortalityReport>> getMortalityReport(String id);
-  Future<Either<Failure, MortalityReport>> createMortalityReport(
+  Future<Either<Failure, Map<String, dynamic>>> createMortalityReport(
     String cycleId,
     String userId,
     String reportDate,
     int quantity,
     XFile image,
   );
-  Future<Either<Failure, MortalityReport>> updateMortalityReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateMortalityReport(
     String id,
     String reportDate,
     int quantity,

@@ -191,7 +191,7 @@ final samplingListNotifierProvider =
 
 // Sampling Detail Notifier Provider
 final samplingDetailNotifierProvider =
-    StateNotifierProvider.autoDispose<
+    StateNotifierProvider<
       SamplingDetailNotifier,
       AsyncValue<Schedule?>
     >((ref) {
