@@ -1,13 +1,16 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_bottom_bar.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_page.dart';
-import 'package:budidaya_lele_mobile/features/harvest-report/presentation/create_harvest_report_page.dart';
-import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_detail_page.dart';
-import 'package:budidaya_lele_mobile/features/harvest-report/presentation/harvest_report_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/create_harvest_report_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/create_mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/update_mortality_report_page.dart';
+import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/create_move_pool_report_page.dart';
+import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/create_pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
@@ -80,6 +83,10 @@ class AppRoutes {
   static const String harvestReport = '/harvest-report';
   static const String createHarvestReport = '/harvest-report/create';
   static const String harvestReportDetail = '/harvest-report/detail';
+  // Move Pool Report
+  static const String movePoolReport = '/move-pool-report';
+  static const String createMovePoolReport = '/move-pool-report/create';
+  static const String movePoolReportDetail = '/move-pool-report/detail';
   // Status Device
   static const String statusDevice = '/status-device';
 
@@ -355,6 +362,35 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return HarvestReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Move Pool Report
+      movePoolReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return MovePoolReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createMovePoolReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateMovePoolReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      movePoolReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return MovePoolReportDetailPage(
           reportId: args?['reportId'] as String? ?? '',
           cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',

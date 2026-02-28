@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 abstract class VitaminReportRepository {
   Future<Either<Failure, List<VitaminReport>>> getVitaminReports();
   Future<Either<Failure, VitaminReport>> getVitaminReport(String id);
-  Future<Either<Failure, VitaminReport>> createVitaminReport(
+  Future<Either<Failure, Map<String, dynamic>>> createVitaminReport(
     String cycleId,
     String userId,
     String inventoryId,
@@ -14,7 +14,7 @@ abstract class VitaminReportRepository {
     int quantity,
     XFile image,
   );
-  Future<Either<Failure, VitaminReport>> updateVitaminReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateVitaminReport(
     String id,
     String inventoryId,
     String reportDate,

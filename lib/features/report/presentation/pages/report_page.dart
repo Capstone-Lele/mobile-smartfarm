@@ -173,7 +173,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ),
           const SizedBox(height: 8),
           AppInputDropdown<Pool>(
-            hint: 'Pilih kolam',
+            hint: 'Semua kolam',
             items: pools,
             itemLabel: (pool) => pool.name,
             value: _selectedPool,
@@ -397,7 +397,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ReportMenuCard(
             icon: Icons.swap_horiz,
             label: 'Laporan Pindah Kolam',
-            onTap: () {},
+            onTap: () {
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.movePoolReport,
+                arguments: {
+                  'cycleId': 'cycle-1',
+                  'poolId': _selectedPool!.id,
+                  'poolName': _selectedPool!.name,
+                },
+              );
+            },
           ),
         ],
       );

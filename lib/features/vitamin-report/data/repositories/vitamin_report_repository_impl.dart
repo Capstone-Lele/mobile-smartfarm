@@ -34,7 +34,7 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
   }
 
   @override
-  Future<Either<Failure, VitaminReport>> createVitaminReport(
+  Future<Either<Failure, Map<String, dynamic>>> createVitaminReport(
     String cycleId,
     String userId,
     String inventoryId,
@@ -52,13 +52,12 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final vitaminReport = VitaminReportModel.fromJson(data);
-      return Right(vitaminReport);
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, VitaminReport>> updateVitaminReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateVitaminReport(
     String id,
     String inventoryId,
     String reportDate,
@@ -74,8 +73,7 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final vitaminReport = VitaminReportModel.fromJson(data);
-      return Right(vitaminReport);
+      return Right(data);
     });
   }
 

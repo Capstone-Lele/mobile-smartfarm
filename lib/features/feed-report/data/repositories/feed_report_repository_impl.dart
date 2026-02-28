@@ -34,7 +34,7 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   }
 
   @override
-  Future<Either<Failure, FeedReport>> createFeedReport(
+  Future<Either<Failure, Map<String, dynamic>>> createFeedReport(
     String cycleId,
     String userId,
     String inventoryId,
@@ -52,13 +52,12 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final feedReport = FeedReportModel.fromJson(data);
-      return Right(feedReport);
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, FeedReport>> updateFeedReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateFeedReport(
     String id,
     String inventoryId,
     String reportDate,
@@ -74,8 +73,7 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final feedReport = FeedReportModel.fromJson(data);
-      return Right(feedReport);
+      return Right(data);
     });
   }
 
