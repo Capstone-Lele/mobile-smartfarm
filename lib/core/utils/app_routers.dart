@@ -25,6 +25,9 @@ import 'package:budidaya_lele_mobile/features/schedule/presentation/pages/update
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/create_seed_report_page.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/seed_report_page.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/create_sick_report_page.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sick_report_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sick_report_page.dart';
 import 'package:budidaya_lele_mobile/features/status-device/presentation/status_device_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';
@@ -87,6 +90,10 @@ class AppRoutes {
   static const String movePoolReport = '/move-pool-report';
   static const String createMovePoolReport = '/move-pool-report/create';
   static const String movePoolReportDetail = '/move-pool-report/detail';
+  // Sick Report
+  static const String sickReport = '/sick-report';
+  static const String createSickReport = '/sick-report/create';
+  static const String sickReportDetail = '/sick-report/detail';
   // Status Device
   static const String statusDevice = '/status-device';
 
@@ -391,6 +398,35 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return MovePoolReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      // Sick Report
+      sickReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SickReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      createSickReport: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return CreateSickReportPage(
+          cycleId: args?['cycleId'] as String? ?? '',
+          poolId: args?['poolId'] as String? ?? '',
+          poolName: args?['poolName'] as String? ?? '',
+        );
+      },
+      sickReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return SickReportDetailPage(
           reportId: args?['reportId'] as String? ?? '',
           cycleId: args?['cycleId'] as String? ?? '',
           poolId: args?['poolId'] as String? ?? '',
