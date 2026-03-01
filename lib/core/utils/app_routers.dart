@@ -15,6 +15,7 @@ import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/update_pool_cleaning_report_page.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/pages/pool_page.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/create_sampling_report_page.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/sampling_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/pages/sampling_report_page.dart';
@@ -94,6 +95,8 @@ class AppRoutes {
   static const String sickReport = '/sick-report';
   static const String createSickReport = '/sick-report/create';
   static const String sickReportDetail = '/sick-report/detail';
+  // Pool
+  static const String pool = '/pool';
   // Status Device
   static const String statusDevice = '/status-device';
 
@@ -433,6 +436,8 @@ class AppRoutes {
           poolName: args?['poolName'] as String? ?? '',
         );
       },
+      // Pool
+      pool: (context) => const PoolPage(),
       // Status Device
       statusDevice: (context) => const StatusDevicePage(),
     };

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 enum FieldType { text, email, number, password }
 
 class AppInputText extends StatefulWidget {
-  final String label;
+  final String? label;
   final String hint;
   final TextEditingController? controller;
   final FieldType type;
@@ -19,7 +19,7 @@ class AppInputText extends StatefulWidget {
 
   const AppInputText({
     super.key,
-    required this.label,
+    this.label,
     required this.hint,
     this.controller,
     this.type = FieldType.text,
@@ -58,22 +58,24 @@ class _AppInputState extends State<AppInputText> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              widget.label,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-            ),
-            if (widget.requiredField) ...[
-              const SizedBox(width: 4),
-              const Text(
-                '*',
-                style: TextStyle(color: Colors.red, fontSize: 14),
+        if (widget.label != null) ...[
+          Row(
+            children: [
+              Text(
+                widget.label!,
+                style: const TextStyle(fontSize: 14, color: Colors.black),
               ),
+              if (widget.requiredField) ...[
+                const SizedBox(width: 4),
+                const Text(
+                  '*',
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ],
             ],
-          ],
-        ),
-        const SizedBox(height: 8),
+          ),
+          const SizedBox(height: 8),
+        ],
         TextFormField(
           controller: widget.controller,
           keyboardType: _keyboardType,
@@ -120,7 +122,12 @@ class _AppInputState extends State<AppInputText> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.red, width: 2),
             ),
-            prefixIcon: widget.prefix ?? const SizedBox(width: 12),
+            prefixIcon: widget.prefix != null
+                ? Padding(
+                    padding: EdgeInsets.only(left: 12, right: 8),
+                    child: widget.prefix,
+                  )
+                : const SizedBox(width: 12),
             prefixIconConstraints: const BoxConstraints(
               minWidth: 12,
               minHeight: 0,
