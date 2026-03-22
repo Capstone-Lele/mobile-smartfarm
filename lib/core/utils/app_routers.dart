@@ -31,6 +31,7 @@ import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sic
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sick_report_page.dart';
 import 'package:budidaya_lele_mobile/features/status-device/presentation/status_device_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_profile_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/update_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_detail_page.dart';
@@ -54,6 +55,7 @@ class AppRoutes {
   static const String updateSchedule = '/schedule/update';
   // User
   static const String changePassword = '/change-password';
+  static const String changeProfile = '/change-profile';
   // Mortality Report
   static const String mortalityReport = '/mortality-report';
   static const String createMortalityReport = '/mortality-report/create';
@@ -104,7 +106,7 @@ class AppRoutes {
     return {
       dashboard: (context) => const AppBottomBar(),
       // Auth
-      splash: (context) => const SplashPage(),
+      // splash: (context) => const SplashPage(),
       login: (context) => const LoginPage(),
       // Schedule
       scheduleDetail: (context) {
@@ -132,6 +134,7 @@ class AppRoutes {
       },
       // User
       changePassword: (context) => const ChangePasswordPage(),
+      changeProfile: (context) => const ChangeProfilePage(),
       // Mortality Report
       mortalityReport: (context) {
         final args =
