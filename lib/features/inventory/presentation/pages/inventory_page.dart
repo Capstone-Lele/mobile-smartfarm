@@ -10,6 +10,7 @@ import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inv
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_summary_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_report_card.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
@@ -67,6 +68,30 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       'quantity': '10 liter',
       'status': 'Ditolak',
       'date': 'Senin, 28 Oktober 2025',
+    },
+  ];
+
+  final List<Map<String, dynamic>> _inventoryReport = [
+    {
+      'id': 1,
+      'product': 'Terpal',
+      'quantity': '50 Kg',
+      'date': 'Senin, 28 Oktober 2025',
+      'imageUrl': 'https://picsum.photos/200',
+    },
+    {
+      'id': 2,
+      'product': 'Batu bata',
+      'quantity': '100 unit',
+      'date': 'Senin, 28 Oktober 2025',
+      'imageUrl': 'https://picsum.photos/200',
+    },
+    {
+      'id': 3,
+      'product': 'Pipa',
+      'quantity': '5 m',
+      'date': 'Senin, 28 Oktober 2025',
+      'imageUrl': 'https://picsum.photos/200',
     },
   ];
 
@@ -172,7 +197,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                             );
                           },
                         );
-                      } else {
+                      } else if (selectedTab == 1) {
                         final item = _inventorySubmission[index];
                         return InventorySubmissionCard(
                           productName: item['product'],
@@ -191,6 +216,20 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                             );
                           },
                         );
+                      } else {
+                        final item = _inventoryReport[index];
+                        return InventoryReportCard(
+                          productName: item['product'],
+                          quantity: item['quantity'],
+                          date: item['date'],
+                          imageUrl: item['imageUrl'],
+                          onTap: () {
+                            AppRoutes.pushNamed(
+                              context,
+                              AppRoutes.inventoryReportDetail,
+                            );
+                          },
+                        );
                       }
                     },
                   ),
@@ -201,7 +240,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         ),
       ),
       floatingActionButton: selectedTab != 0
-          ? _buildFloatingActionButton()
+          ? _buildFloatingActionButton(selectedTab)
           : null,
     );
   }
@@ -245,12 +284,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildFloatingActionButton(int selectedTab) {
     return FloatingActionButton(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       backgroundColor: AppColors.secondary,
       onPressed: () {
-        AppRoutes.pushNamed(context, AppRoutes.createnInventorySubmission);
+        if (selectedTab == 1) {
+          AppRoutes.pushNamed(context, AppRoutes.createInventorySubmission);
+        } else if (selectedTab == 2) {
+          AppRoutes.pushNamed(context, AppRoutes.createInventoryReport);
+        }
       },
       child: const Icon(Icons.add, color: Colors.white, size: 30),
     );
