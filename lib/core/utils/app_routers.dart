@@ -4,10 +4,13 @@ import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_pag
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/create_harvest_report_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_page.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/create_inventory_report_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/create_inventory_submission_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_page.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_submission_detail_page.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/update_inventory_report_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/update_inventory_submission_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/create_mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_detail_page.dart';
@@ -109,12 +112,15 @@ class AppRoutes {
   // Inventory
   static const String inventory = '/inventory';
   static const String inventoryDetail = '/inventory/detail';
-  static const String createnInventorySubmission =
+  static const String createInventorySubmission =
       '/inventory/create-submission';
   static const String inventorySubmissionDetail =
       '/inventory/submission-detail';
   static const String updateInventorySubmission =
       '/inventory/update-submission';
+  static const String createInventoryReport = '/inventory/create-report';
+  static const String inventoryReportDetail = '/inventory/report-detail';
+  static const String updateInventoryReport = '/inventory/update-report';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -460,12 +466,15 @@ class AppRoutes {
       // Inventory
       inventory: (context) => const InventoryPage(),
       inventoryDetail: (context) => const InventoryDetailPage(),
-      createnInventorySubmission: (context) =>
+      createInventorySubmission: (context) =>
           const CreateInventorySubmissionPage(),
       inventorySubmissionDetail: (context) =>
           const InventorySubmissionDetailPage(),
       updateInventorySubmission: (context) =>
           const UpdateInventorySubmissionPage(),
+      createInventoryReport: (context) => const CreateInventoryReportPage(),
+      inventoryReportDetail: (context) => const InventoryReportDetailPage(),
+      updateInventoryReport: (context) => const UpdateInventoryReportPage(),
     };
   }
 
