@@ -16,6 +16,8 @@ class AppInputText extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final int? maxLength;
   final bool readOnly;
+  final int maxLines;
+  final int minLines;
 
   const AppInputText({
     super.key,
@@ -30,6 +32,8 @@ class AppInputText extends StatefulWidget {
     this.onChanged,
     this.maxLength,
     this.readOnly = false,
+    this.maxLines = 1,
+    this.minLines = 1,
   });
 
   @override
@@ -77,6 +81,8 @@ class _AppInputState extends State<AppInputText> {
           const SizedBox(height: 8),
         ],
         TextFormField(
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
           controller: widget.controller,
           keyboardType: _keyboardType,
           obscureText: _isPassword ? _obscure : false,
