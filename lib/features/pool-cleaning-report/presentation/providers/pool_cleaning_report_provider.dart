@@ -61,9 +61,9 @@ class PoolCleaningReportListNotifier
   PoolCleaningReportListNotifier(this._getPoolCleaningReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getPoolCleaningReports() async {
+  Future<void> getPoolCleaningReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getPoolCleaningReportsUsecase.execute();
+    final result = await _getPoolCleaningReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -142,7 +142,7 @@ class PoolCleaningReportMutationNotifier
       },
       (poolCleaningReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getPoolCleaningReports();
+        _listNotifier.getPoolCleaningReports(poolId);
       },
     );
   }
@@ -150,6 +150,7 @@ class PoolCleaningReportMutationNotifier
   // Update pool cleaning report
   Future<void> updatePoolCleaningReport(
     String id,
+    String poolId,
     String reportDate,
     XFile? image,
   ) async {
@@ -169,14 +170,14 @@ class PoolCleaningReportMutationNotifier
       },
       (poolCleaningReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getPoolCleaningReports();
+        _listNotifier.getPoolCleaningReports(poolId);
         _detailNotifier.getPoolCleaningReport(id);
       },
     );
   }
 
   // Delete pool cleaning report
-  Future<void> deletePoolCleaningReport(String id) async {
+  Future<void> deletePoolCleaningReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deletePoolCleaningReportUsecase.execute(id);
 
@@ -189,7 +190,7 @@ class PoolCleaningReportMutationNotifier
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getPoolCleaningReports();
+        _listNotifier.getPoolCleaningReports(poolId);
       },
     );
   }

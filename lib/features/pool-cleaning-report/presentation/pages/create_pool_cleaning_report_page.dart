@@ -1,10 +1,15 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/providers/pool_cleaning_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreatePoolCleaningReportPage extends StatefulWidget {
+class CreatePoolCleaningReportPage extends ConsumerStatefulWidget {
   final String poolId;
   final String poolName;
 
@@ -15,12 +20,12 @@ class CreatePoolCleaningReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreatePoolCleaningReportPage> createState() =>
+  ConsumerState<CreatePoolCleaningReportPage> createState() =>
       _CreatePoolCleaningReportPageState();
 }
 
 class _CreatePoolCleaningReportPageState
-    extends State<CreatePoolCleaningReportPage> {
+    extends ConsumerState<CreatePoolCleaningReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   XFile? _selectedImage;
@@ -29,6 +34,27 @@ class _CreatePoolCleaningReportPageState
   void dispose() {
     _reportDateCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(poolCleaningReportMutationNotifierProvider.notifier)
+        .createPoolCleaningReport(
+          widget.poolId,
+          AppFormat.toApiDateTime(_reportDateCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(poolCleaningReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
   }
 
   @override
@@ -61,6 +87,9 @@ class _CreatePoolCleaningReportPageState
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(poolCleaningReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -72,7 +101,7 @@ class _CreatePoolCleaningReportPageState
               AppInputDate(
                 label: 'Tanggal Pembersihan Kolam',
                 hint: 'Tanggal Pembersihan Kolam',
-                type: DateFieldType.date,
+                type: DateFieldType.dateTime,
                 controller: _reportDateCtrl,
                 requiredField: true,
                 validator: (value) {
@@ -82,7 +111,7 @@ class _CreatePoolCleaningReportPageState
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto pembersihan kolam',
@@ -93,8 +122,10 @@ class _CreatePoolCleaningReportPageState
                   });
                 },
               ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
+              const SizedBox(height: 24),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Submit', onPressed: _onSubmit),
             ],
           ),
         ),
