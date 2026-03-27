@@ -45,36 +45,6 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     },
   ];
 
-  final List<Map<String, dynamic>> _pools = [
-    {
-      'id': 1,
-      'title': 'Kolam 1',
-      'quantity': 1000,
-      'category': 'pembenihan',
-      'pH': 7.5,
-      'temperature': 28.0,
-      'image': 'https://picsum.photos/200',
-    },
-    {
-      'id': 2,
-      'title': 'Kolam 2',
-      'quantity': 1500,
-      'category': 'pembesaran',
-      'pH': 7.2,
-      'temperature': 26.5,
-      'image': 'https://picsum.photos/201',
-    },
-    {
-      'id': 3,
-      'title': 'Kolam 3',
-      'quantity': 2000,
-      'category': 'pembenihan',
-      'pH': 7.0,
-      'temperature': 25.0,
-      'image': '',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -127,7 +97,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                     _buildStatisticsSection(),
                     const SizedBox(height: 16),
                   ],
-                  _buildPoolListSection(),
+                  _buildPoolListSection(poolsAsync),
                   const SizedBox(height: 16),
                   _buildActivitiesSection(),
                 ],
@@ -208,7 +178,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           AppInputDropdown<Pool>(
             hint: 'Semua kolam',
             items: pools,
-            itemLabel: (pool) => pool.name,
+            itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
             value: _selectedPool,
             onChanged: (pool) {
               setState(() {
@@ -299,6 +269,10 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   }
 
   Widget _buildReportMenuGrid(int selectedMenuIndex) {
+    final String category = _selectedPool?.category ?? '';
+    final isGrowing = category.contains('growing');
+    final isBreeding = category.contains('breeding');
+
     if (selectedMenuIndex == 0) {
       return GridView.count(
         crossAxisCount: 4,
@@ -353,21 +327,22 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               );
             },
           ),
-          ReportMenuCard(
-            icon: Icons.error_outline,
-            label: 'Laporan Sakit',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.sickReport,
-                arguments: {
-                  'cycleId': 'cycle-1',
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
+          if (isGrowing || isBreeding)
+            ReportMenuCard(
+              icon: Icons.error_outline,
+              label: 'Laporan Sakit',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.sickReport,
+                  arguments: {
+                    'cycleId': 'cycle-1',
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
           ReportMenuCard(
             icon: Icons.water_drop,
             label: 'Laporan Pembersihan',
@@ -376,6 +351,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 context,
                 AppRoutes.poolCleaningReport,
                 arguments: {
+                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
@@ -408,35 +384,37 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         crossAxisSpacing: 8,
         childAspectRatio: 1,
         children: [
-          ReportMenuCard(
-            icon: Icons.add_circle_outline,
-            label: 'Laporan Tebar Benih',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.seedReport,
-                arguments: {
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
-          ReportMenuCard(
-            icon: Icons.agriculture,
-            label: 'Laporan Panen',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.harvestReport,
-                arguments: {
-                  'cycleId': 'cycle-1',
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
+          if (isBreeding)
+            ReportMenuCard(
+              icon: Icons.add_circle_outline,
+              label: 'Laporan Tebar Benih',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.seedReport,
+                  arguments: {
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
+          if (isGrowing)
+            ReportMenuCard(
+              icon: Icons.agriculture,
+              label: 'Laporan Panen',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.harvestReport,
+                  arguments: {
+                    'cycleId': 'cycle-1',
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
           ReportMenuCard(
             icon: Icons.swap_horiz,
             label: 'Laporan Pindah Kolam',
@@ -558,53 +536,103 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     }
   }
 
-  Widget _buildPoolListSection() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Daftar Kolam',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.darkGray,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                AppRoutes.pushNamed(context, AppRoutes.pool);
-              },
-              child: const Text(
-                'Lihat Kolam',
+  Widget _buildPoolListSection(AsyncValue<List<Pool>> poolsAsync) {
+    return poolsAsync.when(
+      loading: () => Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Daftar Kolam',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.darkGray,
-                  decoration: TextDecoration.underline,
-                  decorationThickness: 1,
-                  height: 1.5,
                 ),
               ),
-            ),
-          ],
-        ),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _pools.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final pool = _pools[index];
-            return _buildPoolItem(pool);
-          },
-        ),
-      ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) =>
+                AppLoading(height: 100, borderRadius: 8),
+          ),
+        ],
+      ),
+      error: (error, stack) => Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Daftar Kolam',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkGray,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Gagal memuat daftar kolam',
+            style: TextStyle(color: AppColors.red),
+          ),
+        ],
+      ),
+      data: (pools) => Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Daftar Kolam',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkGray,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  AppRoutes.pushNamed(context, AppRoutes.pool);
+                },
+                child: const Text(
+                  'Lihat Kolam',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkGray,
+                    decoration: TextDecoration.underline,
+                    decorationThickness: 1,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: (pools.length > 3 ? 3 : pools.length),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final pool = pools[index];
+              return _buildPoolItem(pool);
+            },
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildPoolItem(Map<String, dynamic> pool) {
+  Widget _buildPoolItem(Pool pool) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -624,7 +652,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    pool['image'],
+                    'https://source.unsplash.com/60x60/?pond,fish',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -648,7 +676,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            pool['title'],
+                            pool.name,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -656,10 +684,10 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                             ),
                           ),
                           AppStatusBadge(
-                            label: pool['category'],
-                            type: pool['category'] == 'pembenihan'
+                            label: pool.categoryLabel,
+                            type: pool.categoryLabel == 'Pembenihan'
                                 ? BadgeType.warning
-                                : pool['category'] == 'pembesaran'
+                                : pool.categoryLabel == 'Pembesaran'
                                 ? BadgeType.success
                                 : BadgeType.danger,
                           ),
@@ -668,26 +696,27 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
+                          // Text(
+                          //   '${pool.acidityMax} pH',
+                          //   style: TextStyle(
+                          //     fontSize: 12,
+                          //     fontWeight: FontWeight.w400,
+                          //     color: AppColors.darkGray,
+                          //   ),
+                          // ),
+                          // const SizedBox(width: 12),
+                          // Text(
+                          //   '${pool.temperatureMax} °C',
+                          //   style: TextStyle(
+                          //     fontSize: 12,
+                          //     fontWeight: FontWeight.w400,
+                          //     color: AppColors.darkGray,
+                          //   ),
+                          // ),
+                          // const SizedBox(width: 12),
                           Text(
-                            '${pool['pH']} pH',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.darkGray,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${pool['temperature']} °C',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.darkGray,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${pool['quantity']} Ekor Ikan',
+                            // '${pool.currentQuantity} Ekor Ikan',
+                            'Jumlah Ikan Saat ini 1000 Ekor',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,

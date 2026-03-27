@@ -1,55 +1,62 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/providers/pool_cleaning_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PoolCleaningReportPage extends StatefulWidget {
+class PoolCleaningReportPage extends ConsumerStatefulWidget {
+  final bool isCycle;
   final String poolId;
   final String poolName;
 
   const PoolCleaningReportPage({
     super.key,
+    required this.isCycle,
     required this.poolId,
     required this.poolName,
   });
 
   @override
-  State<PoolCleaningReportPage> createState() => _PoolCleaningReportPageState();
+  ConsumerState<PoolCleaningReportPage> createState() =>
+      _PoolCleaningReportPageState();
 }
 
-class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
+class _PoolCleaningReportPageState
+    extends ConsumerState<PoolCleaningReportPage> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  final List<Map<String, dynamic>> _poolCleaningReports = [
-    {
-      'id': 1,
-      'title': 'Laporan Pembersihan Kolam #1',
-      'date': 'Senin, 29 September 2025 08.30',
-      'image': 'https://picsum.photos/200',
-    },
-    {
-      'id': 2,
-      'title': 'Laporan Pembersihan Kolam #2',
-      'date': 'Senin, 29 September 2025 08.30',
-      'image': 'https://picsum.photos/201',
-    },
-    {
-      'id': 3,
-      'title': 'Laporan Pembersihan Kolam #3',
-      'date': 'Senin, 29 September 2025 08.30',
-      'image': '',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(poolCleaningReportListNotifierProvider.notifier)
+          .getPoolCleaningReports(widget.poolId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
+    final reportState = ref.watch(poolCleaningReportListNotifierProvider);
+
     return Scaffold(
       appBar: _buildHeader(context),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {},
+          onRefresh: () async {
+            await ref
+                .read(poolCleaningReportListNotifierProvider.notifier)
+                .getPoolCleaningReports(widget.poolId);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
@@ -57,10 +64,11 @@ class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
               children: [
                 AppHintBoard(
                   title: '📌 Petunjuk Laporan Pembersihan Kolam',
-                  desc:
-                      '• Tekan + untuk tambah laporan kalau anda melakukan pembersihan Kolam.\n• Ketuk laporan untuk lihat detailnya.',
+                  desc: user?.role != 'pic'
+                      ? '• Tekan + untuk tambah laporan kalau anda melakukan pembersihan Kolam.\n• Ketuk laporan untuk lihat detailnya.'
+                      : '• Ketuk laporan untuk lihat detailnya.',
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
                   endDate: _endDate,
@@ -77,16 +85,71 @@ class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
                     });
                   },
                 ),
-                SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _poolCleaningReports.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final report = _poolCleaningReports[index];
-                    return _buildReportItem(report);
+                const SizedBox(height: 16),
+                _buildSummaryCards(reportState.value?.length ?? 0, user),
+                const SizedBox(height: 16),
+                reportState.when(
+                  loading: () => ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 3,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) =>
+                        AppLoading(height: 100, borderRadius: 8),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  data: (data) {
+                    final filteredData = data.where((report) {
+                      if (_startDate != null && _endDate != null) {
+                        try {
+                          final parsed = DateTime.parse(report.reportDate);
+                          final dateOnly = DateTime(
+                            parsed.year,
+                            parsed.month,
+                            parsed.day,
+                          );
+                          final start = DateTime(
+                            _startDate!.year,
+                            _startDate!.month,
+                            _startDate!.day,
+                          );
+                          final end = DateTime(
+                            _endDate!.year,
+                            _endDate!.month,
+                            _endDate!.day,
+                          );
+                          if (dateOnly.isBefore(start) ||
+                              dateOnly.isAfter(end)) {
+                            return false;
+                          }
+                        } catch (e) {
+                          return false;
+                        }
+                      }
+                      return true;
+                    }).toList();
+
+                    if (filteredData.isEmpty) {
+                      return _buildEmptyReports();
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredData.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final report = filteredData[index];
+                        return _buildReportItem(report, index, user);
+                      },
+                    );
                   },
                 ),
               ],
@@ -94,7 +157,7 @@ class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _buildFloatingActionButton(user),
     );
   }
 
@@ -122,14 +185,35 @@ class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
     );
   }
 
-  Widget _buildReportItem(Map<String, dynamic> report) {
+  Widget _buildEmptyReports() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inbox_outlined, size: 80, color: AppColors.darkGray),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada laporan pembersihan.',
+              style: TextStyle(color: AppColors.darkGray, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportItem(PoolCleaningReport report, int index, User? user) {
+    final formattedDate = AppFormat.dateTime(report.reportDate);
+
     return GestureDetector(
       onTap: () {
         AppRoutes.pushNamed(
           context,
           AppRoutes.poolCleaningReportDetail,
           arguments: {
-            'reportId': '${report['id']}',
+            'reportId': report.id,
             'poolId': widget.poolId,
             'poolName': widget.poolName,
           },
@@ -142,69 +226,207 @@ class _PoolCleaningReportPageState extends State<PoolCleaningReportPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.darkGray),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                report['image'],
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.gray,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    color: AppColors.darkGray,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report['title'],
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    report.image,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.gray,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.darkGray,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Laporan Pembersihan #${index + 1}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.darkGray,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (user?.role == 'pic') ...[
+              SizedBox(height: 12),
+              Row(
+                children: [
                   Text(
-                    report['date'],
+                    'Dilaporkan Oleh ${report.user}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.darkGray,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return FloatingActionButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      backgroundColor: AppColors.secondary,
-      onPressed: () {
-        AppRoutes.pushNamed(
-          context,
-          AppRoutes.createPoolCleaningReport,
-          arguments: {'poolId': widget.poolId, 'poolName': widget.poolName},
-        );
-      },
-      child: const Icon(Icons.add, color: Colors.white, size: 30),
+  Widget _buildSummaryCards(int totalReports, User? user) {
+    if (user?.role == 'pic') {
+      return Row(
+        children: [
+          Expanded(child: _buildTotalReportCard(totalReports)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildSiklusCard()),
+        ],
+      );
+    } else {
+      return _buildSiklusFullCard();
+    }
+  }
+
+  Widget _buildTotalReportCard(int total) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.article, size: 26, color: Colors.black),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Total Laporan',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildSiklusCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 32,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiklusFullCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton(User? user) {
+    if (user?.role != 'pic') {
+      return FloatingActionButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor: AppColors.secondary,
+        onPressed: () {
+          AppRoutes.pushNamed(
+            context,
+            AppRoutes.createPoolCleaningReport,
+            arguments: {'poolId': widget.poolId, 'poolName': widget.poolName},
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      );
+    }
+    return SizedBox.shrink();
   }
 }

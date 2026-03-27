@@ -8,7 +8,7 @@ class GetPoolCleaningReportsUsecase {
 
   GetPoolCleaningReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<PoolCleaningReport>>> execute() {
-    return repository.getPoolCleaningReports();
+  Future<Either<Failure, List<PoolCleaningReport>>> execute(String poolId) {
+    return repository.getPoolCleaningReports(poolId);
   }
 }

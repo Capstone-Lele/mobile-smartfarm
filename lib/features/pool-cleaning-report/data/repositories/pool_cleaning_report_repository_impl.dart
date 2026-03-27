@@ -12,9 +12,10 @@ class PoolCleaningReportRepositoryImpl implements PoolCleaningReportRepository {
   PoolCleaningReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<PoolCleaningReport>>>
-  getPoolCleaningReports() async {
-    final result = await datasource.getPoolCleaningReports();
+  Future<Either<Failure, List<PoolCleaningReport>>> getPoolCleaningReports(
+    String poolId,
+  ) async {
+    final result = await datasource.getPoolCleaningReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final poolCleaningReports = data

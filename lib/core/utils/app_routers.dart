@@ -110,7 +110,6 @@ class AppRoutes {
   // Status Device
   static const String statusDevice = '/status-device';
   // Inventory
-  static const String inventory = '/inventory';
   static const String inventoryDetail = '/inventory/detail';
   static const String createInventorySubmission =
       '/inventory/create-submission';
@@ -126,7 +125,7 @@ class AppRoutes {
     return {
       dashboard: (context) => const AppBottomBar(),
       // Auth
-      // splash: (context) => const SplashPage(),
+      splash: (context) => const SplashPage(),
       login: (context) => const LoginPage(),
       // Schedule
       scheduleDetail: (context) {
@@ -303,6 +302,7 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return PoolCleaningReportPage(
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
@@ -464,7 +464,6 @@ class AppRoutes {
       // Status Device
       statusDevice: (context) => const StatusDevicePage(),
       // Inventory
-      inventory: (context) => const InventoryPage(),
       inventoryDetail: (context) => const InventoryDetailPage(),
       createInventorySubmission: (context) =>
           const CreateInventorySubmissionPage(),

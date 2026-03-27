@@ -12,8 +12,8 @@ import 'package:image_picker/image_picker.dart';
 class PoolCleaningReportDatasource {
    // Get Pool Cleaning Repots
   Future<Either<Failure, List<Map<String, dynamic>>>>
-  getPoolCleaningReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/cleanings');
+  getPoolCleaningReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/cleanings?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {
