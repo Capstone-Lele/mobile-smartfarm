@@ -11,8 +11,9 @@ import 'package:image_picker/image_picker.dart';
 
 class HarvestReportDatasource {
   // Get Harvest Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>>
-  getHarvestReports(String poolId) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getHarvestReports(
+    String poolId,
+  ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/harvest?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
@@ -87,7 +88,7 @@ class HarvestReportDatasource {
       );
 
       final data = AppResponse.data(response);
-      final harvestReport = data['data'][0];
+      final harvestReport = data['data'];
       return Right(harvestReport);
     } catch (e) {
       if (e is Failure) return Left(e);

@@ -5,7 +5,7 @@ class HarvestReport {
   final String date;
   final String cycle;
   final String poolName;
-  final String amount;
+  final int amount;
 
   HarvestReport({
     required this.id,

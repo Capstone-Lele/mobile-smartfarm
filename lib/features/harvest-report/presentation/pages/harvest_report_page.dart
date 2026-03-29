@@ -65,9 +65,11 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                 AppHintBoard(
                   title: '📌 Petunjuk Laporan Panen',
                   desc: user?.role != 'pic'
-                      ? '• Tekan + untuk tambah laporan kalau anda melakukan panen.\n• Ketuk laporan untuk lihat detailnya.\n• Laporan yang dikirim tidak dapat diubah atau dihapus.'
+                      ? '• Tekan + untuk tambah laporan kalau anda melakukan panen.\n• Ketuk laporan untuk lihat detailnya.'
                       : '• Ketuk laporan untuk lihat detailnya.',
                 ),
+                const SizedBox(height: 16),
+                _buildSummaryCards(reportState.value ?? [], user),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
@@ -85,8 +87,6 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                     });
                   },
                 ),
-                const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value ?? [], user),
                 const SizedBox(height: 16),
                 reportState.when(
                   loading: () => ListView.separated(
@@ -205,7 +205,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
   }
 
   Widget _buildReportItem(HarvestReport report, int index, User? user) {
-    final formattedDate = AppFormat.dateTime(report.date);
+    final formattedDate = AppFormat.date(report.date);
 
     return GestureDetector(
       onTap: () {
@@ -232,6 +232,25 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
           children: [
             Row(
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    'https://source.unsplash.com/60x60/?harvest',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.gray,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.darkGray,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +265,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Jumlah Panen: ${report.amount} KG',
+                        'Jumlah Panen ada ${report.amount} Kg',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
@@ -285,17 +304,19 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
 
   Widget _buildSummaryCards(List<HarvestReport> reports, User? user) {
     final total = reports.length;
-    final lastAmount = reports.isNotEmpty ? reports.last.amount : '0';
+    final lastAmount = reports.isNotEmpty ? reports.first.amount : 0;
 
     if (user?.role == 'pic') {
-      return Row(
-        children: [
-          Expanded(child: _buildTotalReportCard(total)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildLastAmountCard(lastAmount)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildSiklusCard()),
-        ],
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: _buildTotalReportCard(total)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildLastAmountCard(lastAmount)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildSiklusCard()),
+          ],
+        ),
       );
     } else {
       return _buildSiklusFullCard();
@@ -343,7 +364,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
     );
   }
 
-  Widget _buildLastAmountCard(String amount) {
+  Widget _buildLastAmountCard(int amount) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
@@ -355,7 +376,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            amount,
+            '$amount',
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -440,7 +461,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
   }
 
   Widget _buildFloatingActionButton(User? user) {
-    if (user?.role != 'pic') {
+    if (user?.role != 'pic' && widget.isCycle) {
       return FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: AppColors.secondary,
