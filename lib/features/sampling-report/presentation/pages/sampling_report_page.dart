@@ -1,74 +1,75 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/providers/sampling_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SamplingReportPage extends StatefulWidget {
+class SamplingReportPage extends ConsumerStatefulWidget {
   final String cycleId;
+  final bool isCycle;
   final String poolId;
   final String poolName;
 
   const SamplingReportPage({
     super.key,
     required this.cycleId,
+    required this.isCycle,
     required this.poolId,
     required this.poolName,
   });
 
   @override
-  State<SamplingReportPage> createState() => _SamplingReportPageState();
+  ConsumerState<SamplingReportPage> createState() => _SamplingReportPageState();
 }
 
-class _SamplingReportPageState extends State<SamplingReportPage> {
+class _SamplingReportPageState extends ConsumerState<SamplingReportPage> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  final List<Map<String, dynamic>> _samplingReports = [
-    {
-      'id': 1,
-      'title': 'Laporan Sampling Kolam #1',
-      'date': 'Senin, 29 September 2025 08.30',
-      'quantity': 100,
-      'averageWeight': 5.0,
-      'image': 'https://picsum.photos/200',
-    },
-    {
-      'id': 2,
-      'title': 'Laporan Sampling Kolam #2',
-      'date': 'Senin, 29 September 2025 08.30',
-      'quantity': 101,
-      'averageWeight': 5.1,
-      'image': 'https://picsum.photos/201',
-    },
-    {
-      'id': 3,
-      'title': 'Laporan Sampling Kolam #3',
-      'date': 'Senin, 29 September 2025 08.30',
-      'quantity': 102,
-      'averageWeight': 5.2,
-      'image': '',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(samplingReportListNotifierProvider.notifier)
+          .getSamplingReports(widget.poolId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
+    final reportState = ref.watch(samplingReportListNotifierProvider);
+
     return Scaffold(
       appBar: _buildHeader(context),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {},
+          onRefresh: () async {
+            await ref
+                .read(samplingReportListNotifierProvider.notifier)
+                .getSamplingReports(widget.poolId);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 AppHintBoard(
-                  title: '📌 Petunjuk Laporan Sampling',
+                  title: 'Estimasi Panen 14 Hari Lagi',
                   desc:
-                      '• Tekan + untuk tambah laporan kalau anda melakukan sampling.\n• Ketuk laporan untuk lihat detailnya.',
+                      'Berdasarkan sampling terakhir 120gram/ekor, ikan diprediksi mencapai target bobot panen pada Senin, 10 Oktober 2025.',
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
+                _buildSummaryCards(reportState.value?.length ?? 0, user),
+                const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
                   endDate: _endDate,
@@ -85,16 +86,69 @@ class _SamplingReportPageState extends State<SamplingReportPage> {
                     });
                   },
                 ),
-                SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _samplingReports.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final report = _samplingReports[index];
-                    return _buildReportItem(report);
+                const SizedBox(height: 16),
+                reportState.when(
+                  loading: () => ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 3,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) =>
+                        AppLoading(height: 100, borderRadius: 8),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  data: (data) {
+                    final filteredData = data.where((report) {
+                      if (_startDate != null && _endDate != null) {
+                        try {
+                          final parsed = DateTime.parse(report.reportDate);
+                          final dateOnly = DateTime(
+                            parsed.year,
+                            parsed.month,
+                            parsed.day,
+                          );
+                          final start = DateTime(
+                            _startDate!.year,
+                            _startDate!.month,
+                            _startDate!.day,
+                          );
+                          final end = DateTime(
+                            _endDate!.year,
+                            _endDate!.month,
+                            _endDate!.day,
+                          );
+                          if (dateOnly.isBefore(start) ||
+                              dateOnly.isAfter(end)) {
+                            return false;
+                          }
+                        } catch (e) {
+                          return false;
+                        }
+                      }
+                      return true;
+                    }).toList();
+
+                    if (filteredData.isEmpty) {
+                      return _buildEmptyReports();
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredData.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final report = filteredData[index];
+                        return _buildReportItem(report, index, user);
+                      },
+                    );
                   },
                 ),
               ],
@@ -102,7 +156,7 @@ class _SamplingReportPageState extends State<SamplingReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _buildFloatingActionButton(user),
     );
   }
 
@@ -130,14 +184,35 @@ class _SamplingReportPageState extends State<SamplingReportPage> {
     );
   }
 
-  Widget _buildReportItem(Map<String, dynamic> report) {
+  Widget _buildEmptyReports() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inbox_outlined, size: 80, color: AppColors.darkGray),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada laporan sampling.',
+              style: TextStyle(color: AppColors.darkGray, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportItem(SamplingReport report, int index, User? user) {
+    final formattedDate = AppFormat.dateTime(report.reportDate);
+
     return GestureDetector(
       onTap: () {
         AppRoutes.pushNamed(
           context,
           AppRoutes.samplingReportDetail,
           arguments: {
-            'reportId': '${report['id']}',
+            'reportId': report.id,
             'cycleId': widget.cycleId,
             'poolId': widget.poolId,
             'poolName': widget.poolName,
@@ -151,96 +226,220 @@ class _SamplingReportPageState extends State<SamplingReportPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.darkGray),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                report['image'],
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.gray,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    color: AppColors.darkGray,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report['title'],
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    report.image,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.gray,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.darkGray,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Jumlah: ${report['quantity']}',
+                        'Laporan Sampling #${index + 1}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jumlah ikan yang disampling ${report.quantity}',
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Berat Rata²: ${report['averageWeight']} gr',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.darkGray,
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.darkGray,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                ),
+              ],
+            ),
+            if (user?.role == 'pic') ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Text(
-                    report['date'],
+                    'Dilaporkan Oleh ${report.user}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.darkGray,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return FloatingActionButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      backgroundColor: AppColors.secondary,
-      onPressed: () {
-        AppRoutes.pushNamed(
-          context,
-          AppRoutes.createSamplingReport,
-          arguments: {
-            'cycleId': widget.cycleId,
-            'poolId': widget.poolId,
-            'poolName': widget.poolName,
-          },
-        );
-      },
-      child: const Icon(Icons.add, color: Colors.white, size: 30),
+  Widget _buildSummaryCards(int totalReports, User? user) {
+    if (user?.role == 'pic') {
+      return Row(
+        children: [
+          Expanded(child: _buildTotalReportCard(totalReports)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildSiklusCard()),
+        ],
+      );
+    } else {
+      return _buildSiklusFullCard();
+    }
+  }
+
+  Widget _buildTotalReportCard(int total) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.article, size: 26, color: Colors.black),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Total Laporan',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildSiklusCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 32,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiklusFullCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton(User? user) {
+    if (user?.role != 'pic' && widget.isCycle) {
+      return FloatingActionButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor: AppColors.secondary,
+        onPressed: () {
+          AppRoutes.pushNamed(
+            context,
+            AppRoutes.createSamplingReport,
+            arguments: {
+              'cycleId': widget.cycleId,
+              'poolId': widget.poolId,
+              'poolName': widget.poolName,
+            },
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

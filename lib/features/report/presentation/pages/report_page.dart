@@ -366,7 +366,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 context,
                 AppRoutes.samplingReport,
                 arguments: {
-                  'cycleId': 'cycle-1',
+                  'cycleId': _selectedPool!.cycleId,
+                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },

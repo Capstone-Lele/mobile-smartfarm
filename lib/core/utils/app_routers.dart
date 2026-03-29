@@ -339,6 +339,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return SamplingReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );

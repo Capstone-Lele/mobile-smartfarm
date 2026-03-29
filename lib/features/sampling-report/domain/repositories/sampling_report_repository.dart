@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class SamplingReportRepository {
-  Future<Either<Failure, List<SamplingReport>>> getSamplingReports();
+  Future<Either<Failure, List<SamplingReport>>> getSamplingReports(String poolId);
   Future<Either<Failure, SamplingReport>> getSamplingReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createSamplingReport(
     String cycleId,

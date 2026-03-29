@@ -8,7 +8,7 @@ class GetSamplingReportsUsecase {
 
   GetSamplingReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<SamplingReport>>> execute() {
-    return repository.getSamplingReports();
+  Future<Either<Failure, List<SamplingReport>>> execute(String poolId) {
+    return repository.getSamplingReports(poolId);
   }
 }

@@ -2,10 +2,15 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/providers/sampling_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateSamplingReportPage extends StatefulWidget {
+class CreateSamplingReportPage extends ConsumerStatefulWidget {
   final String cycleId;
   final String poolId;
   final String poolName;
@@ -18,11 +23,12 @@ class CreateSamplingReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreateSamplingReportPage> createState() =>
+  ConsumerState<CreateSamplingReportPage> createState() =>
       _CreateSamplingReportPageState();
 }
 
-class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
+class _CreateSamplingReportPageState
+    extends ConsumerState<CreateSamplingReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
@@ -35,6 +41,30 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
     _quantityCtrl.dispose();
     _averageWeightCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(samplingReportMutationNotifierProvider.notifier)
+        .createSamplingReport(
+          widget.poolId,
+          widget.cycleId,
+          AppFormat.toApiDateTime(_reportDateCtrl.text),
+          int.parse(_quantityCtrl.text),
+          double.parse(_averageWeightCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(samplingReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
   }
 
   @override
@@ -67,6 +97,9 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(samplingReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -88,7 +121,7 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah',
                 hint: 'Jumlah',
@@ -99,16 +132,14 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah harus diisi';
                   }
-
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Jumlah Sampling harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Rata-rata Berat (gram)',
                 hint: 'Rata-rata Berat',
@@ -119,16 +150,14 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Rata-rata berat harus diisi';
                   }
-
                   final number = double.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Rata-rata berat harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto sampling',
@@ -139,8 +168,10 @@ class _CreateSamplingReportPageState extends State<CreateSamplingReportPage> {
                   });
                 },
               ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
+              const SizedBox(height: 24),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Submit', onPressed: _onSubmit),
             ],
           ),
         ),
