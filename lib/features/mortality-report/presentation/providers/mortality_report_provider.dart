@@ -64,9 +64,9 @@ class MortalityReportListNotifier
   MortalityReportListNotifier(this._getMortalityReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getMortalityReports() async {
+  Future<void> getMortalityReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getMortalityReportsUsecase.execute();
+    final result = await _getMortalityReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -124,6 +124,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 
   // Create Mortality Report
   Future<void> createMortalityReport(
+    String poolId,
     String cycleId,
     String userId,
     String reportDate,
@@ -148,7 +149,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (mortalityReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getMortalityReports();
+        _listNotifier.getMortalityReports(poolId);
       },
     );
   }
@@ -156,6 +157,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   // Update mortality report
   Future<void> updateMortalityReport(
     String id,
+    String poolId,
     String reportDate,
     int quantity,
     XFile? image,
@@ -177,14 +179,14 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (mortalityReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getMortalityReports();
+        _listNotifier.getMortalityReports(poolId);
         _detailNotifier.getMortalityReport(id);
       },
     );
   }
 
   // Delete mortality report
-  Future<void> deleteMortalityReport(String id) async {
+  Future<void> deleteMortalityReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteMortalityReportUsecase.execute(id);
 
@@ -197,7 +199,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getMortalityReports();
+        _listNotifier.getMortalityReports(poolId);
       },
     );
   }

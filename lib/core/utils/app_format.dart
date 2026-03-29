@@ -1,6 +1,17 @@
 import 'package:intl/intl.dart';
 
 class AppFormat {
+  static String date(String isoDate) {
+    try {
+      final date = DateTime.parse(isoDate).toLocal();
+      final dayName = DateFormat('EEEE', 'id_ID').format(date);
+      final formatted = DateFormat('d MMM yyyy', 'id_ID').format(date);
+      return '$dayName, $formatted';
+    } catch (e) {
+      return isoDate;
+    }
+  }
+
   static String dateTime(String isoDate) {
     try {
       final date = DateTime.parse(isoDate).toLocal();

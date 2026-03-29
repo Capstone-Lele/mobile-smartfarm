@@ -2,9 +2,10 @@ import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/m
 
 class MortalityReportModel extends MortalityReport {
   MortalityReportModel({
+    required super.userId,
+    required super.user,
     required super.id,
     required super.cycleId,
-    required super.userId,
     required super.reportDate,
     required super.quantity,
     required super.image,
@@ -15,15 +16,16 @@ class MortalityReportModel extends MortalityReport {
 
   factory MortalityReportModel.fromJson(Map<String, dynamic> json) {
     return MortalityReportModel(
+      userId: json['userId'],
+      user: json['user'],
       id: json['id'],
-      cycleId: json['cycle_id'],
-      userId: json['user_id'],
-      reportDate: json['report_date'],
+      cycleId: json['cycleId'],
+      reportDate: json['reportDate'],
       quantity: json['quantity'],
       image: json['image'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      deletedAt: json['deleted_at'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
+      deletedAt: json['deletedAt'],
     );
   }
 }

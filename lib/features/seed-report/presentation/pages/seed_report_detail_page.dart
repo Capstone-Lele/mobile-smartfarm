@@ -3,11 +3,16 @@ import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SeedReportDetailPage extends StatefulWidget {
+class SeedReportDetailPage extends ConsumerStatefulWidget {
   final String reportId;
   final String poolId;
   final String poolName;
@@ -20,15 +25,26 @@ class SeedReportDetailPage extends StatefulWidget {
   });
 
   @override
-  State<SeedReportDetailPage> createState() => _SeedReportDetailPageState();
+  ConsumerState<SeedReportDetailPage> createState() =>
+      _SeedReportDetailPageState();
 }
 
-class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
+class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: '08-04-2026');
-  final _initialQuantityCtrl = TextEditingController(text: '100');
-  final _currentQuantityCtrl = TextEditingController(text: '80');
-  final _initialAverageWeightCtrl = TextEditingController(text: '5.5');
+  final _reportDateCtrl = TextEditingController();
+  final _initialQuantityCtrl = TextEditingController();
+  final _currentQuantityCtrl = TextEditingController();
+  final _initialAverageWeightCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(seedReportDetailNotifierProvider.notifier)
+          .getSeedReport(widget.reportId);
+    });
+  }
 
   @override
   void dispose() {
@@ -41,7 +57,34 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final reportAsync = ref.watch(seedReportDetailNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: reportAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error: $err', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              AppButton(
+                label: 'Coba Lagi',
+                onPressed: () {
+                  ref
+                      .read(seedReportDetailNotifierProvider.notifier)
+                      .getSeedReport(widget.reportId);
+                },
+              ),
+            ],
+          ),
+        ),
+        data: (report) => _buildFormState(report),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -68,10 +111,19 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(SeedReport? report) {
+    if (report == null) {
+      return const Center(child: Text('Laporan tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
+    _initialQuantityCtrl.text = report.initialQuantity.toString();
+    _currentQuantityCtrl.text = report.currentQuantity.toString();
+    _initialAverageWeightCtrl.text = report.initialAverageWeight;
+
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -85,7 +137,7 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Benih Awal (ekor)',
                 hint: 'Jumlah Benih Awal',
@@ -94,7 +146,7 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Lele Saat ini (ekor)',
                 hint: 'Jumlah Lele Saat ini',
@@ -103,7 +155,7 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Bobot Rata-rata Awal (gram)',
                 hint: 'Bobot Rata-rata Awal',
@@ -112,15 +164,15 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto tebar benih',
                 requiredField: true,
                 readOnly: true,
-                imageUrl: 'https://picsum.photos/200',
+                imageUrl: report.image,
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               AppButton(
                 label: 'Hapus',
                 color: AppColors.red,
@@ -133,13 +185,27 @@ class _SeedReportDetailPageState extends State<SeedReportDetailPage> {
                     confirmText: 'Iya',
                     cancelText: 'Tidak',
                     onConfirm: () async {
-                      AppRoutes.pop(context);
+                      await ref
+                          .read(seedReportMutationNotifierProvider.notifier)
+                          .deleteSeedReport(widget.reportId);
+
+                      final mutationState =
+                          ref.read(seedReportMutationNotifierProvider);
+
+                      if (mutationState.hasError) {
+                        AppRoutes.pop(context);
+                        AppSnackbar.error(mutationState.error.toString());
+                      } else {
+                        AppRoutes.pop(context);
+                        AppSnackbar.success('Laporan berhasil dihapus');
+                        AppRoutes.pop(context);
+                      }
                     },
                   );
                 },
               ),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 16),
+              const Text(
                 'Catatan: Laporan ini tidak dapat diubah.',
                 style: TextStyle(fontSize: 14, color: Colors.red),
               ),

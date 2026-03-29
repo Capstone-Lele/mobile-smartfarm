@@ -8,7 +8,7 @@ class GetSeedReportsUsecase {
 
   GetSeedReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<SeedReport>>> execute() {
-    return repository.getSeedReports();
+  Future<Either<Failure, List<SeedReport>>> execute(String poolId) {
+    return repository.getSeedReports(poolId);
   }
 }

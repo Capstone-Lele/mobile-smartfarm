@@ -12,8 +12,8 @@ class HarvestReportRepositoryImpl implements HarvestReportRepository {
   HarvestReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<HarvestReport>>> getHarvestReports() async {
-    final result = await datasource.getHarvestReports();
+  Future<Either<Failure, List<HarvestReport>>> getHarvestReports(String poolId) async {
+    final result = await datasource.getHarvestReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final harvestReports = data

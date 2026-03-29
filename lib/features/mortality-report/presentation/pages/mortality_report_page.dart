@@ -1,60 +1,63 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/providers/mortality_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MortalityReportPage extends StatefulWidget {
+class MortalityReportPage extends ConsumerStatefulWidget {
   final String cycleId;
+  final bool isCycle;
   final String poolId;
   final String poolName;
 
   const MortalityReportPage({
     super.key,
     required this.cycleId,
+    required this.isCycle,
     required this.poolId,
     required this.poolName,
   });
 
   @override
-  State<MortalityReportPage> createState() => _MortalityReportPageState();
+  ConsumerState<MortalityReportPage> createState() =>
+      _MortalityReportPageState();
 }
 
-class _MortalityReportPageState extends State<MortalityReportPage> {
+class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  final List<Map<String, dynamic>> _mortalityReports = [
-    {
-      'id': 1,
-      'title': 'Laporan Kematian Kolam #1',
-      'date': 'Senin, 29 September 2025',
-      'quantity': 100,
-      'image': 'https://picsum.photos/200',
-    },
-    {
-      'id': 2,
-      'title': 'Laporan Kematian Kolam #2',
-      'date': 'Senin, 29 September 2025',
-      'quantity': 101,
-      'image': 'https://picsum.photos/201',
-    },
-    {
-      'id': 3,
-      'title': 'Laporan Kematian Kolam #3',
-      'date': 'Senin, 29 September 2025',
-      'quantity': 102,
-      'image': '',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(mortalityReportListNotifierProvider.notifier)
+          .getMortalityReports(widget.poolId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
+    final reportState = ref.watch(mortalityReportListNotifierProvider);
+
     return Scaffold(
       appBar: _buildHeader(context),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {},
+          onRefresh: () async {
+            await ref
+                .read(mortalityReportListNotifierProvider.notifier)
+                .getMortalityReports(widget.poolId);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
@@ -62,10 +65,13 @@ class _MortalityReportPageState extends State<MortalityReportPage> {
               children: [
                 AppHintBoard(
                   title: '📌 Petunjuk Laporan Kematian',
-                  desc:
-                      '• Tekan + untuk tambah laporan kalau anda menemukan kematian ikan.\n• Ketuk laporan untuk lihat detailnya.',
+                  desc: user?.role != 'pic'
+                      ? '• Tekan + untuk tambah laporan kalau anda menemukan kematian ikan.\n• Ketuk laporan untuk lihat detailnya.'
+                      : '• Ketuk laporan untuk lihat detailnya.',
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
+                _buildSummaryCards(reportState.value ?? [], user),
+                const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
                   endDate: _endDate,
@@ -82,16 +88,69 @@ class _MortalityReportPageState extends State<MortalityReportPage> {
                     });
                   },
                 ),
-                SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _mortalityReports.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final report = _mortalityReports[index];
-                    return _buildReportItem(report);
+                const SizedBox(height: 16),
+                reportState.when(
+                  loading: () => ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 3,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) =>
+                        AppLoading(height: 100, borderRadius: 8),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  data: (data) {
+                    final filteredData = data.where((report) {
+                      if (_startDate != null && _endDate != null) {
+                        try {
+                          final parsed = DateTime.parse(report.reportDate);
+                          final dateOnly = DateTime(
+                            parsed.year,
+                            parsed.month,
+                            parsed.day,
+                          );
+                          final start = DateTime(
+                            _startDate!.year,
+                            _startDate!.month,
+                            _startDate!.day,
+                          );
+                          final end = DateTime(
+                            _endDate!.year,
+                            _endDate!.month,
+                            _endDate!.day,
+                          );
+                          if (dateOnly.isBefore(start) ||
+                              dateOnly.isAfter(end)) {
+                            return false;
+                          }
+                        } catch (e) {
+                          return false;
+                        }
+                      }
+                      return true;
+                    }).toList();
+
+                    if (filteredData.isEmpty) {
+                      return _buildEmptyReports();
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredData.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final report = filteredData[index];
+                        return _buildReportItem(report, index, user);
+                      },
+                    );
                   },
                 ),
               ],
@@ -99,94 +158,7 @@ class _MortalityReportPageState extends State<MortalityReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
-  }
-
-  Widget _buildReportItem(Map<String, dynamic> report) {
-    return GestureDetector(
-      onTap: () {
-        AppRoutes.pushNamed(
-          context,
-          AppRoutes.mortalityReportDetail,
-          arguments: {
-            'reportId': '${report['id']}',
-            'cycleId': widget.cycleId,
-            'poolId': widget.poolId,
-            'poolName': widget.poolName,
-          },
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.lightGray,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.darkGray),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                report['image'],
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.gray,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    color: AppColors.darkGray,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report['title'],
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Jumlah Kematian: ${report['quantity']} ekor',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.darkGray,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    report['date'],
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.darkGray,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      floatingActionButton: _buildFloatingActionButton(user),
     );
   }
 
@@ -214,22 +186,300 @@ class _MortalityReportPageState extends State<MortalityReportPage> {
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return FloatingActionButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      backgroundColor: AppColors.secondary,
-      onPressed: () {
+  Widget _buildEmptyReports() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inbox_outlined, size: 80, color: AppColors.darkGray),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada laporan kematian.',
+              style: TextStyle(color: AppColors.darkGray, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportItem(MortalityReport report, int index, User? user) {
+    final formattedDate = AppFormat.date(report.reportDate);
+
+    return GestureDetector(
+      onTap: () {
         AppRoutes.pushNamed(
           context,
-          AppRoutes.createMortalityReport,
+          AppRoutes.mortalityReportDetail,
           arguments: {
+            'reportId': report.id,
             'cycleId': widget.cycleId,
             'poolId': widget.poolId,
             'poolName': widget.poolName,
           },
         );
       },
-      child: const Icon(Icons.add, color: Colors.white, size: 30),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.lightGray,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.darkGray),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    report.image,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.gray,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.darkGray,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Laporan Kematian #${index + 1}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Jumlah Kematian ada ${report.quantity} ekor',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.darkGray,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.darkGray,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (user?.role == 'pic') ...[
+              const SizedBox(height: 12),
+              Text(
+                'Dilaporkan Oleh ${report.user}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.darkGray,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _buildSummaryCards(List<MortalityReport> reports, User? user) {
+    final total = reports.length;
+    final lastQuantity = reports.isNotEmpty ? reports.first.quantity : 0;
+
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: _buildTotalReportCard(total)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildLastQuantityCard(lastQuantity)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildSiklusCard()),
+          ],
+        ),
+      );
+    } else {
+      return _buildSiklusFullCard();
+    }
+  }
+
+  Widget _buildTotalReportCard(int total) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.article, size: 22, color: Colors.black),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Total Laporan',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLastQuantityCard(int quantity) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$quantity',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Terakhir Jumlah Kematian',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiklusCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 28,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiklusFullCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.darkGray),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Siklus Sedang Aktif',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            widget.isCycle ? Icons.check : Icons.close,
+            color: widget.isCycle ? AppColors.green : AppColors.red,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton(User? user) {
+    if (user?.role != 'pic' && widget.isCycle) {
+      return FloatingActionButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor: AppColors.secondary,
+        onPressed: () {
+          AppRoutes.pushNamed(
+            context,
+            AppRoutes.createMortalityReport,
+            arguments: {
+              'cycleId': widget.cycleId,
+              'poolId': widget.poolId,
+              'poolName': widget.poolName,
+            },
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

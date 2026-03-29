@@ -2,10 +2,16 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/providers/mortality_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class UpdateMortalityReportPage extends StatefulWidget {
+class UpdateMortalityReportPage extends ConsumerStatefulWidget {
   final String reportId;
   final String cycleId;
   final String poolId;
@@ -20,15 +26,22 @@ class UpdateMortalityReportPage extends StatefulWidget {
   });
 
   @override
-  State<UpdateMortalityReportPage> createState() =>
+  ConsumerState<UpdateMortalityReportPage> createState() =>
       _UpdateMortalityReportPageState();
 }
 
-class _UpdateMortalityReportPageState extends State<UpdateMortalityReportPage> {
+class _UpdateMortalityReportPageState
+    extends ConsumerState<UpdateMortalityReportPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: '08-04-2026');
-  final _quantityCtrl = TextEditingController(text: '100');
+  final _reportDateCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _initialData());
+  }
 
   @override
   void dispose() {
@@ -37,9 +50,49 @@ class _UpdateMortalityReportPageState extends State<UpdateMortalityReportPage> {
     super.dispose();
   }
 
+  Future<void> _initialData() async {
+    await ref
+        .read(mortalityReportDetailNotifierProvider.notifier)
+        .getMortalityReport(widget.reportId);
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(mortalityReportMutationNotifierProvider.notifier)
+        .updateMortalityReport(
+          widget.reportId,
+          widget.poolId,
+          AppFormat.toApiDate(_reportDateCtrl.text),
+          int.parse(_quantityCtrl.text),
+          _selectedImage,
+        );
+
+    final mutationState = ref.read(mortalityReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil diubah');
+      AppRoutes.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final detail = ref.watch(mortalityReportDetailNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: SafeArea(
+        child: detail.when(
+          loading: () => _buildLoadingState(),
+          error: (error, stack) => _buildErrorState(error),
+          data: (report) => _buildFormState(report),
+        ),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -66,64 +119,91 @@ class _UpdateMortalityReportPageState extends State<UpdateMortalityReportPage> {
     );
   }
 
-  Widget _buildFormState() {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppInputDate(
-                label: 'Tanggal Kematian',
-                hint: 'Tanggal Kematian',
-                type: DateFieldType.date,
-                controller: _reportDateCtrl,
-                requiredField: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Tanggal kematian harus dipilih';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              AppInputText(
-                label: 'Jumlah Kematian (ekor)',
-                hint: 'Jumlah Kematian',
-                controller: _quantityCtrl,
-                type: FieldType.number,
-                requiredField: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Jumlah Kematian harus diisi';
-                  }
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
 
-                  final number = int.tryParse(value);
-                  if (number == null || number <= 0) {
-                    return 'Jumlah Kematian harus berupa angka positif';
-                  }
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
+        ],
+      ),
+    );
+  }
 
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              AppInputImage(
-                label: 'Foto',
-                hint: 'Tambahkan foto kematian ikan lele',
-                requiredField: true,
-                imageUrl: 'https://picsum.photos/200',
-                onChanged: (image) {
-                  setState(() {
-                    _selectedImage = image;
-                  });
-                },
-              ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
-            ],
-          ),
+  Widget _buildFormState(MortalityReport? report) {
+    if (report == null) {
+      return const Center(child: Text('Laporan tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
+    _quantityCtrl.text = report.quantity.toString();
+
+    final mutationState = ref.watch(mortalityReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppInputDate(
+              label: 'Tanggal Kematian',
+              hint: 'Tanggal Kematian',
+              type: DateFieldType.date,
+              controller: _reportDateCtrl,
+              requiredField: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Tanggal kematian harus dipilih';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppInputText(
+              label: 'Jumlah Kematian (ekor)',
+              hint: 'Jumlah Kematian',
+              controller: _quantityCtrl,
+              type: FieldType.number,
+              requiredField: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Jumlah Kematian harus diisi';
+                }
+                final number = int.tryParse(value);
+                if (number == null || number <= 0) {
+                  return 'Jumlah Kematian harus berupa angka positif';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppInputImage(
+              label: 'Foto',
+              hint: 'Tambahkan foto kematian ikan lele',
+              requiredField: true,
+              imageUrl: report.image,
+              onChanged: (image) {
+                setState(() {
+                  _selectedImage = image;
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : AppButton(label: 'Submit', onPressed: _onSubmit),
+          ],
         ),
       ),
     );

@@ -51,9 +51,9 @@ class SeedReportListNotifier
   SeedReportListNotifier(this._getSeedReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getSeedReports() async {
+  Future<void> getSeedReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getSeedReportsUsecase.execute();
+    final result = await _getSeedReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -134,7 +134,7 @@ class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (seedReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getSeedReports();
+        _listNotifier.getSeedReports('');
       },
     );
   }
@@ -153,7 +153,7 @@ class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getSeedReports();
+        _listNotifier.getSeedReports('');
       },
     );
   }

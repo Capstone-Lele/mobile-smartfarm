@@ -8,7 +8,7 @@ class GetHarvestReportsUsecase {
 
   GetHarvestReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<HarvestReport>>> execute() {
-    return repository.getHarvestReports();
+  Future<Either<Failure, List<HarvestReport>>> execute(String poolId) {
+    return repository.getHarvestReports(poolId);
   }
 }
