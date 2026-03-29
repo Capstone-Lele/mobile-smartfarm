@@ -395,6 +395,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   context,
                   AppRoutes.seedReport,
                   arguments: {
+                    'isCycle': _selectedPool!.cycle == 'active_cultivation',
                     'poolId': _selectedPool!.id,
                     'poolName': _selectedPool!.name,
                   },

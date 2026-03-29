@@ -19,17 +19,17 @@ class SeedReportModel extends SeedReport {
   factory SeedReportModel.fromJson(Map<String, dynamic> json) {
     return SeedReportModel(
       id: json['id'],
-      poolId: json['pool_id'],
-      userId: json['user_id'],
-      reportDate: json['report_date'],
-      initialQuantity: json['initial_quantity'],
-      currentQuantity: json['current_quantity'],
-      initialAverageWeight: json['initial_average_weight'],
+      poolId: json['poolId'],
+      userId: json['userId'],
+      reportDate: json['reportDate'],
+      initialQuantity: json['initialQuantity'],
+      currentQuantity: json['currentQuantity'],
+      initialAverageWeight: json['initialAverageWeight'],
       image: json['image'],
       condition: json['condition'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      deletedAt: json['deleted_at'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
+      deletedAt: json['deletedAt'],
     );
   }
 }

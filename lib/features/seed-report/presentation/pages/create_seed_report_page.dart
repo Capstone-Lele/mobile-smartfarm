@@ -45,10 +45,6 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedImage == null) {
-      AppSnackbar.error('Foto tebar benih harus ditambahkan');
-      return;
-    }
 
     final user = ref.read(userProvider);
 
@@ -57,7 +53,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
         .createSeedReport(
           widget.poolId,
           user?.id ?? '',
-          AppFormat.toApiDate(_reportDateCtrl.text),
+          AppFormat.toApiDateTime(_reportDateCtrl.text),
           int.parse(_initialQuantityCtrl.text),
           int.parse(_currentQuantityCtrl.text),
           double.parse(_initialAverageWeightCtrl.text),
@@ -76,10 +72,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildHeader(context),
-      body: _buildFormState(),
-    );
+    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -121,7 +114,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               AppInputDate(
                 label: 'Tanggal Tebar Benih',
                 hint: 'Tanggal Tebar Benih',
-                type: DateFieldType.date,
+                type: DateFieldType.dateTime,
                 controller: _reportDateCtrl,
                 requiredField: true,
                 validator: (value) {
