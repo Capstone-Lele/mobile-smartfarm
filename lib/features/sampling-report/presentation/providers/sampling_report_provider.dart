@@ -64,9 +64,9 @@ class SamplingReportListNotifier
   SamplingReportListNotifier(this._getSamplingReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getSamplingReports() async {
+  Future<void> getSamplingReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getSamplingReportsUsecase.execute();
+    final result = await _getSamplingReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -124,6 +124,7 @@ class SamplingReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 
   // Create Sampling Report
   Future<void> createSamplingReport(
+    String poolId,
     String cycleId,
     String reportDate,
     int quantity,
@@ -148,7 +149,7 @@ class SamplingReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (samplingReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getSamplingReports();
+        _listNotifier.getSamplingReports(poolId);
       },
     );
   }
@@ -156,6 +157,7 @@ class SamplingReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   // Update sampling report
   Future<void> updateSamplingReport(
     String id,
+    String poolId,
     String reportDate,
     int quantity,
     double averageWeight,
@@ -179,14 +181,14 @@ class SamplingReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (samplingReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getSamplingReports();
+        _listNotifier.getSamplingReports(poolId);
         _detailNotifier.getSamplingReport(id);
       },
     );
   }
 
   // Delete sampling report
-  Future<void> deleteSamplingReport(String id) async {
+  Future<void> deleteSamplingReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteSamplingReportUsecase.execute(id);
 
@@ -199,7 +201,7 @@ class SamplingReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getSamplingReports();
+        _listNotifier.getSamplingReports(poolId);
       },
     );
   }

@@ -12,8 +12,8 @@ class SamplingReportRepositoryImpl implements SamplingReportRepository {
   SamplingReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SamplingReport>>> getSamplingReports() async {
-    final result = await datasource.getSamplingReports();
+  Future<Either<Failure, List<SamplingReport>>> getSamplingReports(String poolId) async {
+    final result = await datasource.getSamplingReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final samplingReports = data

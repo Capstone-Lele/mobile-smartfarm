@@ -10,10 +10,10 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
 class SamplingReportDatasource {
-  // Get Sampling Repots
+  // Get Sampling Reports
   Future<Either<Failure, List<Map<String, dynamic>>>>
-  getSamplingReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/samplings');
+  getSamplingReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/samplings?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {
