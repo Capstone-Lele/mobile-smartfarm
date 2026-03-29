@@ -11,8 +11,8 @@ import 'package:image_picker/image_picker.dart';
 
 class SeedReportDatasource {
   // Get Seed Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSeedReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/seed');
+  Future<Either<Failure, List<Map<String, dynamic>>>> getSeedReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/seed?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {

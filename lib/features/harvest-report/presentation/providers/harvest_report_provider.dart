@@ -51,9 +51,9 @@ class HarvestReportListNotifier
   HarvestReportListNotifier(this._getHarvestReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getHarvestReports() async {
+  Future<void> getHarvestReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getHarvestReportsUsecase.execute();
+    final result = await _getHarvestReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -127,7 +127,7 @@ class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (harvestReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getHarvestReports();
+        _listNotifier.getHarvestReports('');
       },
     );
   }

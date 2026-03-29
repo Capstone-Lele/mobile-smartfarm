@@ -12,14 +12,14 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
   MortalityReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<MortalityReport>>> getMortalityReports() async {
-    final result = await datasource.getMortalityReports();
+  Future<Either<Failure, List<MortalityReport>>> getMortalityReports(String poolId) async {
+    final result = await datasource.getMortalityReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final mortalityRepots = data
+      final mortalityReports = data
           .map((json) => MortalityReportModel.fromJson(json))
           .toList();
-      return Right(mortalityRepots);
+      return Right(mortalityReports);
     });
   }
 

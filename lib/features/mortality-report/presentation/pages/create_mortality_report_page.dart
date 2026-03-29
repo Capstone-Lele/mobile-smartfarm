@@ -2,10 +2,16 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/presentation/providers/mortality_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateMortalityReportPage extends StatefulWidget {
+class CreateMortalityReportPage extends ConsumerStatefulWidget {
   final String cycleId;
   final String poolId;
   final String poolName;
@@ -18,11 +24,12 @@ class CreateMortalityReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreateMortalityReportPage> createState() =>
+  ConsumerState<CreateMortalityReportPage> createState() =>
       _CreateMortalityReportPageState();
 }
 
-class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
+class _CreateMortalityReportPageState
+    extends ConsumerState<CreateMortalityReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
@@ -35,9 +42,38 @@ class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
     super.dispose();
   }
 
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final user = ref.read(userProvider);
+
+    await ref
+        .read(mortalityReportMutationNotifierProvider.notifier)
+        .createMortalityReport(
+          widget.poolId,
+          widget.cycleId,
+          user?.id ?? '',
+          AppFormat.toApiDate(_reportDateCtrl.text),
+          int.parse(_quantityCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(mortalityReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: _buildFormState(),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -65,6 +101,9 @@ class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(mortalityReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -86,7 +125,7 @@ class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Kematian (ekor)',
                 hint: 'Jumlah Kematian',
@@ -97,16 +136,14 @@ class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah harus diisi';
                   }
-
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Jumlah Kematian harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto kematian ikan lele',
@@ -117,8 +154,10 @@ class _CreateMortalityReportPageState extends State<CreateMortalityReportPage> {
                   });
                 },
               ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
+              const SizedBox(height: 24),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Submit', onPressed: _onSubmit),
             ],
           ),
         ),

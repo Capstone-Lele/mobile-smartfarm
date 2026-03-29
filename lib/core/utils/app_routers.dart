@@ -7,7 +7,6 @@ import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/create_inventory_report_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/create_inventory_submission_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_detail_page.dart';
-import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_submission_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/update_inventory_report_page.dart';
@@ -160,6 +159,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return MortalityReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
@@ -198,6 +198,7 @@ class AppRoutes {
         final args =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return SeedReportPage(
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
@@ -379,6 +380,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return HarvestReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );

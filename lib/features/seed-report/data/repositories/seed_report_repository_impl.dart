@@ -12,8 +12,8 @@ class SeedReportRepositoryImpl implements SeedReportRepository {
   SeedReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SeedReport>>> getSeedReports() async {
-    final result = await datasource.getSeedReports();
+  Future<Either<Failure, List<SeedReport>>> getSeedReports(String poolId) async {
+    final result = await datasource.getSeedReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final seedReports = data

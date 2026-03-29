@@ -37,12 +37,11 @@ class _UpdateSamplingReportPageState
   final _quantityCtrl = TextEditingController();
   final _averageWeightCtrl = TextEditingController();
   XFile? _selectedImage;
-  bool _isInitialLoading = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initialData());
+    Future.microtask(() => _initialData());
   }
 
   @override
@@ -54,25 +53,9 @@ class _UpdateSamplingReportPageState
   }
 
   Future<void> _initialData() async {
-    try {
-      await ref
-          .read(samplingReportDetailNotifierProvider.notifier)
-          .getSamplingReport(widget.reportId);
-
-      final detailData = ref.read(samplingReportDetailNotifierProvider);
-      if (detailData.hasValue && detailData.value != null) {
-        final report = detailData.value as SamplingReport;
-        _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
-        _quantityCtrl.text = report.quantity.toString();
-        _averageWeightCtrl.text = report.averageWeight.toString();
-      }
-    } catch (e) {
-      debugPrint('Error loading initial data: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isInitialLoading = false);
-      }
-    }
+    await ref
+        .read(samplingReportDetailNotifierProvider.notifier)
+        .getSamplingReport(widget.reportId);
   }
 
   Future<void> _onSubmit() async {
@@ -102,17 +85,15 @@ class _UpdateSamplingReportPageState
   @override
   Widget build(BuildContext context) {
     final detail = ref.watch(samplingReportDetailNotifierProvider);
-    final isLoading = _isInitialLoading || detail.isLoading;
-    final error = detail.error;
 
     return Scaffold(
       appBar: _buildHeader(context),
       body: SafeArea(
-        child: isLoading
-            ? _buildLoadingState()
-            : error != null
-            ? _buildErrorState(error)
-            : _buildFormState(detail.value),
+        child: detail.when(
+          loading: () => _buildLoadingState(),
+          error: (error, stack) => _buildErrorState(error),
+          data: (report) => _buildFormState(report),
+        ),
       ),
     );
   }
@@ -164,6 +145,10 @@ class _UpdateSamplingReportPageState
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
+
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    _quantityCtrl.text = report.quantity.toString();
+    _averageWeightCtrl.text = report.averageWeight.toString();
 
     final mutationState = ref.watch(samplingReportMutationNotifierProvider);
     final isLoading = mutationState.isLoading;

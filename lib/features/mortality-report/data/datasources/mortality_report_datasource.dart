@@ -10,10 +10,10 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
 class MortalityReportDatasource {
-  // Get Mortality Repots
+  // Get Mortality Reports
   Future<Either<Failure, List<Map<String, dynamic>>>>
-  getMortalityReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/mortality');
+  getMortalityReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/mortality?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {

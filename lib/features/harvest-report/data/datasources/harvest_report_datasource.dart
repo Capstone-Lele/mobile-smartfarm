@@ -10,10 +10,10 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HarvestReportDatasource {
-  // Get Harvest Repots
+  // Get Harvest Reports
   Future<Either<Failure, List<Map<String, dynamic>>>>
-  getHarvestReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/harvest');
+  getHarvestReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/harvest?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {

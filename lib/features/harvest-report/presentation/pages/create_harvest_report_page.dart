@@ -2,10 +2,15 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/presentation/providers/harvest_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateHarvestReportPage extends StatefulWidget {
+class CreateHarvestReportPage extends ConsumerStatefulWidget {
   final String cycleId;
   final String poolId;
   final String poolName;
@@ -18,26 +23,56 @@ class CreateHarvestReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreateHarvestReportPage> createState() =>
+  ConsumerState<CreateHarvestReportPage> createState() =>
       _CreateHarvestReportPageState();
 }
 
-class _CreateHarvestReportPageState extends State<CreateHarvestReportPage> {
+class _CreateHarvestReportPageState
+    extends ConsumerState<CreateHarvestReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
-  final _quantityCtrl = TextEditingController();
+  final _amountCtrl = TextEditingController();
   XFile? _selectedImage;
 
   @override
   void dispose() {
     _reportDateCtrl.dispose();
-    _quantityCtrl.dispose();
+    _amountCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedImage == null) {
+      AppSnackbar.error('Foto panen harus ditambahkan');
+      return;
+    }
+
+    await ref
+        .read(harvestReportMutationNotifierProvider.notifier)
+        .createHarvestReport(
+          widget.cycleId,
+          AppFormat.toApiDate(_reportDateCtrl.text),
+          int.parse(_amountCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(harvestReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: _buildFormState(),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -65,6 +100,9 @@ class _CreateHarvestReportPageState extends State<CreateHarvestReportPage> {
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(harvestReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -86,27 +124,25 @@ class _CreateHarvestReportPageState extends State<CreateHarvestReportPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Panen (KG)',
                 hint: 'Jumlah Panen',
-                controller: _quantityCtrl,
+                controller: _amountCtrl,
                 type: FieldType.number,
                 requiredField: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah harus diisi';
                   }
-
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Jumlah Panen harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto panen',
@@ -117,10 +153,12 @@ class _CreateHarvestReportPageState extends State<CreateHarvestReportPage> {
                   });
                 },
               ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 24),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Submit', onPressed: _onSubmit),
+              const SizedBox(height: 16),
+              const Text(
                 'Perhatian: Laporan yang telah dikirim tidak dapat diubah atau dihapus kembali. Pastikan seluruh data panen sudah sesuai.',
                 style: TextStyle(fontSize: 14, color: Colors.red),
               ),

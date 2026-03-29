@@ -2,10 +2,16 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateSeedReportPage extends StatefulWidget {
+class CreateSeedReportPage extends ConsumerStatefulWidget {
   final String poolId;
   final String poolName;
 
@@ -16,10 +22,11 @@ class CreateSeedReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreateSeedReportPage> createState() => _CreateSeedReportPageState();
+  ConsumerState<CreateSeedReportPage> createState() =>
+      _CreateSeedReportPageState();
 }
 
-class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
+class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _initialQuantityCtrl = TextEditingController();
@@ -36,9 +43,43 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
     super.dispose();
   }
 
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedImage == null) {
+      AppSnackbar.error('Foto tebar benih harus ditambahkan');
+      return;
+    }
+
+    final user = ref.read(userProvider);
+
+    await ref
+        .read(seedReportMutationNotifierProvider.notifier)
+        .createSeedReport(
+          widget.poolId,
+          user?.id ?? '',
+          AppFormat.toApiDate(_reportDateCtrl.text),
+          int.parse(_initialQuantityCtrl.text),
+          int.parse(_currentQuantityCtrl.text),
+          double.parse(_initialAverageWeightCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(seedReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: _buildFormState(),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -66,6 +107,9 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(seedReportMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -87,7 +131,7 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Benih Awal (ekor)',
                 hint: 'Jumlah Benih Awal',
@@ -98,16 +142,14 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah benih awal harus diisi';
                   }
-
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Jumlah benih awal harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah Lele Saat ini (ekor)',
                 hint: 'Jumlah Lele Saat ini',
@@ -118,16 +160,14 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Jumlah lele saat ini harus diisi';
                   }
-
                   final number = int.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Jumlah lele saat ini harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Bobot Rata-rata Awal (gram)',
                 hint: 'Bobot Rata-rata Awal',
@@ -138,16 +178,14 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
                   if (value == null || value.isEmpty) {
                     return 'Bobot Rata-rata Awal harus diisi';
                   }
-
                   final number = double.tryParse(value);
                   if (number == null || number <= 0) {
                     return 'Bobot Rata-rata Awal harus berupa angka positif';
                   }
-
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
                 hint: 'Tambahkan foto tebar benih',
@@ -158,10 +196,12 @@ class _CreateSeedReportPageState extends State<CreateSeedReportPage> {
                   });
                 },
               ),
-              SizedBox(height: 24),
-              AppButton(label: 'Submit', onPressed: () {}),
-              SizedBox(height: 16),
-              Text(
+              const SizedBox(height: 24),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Submit', onPressed: _onSubmit),
+              const SizedBox(height: 16),
+              const Text(
                 'Perhatian: Laporan yang telah dikirim tidak dapat diubah kembali. Pastikan seluruh data tebar benih sudah sesuai.',
                 style: TextStyle(fontSize: 14, color: Colors.red),
               ),

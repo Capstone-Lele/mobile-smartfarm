@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class MortalityReportRepository {
-  Future<Either<Failure, List<MortalityReport>>> getMortalityReports();
+  Future<Either<Failure, List<MortalityReport>>> getMortalityReports(String poolId);
   Future<Either<Failure, MortalityReport>> getMortalityReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createMortalityReport(
     String cycleId,

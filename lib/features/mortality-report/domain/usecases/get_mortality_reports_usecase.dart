@@ -8,7 +8,7 @@ class GetMortalityReportsUsecase {
 
   GetMortalityReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<MortalityReport>>> execute() {
-    return repository.getMortalityReports();
+  Future<Either<Failure, List<MortalityReport>>> execute(String poolId) {
+    return repository.getMortalityReports(poolId);
   }
 }

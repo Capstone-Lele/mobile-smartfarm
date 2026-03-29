@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class HarvestReportRepository {
-  Future<Either<Failure, List<HarvestReport>>> getHarvestReports();
+  Future<Either<Failure, List<HarvestReport>>> getHarvestReports(String poolId);
   Future<Either<Failure, HarvestReport>> getHarvestReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createHarvestReport(
     String cycleId,
