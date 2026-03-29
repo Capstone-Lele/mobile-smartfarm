@@ -1,5 +1,6 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
@@ -7,6 +8,8 @@ import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -35,15 +38,12 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
   final _initialQuantityCtrl = TextEditingController();
   final _currentQuantityCtrl = TextEditingController();
   final _initialAverageWeightCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref
-          .read(seedReportDetailNotifierProvider.notifier)
-          .getSeedReport(widget.reportId);
-    });
+    Future.microtask(() => _getReportDetail());
   }
 
   @override
@@ -52,37 +52,27 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
     _initialQuantityCtrl.dispose();
     _currentQuantityCtrl.dispose();
     _initialAverageWeightCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(seedReportDetailNotifierProvider.notifier)
+        .getSeedReport(widget.reportId);
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
     final reportAsync = ref.watch(seedReportDetailNotifierProvider);
 
     return Scaffold(
       appBar: _buildHeader(context),
       body: reportAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Error: $err', textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              AppButton(
-                label: 'Coba Lagi',
-                onPressed: () {
-                  ref
-                      .read(seedReportDetailNotifierProvider.notifier)
-                      .getSeedReport(widget.reportId);
-                },
-              ),
-            ],
-          ),
-        ),
-        data: (report) => _buildFormState(report),
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report, user),
       ),
     );
   }
@@ -111,7 +101,26 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
     );
   }
 
-  Widget _buildFormState(SeedReport? report) {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormState(SeedReport? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
@@ -120,6 +129,8 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
     _initialQuantityCtrl.text = report.initialQuantity.toString();
     _currentQuantityCtrl.text = report.currentQuantity.toString();
     _initialAverageWeightCtrl.text = report.initialAverageWeight;
+    //  _userCtrl.text = report.user.toString();
+    _userCtrl.text = 'Bug';
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -129,6 +140,13 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (user?.role != 'pic') ...[
+                AppHintBoard(
+                  title: '📌 Petunjuk Laporan Tebar Benih',
+                  desc: '• Tekan Hapus kalau laporannya tidak dipakai lagi.',
+                ),
+                const SizedBox(height: 16),
+              ],
               AppInputDate(
                 label: 'Tanggal Tebar Benih',
                 hint: 'Tanggal Tebar Benih',
@@ -172,39 +190,53 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
                 readOnly: true,
                 imageUrl: report.image,
               ),
+              if (user?.role == 'pic') ...[
+                const SizedBox(height: 16),
+                AppInputText(
+                  label: 'Petugas',
+                  hint: 'Petugas',
+                  controller: _userCtrl,
+                  type: FieldType.text,
+                  requiredField: true,
+                  readOnly: true,
+                ),
+              ],
               const SizedBox(height: 24),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Laporan',
-                    message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      await ref
-                          .read(seedReportMutationNotifierProvider.notifier)
-                          .deleteSeedReport(widget.reportId);
+              if (user?.role != 'pic') ...[
+                AppButton(
+                  label: 'Hapus',
+                  color: AppColors.red,
+                  onPressed: () {
+                    AppDialog.showConfirmationDialog(
+                      context: context,
+                      color: AppColors.red,
+                      title: 'Hapus Laporan',
+                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
+                      confirmText: 'Iya',
+                      cancelText: 'Tidak',
+                      onConfirm: () async {
+                        await ref
+                            .read(seedReportMutationNotifierProvider.notifier)
+                            .deleteSeedReport(widget.reportId, widget.poolId);
 
-                      final mutationState =
-                          ref.read(seedReportMutationNotifierProvider);
+                        final mutationState = ref.read(
+                          seedReportMutationNotifierProvider,
+                        );
 
-                      if (mutationState.hasError) {
-                        AppRoutes.pop(context);
-                        AppSnackbar.error(mutationState.error.toString());
-                      } else {
-                        AppRoutes.pop(context);
-                        AppSnackbar.success('Laporan berhasil dihapus');
-                        AppRoutes.pop(context);
-                      }
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
+                        if (mutationState.hasError) {
+                          AppRoutes.pop(context);
+                          AppSnackbar.error(mutationState.error.toString());
+                        } else {
+                          AppRoutes.pop(context);
+                          AppSnackbar.success('Laporan berhasil dihapus');
+                          AppRoutes.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
               const Text(
                 'Catatan: Laporan ini tidak dapat diubah.',
                 style: TextStyle(fontSize: 14, color: Colors.red),

@@ -134,13 +134,13 @@ class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (seedReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getSeedReports('');
+        _listNotifier.getSeedReports(poolId);
       },
     );
   }
 
   // Delete seed report
-  Future<void> deleteSeedReport(String id) async {
+  Future<void> deleteSeedReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteSeedReportUsecase.execute(id);
 
@@ -153,7 +153,7 @@ class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getSeedReports('');
+        _listNotifier.getSeedReports(poolId);
       },
     );
   }
