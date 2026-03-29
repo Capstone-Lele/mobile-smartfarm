@@ -43,14 +43,11 @@ class _CreateHarvestReportPageState
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedImage == null) {
-      AppSnackbar.error('Foto panen harus ditambahkan');
-      return;
-    }
-
+    
     await ref
         .read(harvestReportMutationNotifierProvider.notifier)
         .createHarvestReport(
+          widget.poolId,
           widget.cycleId,
           AppFormat.toApiDate(_reportDateCtrl.text),
           int.parse(_amountCtrl.text),

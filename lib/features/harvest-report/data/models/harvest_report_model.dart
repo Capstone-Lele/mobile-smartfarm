@@ -14,7 +14,7 @@ class HarvestReportModel extends HarvestReport {
   factory HarvestReportModel.fromJson(Map<String, dynamic> json) {
     return HarvestReportModel(
       id: json['id'],
-      userId: json['user_id'],
+      userId: json['userId'],
       user: json['user'],
       date: json['date'],
       cycle: json['cycle'],

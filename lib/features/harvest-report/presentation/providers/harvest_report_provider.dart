@@ -105,6 +105,7 @@ class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 
   // Create Harvest Report
   Future<void> createHarvestReport(
+    String poolId,
     String cycleId,
     String reportDate,
     int amount,
@@ -127,7 +128,7 @@ class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (harvestReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getHarvestReports('');
+        _listNotifier.getHarvestReports(poolId);
       },
     );
   }

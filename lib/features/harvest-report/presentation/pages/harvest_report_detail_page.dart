@@ -1,6 +1,9 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/providers/harvest_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -30,15 +33,12 @@ class _HarvestReportDetailPageState
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref
-          .read(harvestReportDetailNotifierProvider.notifier)
-          .getHarvestReport(widget.reportId);
-    });
+    Future.microtask(() => _getReportDetail());
   }
 
   @override
@@ -48,16 +48,23 @@ class _HarvestReportDetailPageState
     super.dispose();
   }
 
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(harvestReportDetailNotifierProvider.notifier)
+        .getHarvestReport(widget.reportId);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
     final reportAsync = ref.watch(harvestReportDetailNotifierProvider);
 
     return Scaffold(
       appBar: _buildHeader(context),
       body: reportAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (report) => _buildFormState(report),
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report, user),
       ),
     );
   }
@@ -86,13 +93,33 @@ class _HarvestReportDetailPageState
     );
   }
 
-  Widget _buildFormState(HarvestReport? report) {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormState(HarvestReport? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
     _reportDateCtrl.text = AppFormat.toUiDate(report.date);
-    _amountCtrl.text = report.amount;
+    _amountCtrl.text = report.amount.toString();
+    _userCtrl.text = report.user.toString();
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -119,6 +146,17 @@ class _HarvestReportDetailPageState
                 requiredField: true,
                 readOnly: true,
               ),
+              if (user?.role == 'pic') ...[
+                const SizedBox(height: 16),
+                AppInputText(
+                  label: 'Petugas',
+                  hint: 'Petugas',
+                  controller: _userCtrl,
+                  type: FieldType.text,
+                  requiredField: true,
+                  readOnly: true,
+                ),
+              ],
               const SizedBox(height: 16),
               const Text(
                 'Catatan: Laporan ini tidak dapat diubah atau dihapus kembali.',
