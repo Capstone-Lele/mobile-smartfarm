@@ -19,4 +19,16 @@ class UserRepositoryImpl implements UserRepository {
       (data) => Right(UserModel.fromJson(data)),
     );
   }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> changePassword(
+    String oldPassword,
+    String newPassword,
+  ) async {
+    final result = await datasource.changePassword(oldPassword, newPassword);
+
+    return result.fold((failure) => Left(failure), (data) {
+      return Right(data);
+    });
+  }
 }
