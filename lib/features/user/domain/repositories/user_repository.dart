@@ -4,4 +4,8 @@ import 'package:dartz/dartz.dart';
 
 abstract class UserRepository {
   Future<Either<Failure, User>> getUserInfo();
+  Future<Either<Failure, Map<String, dynamic>>> changePassword(
+    String oldPassword,
+    String newPassword,
+  );
 }

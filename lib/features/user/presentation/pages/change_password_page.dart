@@ -1,15 +1,18 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChangePasswordPage extends StatefulWidget {
+class ChangePasswordPage extends ConsumerStatefulWidget {
   const ChangePasswordPage({super.key});
 
   @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
+  ConsumerState<ChangePasswordPage> createState() => _ChangePasswordPageState();
 }
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
+class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _oldPasswordCtrl = TextEditingController();
   final _newPasswordCtrl = TextEditingController();
@@ -21,6 +24,25 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     _newPasswordCtrl.dispose();
     _confirmPasswordCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(userMutationNotifierProvider.notifier)
+        .changePassword(
+          _oldPasswordCtrl.text.trim(),
+          _newPasswordCtrl.text.trim(),
+        );
+
+    final mutationState = ref.read(userMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Password berhasil diubah');
+    }
   }
 
   @override
@@ -53,6 +75,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   Widget _buildFormState() {
+    final mutationState = ref.watch(userMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -109,7 +134,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 },
               ),
               const SizedBox(height: 24),
-              AppButton(label: 'Ubah', onPressed: () {}),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : AppButton(label: 'Ubah', onPressed: _onSubmit),
             ],
           ),
         ),
