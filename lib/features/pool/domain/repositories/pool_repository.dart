@@ -4,4 +4,5 @@ import 'package:dartz/dartz.dart';
 
 abstract class PoolRepository {
   Future<Either<Failure, List<Pool>>> getPools();
+  Future<Either<Failure, Pool>> getPool(String id);
 }
