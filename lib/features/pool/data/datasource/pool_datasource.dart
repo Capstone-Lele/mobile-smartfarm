@@ -28,4 +28,25 @@ class PoolDatasource {
       return Left(FetchFailure(e.toString()));
     }
   }
+
+  // Get Pool
+  Future<Either<Failure, Map<String, dynamic>>> getPool(String id) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/pool/$id');
+    final token = AppSession.getBearerToken();
+
+    try {
+      final response = await safeRequest(
+        () => http
+            .get(url, headers: AppRequest.header(token))
+            .timeout(const Duration(seconds: 10)),
+      );
+
+      final data = AppResponse.data(response);
+      final pool = data['data'][0];
+      return Right(pool);
+    } catch (e) {
+      if (e is Failure) return Left(e);
+      return Left(FetchFailure(e.toString()));
+    }
+  }
 }

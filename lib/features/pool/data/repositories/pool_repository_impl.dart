@@ -19,4 +19,14 @@ class PoolRepositoryImpl implements PoolRepository {
       return Right(pools);
     });
   }
+
+  @override
+  Future<Either<Failure, Pool>> getPool(String id) async {
+    final result = await datasource.getPool(id);
+
+    return result.fold((failure) => Left(failure), (data) {
+      final pool = PoolModel.fromJson(data);
+      return Right(pool);
+    });
+  }
 }
