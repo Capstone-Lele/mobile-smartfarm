@@ -26,29 +26,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  void _onSubmit() {
-    if (_formKey.currentState!.validate()) {
-      ref
-          .read(loginNotifierProvider.notifier)
-          .login(_emailCtrl.text.trim(), _passwordCtrl.text.trim());
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(loginNotifierProvider.notifier)
+        .login(_emailCtrl.text.trim(), _passwordCtrl.text.trim());
+
+    final mutationState = ref.read(loginNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Login berhasil');
+      AppRoutes.pushNamedAndRemoveUntil(context, AppRoutes.dashboard);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(loginNotifierProvider, (previous, next) {
-      next.whenOrNull(
-        data: (_) {
-          AppSnackbar.success('Login berhasil!');
-          AppRoutes.pushNamedAndRemoveUntil(context, AppRoutes.dashboard);
-        },
-        error: (error, _) {
-          AppSnackbar.error(error.toString());
-        },
-      );
-    });
-
-    final isLoading = ref.watch(loginNotifierProvider).isLoading;
+    final mutationState = ref.watch(loginNotifierProvider);
+    final isLoading = mutationState.isLoading;
 
     return Scaffold(
       body: SafeArea(

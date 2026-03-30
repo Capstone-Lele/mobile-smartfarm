@@ -5,9 +5,10 @@ import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
+import 'package:budidaya_lele_mobile/features/report/domain/entities/activity_log.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/providers/report_provider.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_activity_item.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_menu_card.dart';
@@ -50,12 +51,14 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     super.initState();
     Future.microtask(() {
       ref.read(poolListNotifierProvider.notifier).getPools();
+      ref.read(activityLogListNotifierProvider.notifier).getActivityLogs();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final poolsAsync = ref.watch(poolListNotifierProvider);
+    final activityLogsAsync = ref.watch(activityLogListNotifierProvider);
     final user = ref.watch(userProvider);
 
     return Scaffold(
@@ -67,6 +70,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               _selectedPool = null;
             });
             await ref.read(poolListNotifierProvider.notifier).getPools();
+            await ref
+                .read(activityLogListNotifierProvider.notifier)
+                .getActivityLogs();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -99,6 +105,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   ],
                   _buildPoolListSection(poolsAsync),
                   const SizedBox(height: 16),
+                  // _buildActivitiesSection(activityLogsAsync),
                   _buildActivitiesSection(),
                 ],
               ),
@@ -568,7 +575,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ),
         ],
       ),
-      error: (error, stack) => Column(
+      error: (err, stack) => Column(
         children: [
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -700,27 +707,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          // Text(
-                          //   '${pool.acidityMax} pH',
-                          //   style: TextStyle(
-                          //     fontSize: 12,
-                          //     fontWeight: FontWeight.w400,
-                          //     color: AppColors.darkGray,
-                          //   ),
-                          // ),
-                          // const SizedBox(width: 12),
-                          // Text(
-                          //   '${pool.temperatureMax} °C',
-                          //   style: TextStyle(
-                          //     fontSize: 12,
-                          //     fontWeight: FontWeight.w400,
-                          //     color: AppColors.darkGray,
-                          //   ),
-                          // ),
-                          // const SizedBox(width: 12),
                           Text(
-                            // '${pool.currentQuantity} Ekor Ikan',
-                            'Jumlah Ikan Saat ini 1000 Ekor',
+                            // 'Jumlah Ikan Saat ini ${pool.currentQuantity} Ekor',
+                            'Jumlah Ikan Saat ini 1000 Ekor Bug',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
@@ -776,4 +765,53 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       ],
     );
   }
+
+  // Widget _buildActivitiesSection(
+  //   AsyncValue<List<ActivityLog>> activityLogsAsync,
+  // ) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text(
+  //         'Aktivitas Terbaru',
+  //         style: TextStyle(
+  //           fontSize: 14,
+  //           fontWeight: FontWeight.w600,
+  //           color: AppColors.darkGray,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //       activityLogsAsync.when(
+  //         loading: () => AppLoading(height: 300, borderRadius: 8),
+  //         error: (err, stack) => Center(
+  //           child: Text(
+  //             'Gagal memuat aktivitas terbaru',
+  //             style: TextStyle(color: AppColors.red),
+  //           ),
+  //         ),
+  //         data: (activityLogs) => Container(
+  //           decoration: BoxDecoration(
+  //             border: Border.all(color: AppColors.gray),
+  //             borderRadius: BorderRadius.circular(8),
+  //           ),
+  //           child: Column(
+  //             children: activityLogs
+  //                 .asMap()
+  //                 .entries
+  //                 .map(
+  //                   (entry) => ReportActivityItem(
+  //                     tag: '#${entry.value.poolName}',
+  //                     title:
+  //                         '${entry.value.user} telah melaporkan ${entry.value.activity}',
+  //                     subtitle: entry.value.createdAt,
+  //                     isLast: entry.key == activityLogs.length - 1,
+  //                   ),
+  //                 )
+  //                 .toList(),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }
