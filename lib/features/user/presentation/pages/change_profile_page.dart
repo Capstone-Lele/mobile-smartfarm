@@ -1,27 +1,57 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/widgets/profile_photo_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ChangeProfilePage extends StatefulWidget {
+class ChangeProfilePage extends ConsumerStatefulWidget {
   const ChangeProfilePage({super.key});
 
   @override
-  State<ChangeProfilePage> createState() => _ChangeProfilePageState();
+  ConsumerState<ChangeProfilePage> createState() => _ChangeProfilePageState();
 }
 
-class _ChangeProfilePageState extends State<ChangeProfilePage> {
+class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController(text: "Muhammad Adib Firmansyah");
-  final _emailCtrl = TextEditingController(text: "adib@gmail.com");
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   XFile? _profileImage;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _initialData());
+  }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _initialData() async {
+    await ref.read(userInfoNotifierProvider.notifier).getUserInfo();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(userMutationNotifierProvider.notifier)
+        .changeProfile(_nameCtrl.text, _profileImage);
+
+    final mutationState = ref.read(userMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Profil berhasil diubah');
+      await ref.read(userInfoNotifierProvider.notifier).getUserInfo();
+    }
   }
 
   @override
@@ -54,6 +84,13 @@ class _ChangeProfilePageState extends State<ChangeProfilePage> {
   }
 
   Widget _buildFormState() {
+    final user = ref.watch(userProvider);
+    final mutationState = ref.watch(userMutationNotifierProvider);
+    final isLoading = mutationState.isLoading;
+
+    _emailCtrl.text = user?.email ?? '';
+    _nameCtrl.text = user?.name ?? '';
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -63,7 +100,7 @@ class _ChangeProfilePageState extends State<ChangeProfilePage> {
             children: [
               Center(
                 child: ProfilePhotoInput(
-                  initialImageUrl: 'https://picsum.photos/201',
+                  initialImageUrl: user?.image ?? '',
                   onChanged: (file) {
                     setState(() {
                       _profileImage = file;
@@ -76,12 +113,21 @@ class _ChangeProfilePageState extends State<ChangeProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Penanggung Jawab',
+                    user?.roleLabel ?? 'User',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
+              AppInputText(
+                label: 'Email Address',
+                hint: 'alex@gmail.com',
+                controller: _emailCtrl,
+                type: FieldType.email,
+                requiredField: true,
+                readOnly: true,
+              ),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Nama Lengkap',
                 hint: 'Nama Lengkap',
@@ -95,25 +141,10 @@ class _ChangeProfilePageState extends State<ChangeProfilePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              AppInputText(
-                label: 'Email Address',
-                hint: 'alex@gmail.com',
-                controller: _emailCtrl,
-                type: FieldType.email,
-                requiredField: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email harus diisi';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Masukkan format email yang benar';
-                  }
-                  return null;
-                },
-              ),
               const SizedBox(height: 24),
-              AppButton(label: 'Ubah', onPressed: () {}),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : AppButton(label: 'Ubah', onPressed: _onSubmit),
             ],
           ),
         ),

@@ -33,7 +33,9 @@ class SettingPage extends ConsumerWidget {
                   _buildMenuItem(
                     Icons.person_outline,
                     "Ubah Profil",
-                    onTap: () {},
+                    onTap: () {
+                      AppRoutes.pushNamed(context, AppRoutes.changeProfile);
+                    },
                   ),
                   _buildMenuItem(
                     Icons.lock_outline,
@@ -53,9 +55,13 @@ class SettingPage extends ConsumerWidget {
                     onTap: () {},
                   ),
                   _buildMenuItem(Icons.help_outline, "Bantuan", onTap: () {}),
-                  _buildMenuItem(Icons.sensors, "Status Alat", onTap: () {
-                    AppRoutes.pushNamed(context, AppRoutes.statusDevice);
-                  }),
+                  _buildMenuItem(
+                    Icons.sensors,
+                    "Status Alat",
+                    onTap: () {
+                      AppRoutes.pushNamed(context, AppRoutes.statusDevice);
+                    },
+                  ),
                   if (user?.role == 'pic') ...[
                     _buildMenuItem(
                       Icons.local_parking,

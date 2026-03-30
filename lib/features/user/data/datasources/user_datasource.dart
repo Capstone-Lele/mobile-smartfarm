@@ -6,6 +6,8 @@ import 'package:budidaya_lele_mobile/core/network/app_response.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_session.dart';
 import 'package:dartz/dartz.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UserDatasource {
   // Get User Info
@@ -50,6 +52,43 @@ class UserDatasource {
 
       final data = AppResponse.data(response);
       return Right(data);
+    } catch (e) {
+      if (e is Failure) return Left(e);
+      return Left(FetchFailure(e.toString()));
+    }
+  }
+
+  // Change Profile
+  Future<Either<Failure, Map<String, dynamic>>> changeProfile(
+    String name,
+    XFile? image,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/user');
+    final token = AppSession.getBearerToken();
+
+    try {
+      var request = http.MultipartRequest('PUT', url);
+      request.headers.addAll(AppRequest.header(token));
+      request.fields['name'] = name;
+      if (image != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            image.path,
+            contentType: MediaType('image', 'jpeg'),
+          ),
+        );
+      }
+      final streamedResponse = await request.send();
+      final response = await safeRequest(
+        () => http.Response.fromStream(
+          streamedResponse,
+        ).timeout(const Duration(seconds: 10)),
+      );
+
+      final data = AppResponse.data(response);
+      final user = data['data'][0];
+      return Right(user);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));
