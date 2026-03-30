@@ -3,7 +3,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/auth/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/grouped_schedules.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/schedule.dart';
 import 'package:budidaya_lele_mobile/features/schedule/presentation/providers/cleaning_provider.dart';

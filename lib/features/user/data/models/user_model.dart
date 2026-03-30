@@ -1,4 +1,4 @@
-import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 
 class UserModel extends User {
   UserModel({

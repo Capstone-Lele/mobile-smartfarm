@@ -1,10 +1,10 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
-import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
-import 'package:budidaya_lele_mobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/repositories/user_repository.dart';
 import 'package:dartz/dartz.dart';
 
 class GetUserInfoUsecase {
-  final AuthRepository repository;
+  final UserRepository repository;
 
   GetUserInfoUsecase(this.repository);
 

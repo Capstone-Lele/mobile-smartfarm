@@ -1,13 +1,24 @@
 import 'package:budidaya_lele_mobile/core/utils/app_session.dart';
-import 'package:budidaya_lele_mobile/features/auth/domain/entities/user.dart';
-import 'package:budidaya_lele_mobile/features/auth/domain/usecases/get_user_info_usecase.dart';
-import 'package:budidaya_lele_mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/data/datasources/user_datasource.dart';
+import 'package:budidaya_lele_mobile/features/user/data/repositories/user_repository_impl.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/repositories/user_repository.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/usecases/get_user_info_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+// Provider Datasource
+final userDatasourceProvider = Provider((ref) => UserDatasource());
+
+// Provider Repository
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  final datasource = ref.read(userDatasourceProvider);
+  return UserRepositoryImpl(datasource);
+});
+
 // Provider UseCase
 final getUserInfoUseCaseProvider = Provider<GetUserInfoUsecase>((ref) {
-  final repository = ref.read(authRepositoryProvider);
+  final repository = ref.read(userRepositoryProvider);
   return GetUserInfoUsecase(repository);
 });
 
