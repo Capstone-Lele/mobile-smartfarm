@@ -4,9 +4,11 @@ import 'package:budidaya_lele_mobile/features/user/data/repositories/user_reposi
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/repositories/user_repository.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/usecases/change_password_usecase.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/usecases/change_profile_usecase.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/usecases/get_user_info_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:image_picker/image_picker.dart';
 
 // Provider Datasource
 final userDatasourceProvider = Provider((ref) => UserDatasource());
@@ -26,6 +28,11 @@ final getUserInfoUseCaseProvider = Provider<GetUserInfoUsecase>((ref) {
 final changePasswordUseCaseProvider = Provider<ChangePasswordUsecase>((ref) {
   final repository = ref.read(userRepositoryProvider);
   return ChangePasswordUsecase(repository);
+});
+
+final changeProfileUseCaseProvider = Provider<ChangeProfileUsecase>((ref) {
+  final repository = ref.read(userRepositoryProvider);
+  return ChangeProfileUsecase(repository);
 });
 
 // Notifier Provider
@@ -59,8 +66,9 @@ class UserNotifier extends StateNotifier<AsyncValue<void>> {
 
 class UserMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final ChangePasswordUsecase _changePasswordUsecase;
+  final ChangeProfileUsecase _changeProfileUsecase;
 
-  UserMutationNotifier(this._changePasswordUsecase)
+  UserMutationNotifier(this._changePasswordUsecase, this._changeProfileUsecase)
     : super(const AsyncValue.data(null));
 
   // Change Password
@@ -75,6 +83,24 @@ class UserMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (failure) {
         state = AsyncValue.error(
           failure.message ?? 'Gagal mengubah password',
+          StackTrace.current,
+        );
+      },
+      (user) {
+        state = AsyncValue.data(null);
+      },
+    );
+  }
+
+  // Change Profile
+  Future<void> changeProfile(String name, XFile? image) async {
+    state = const AsyncValue.loading();
+    final result = await _changeProfileUsecase.execute(name, image);
+
+    result.fold(
+      (failure) {
+        state = AsyncValue.error(
+          failure.message ?? 'Gagal mengubah profile',
           StackTrace.current,
         );
       },
@@ -99,6 +125,7 @@ final userInfoNotifierProvider =
 final userMutationNotifierProvider =
     StateNotifierProvider<UserMutationNotifier, AsyncValue<void>>((ref) {
       final changePasswordUsecase = ref.read(changePasswordUseCaseProvider);
+      final changeProfileUsecase = ref.read(changeProfileUseCaseProvider);
 
-      return UserMutationNotifier(changePasswordUsecase);
+      return UserMutationNotifier(changePasswordUsecase, changeProfileUsecase);
     });
