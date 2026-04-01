@@ -11,9 +11,10 @@ import 'package:image_picker/image_picker.dart';
 
 class MovePoolReportDatasource {
   // Get Move Pool Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>>
-  getMovePoolReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move');
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMovePoolReports(
+    String poolId,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool');
     final token = AppSession.getBearerToken();
 
     try {
@@ -36,7 +37,7 @@ class MovePoolReportDatasource {
   Future<Either<Failure, Map<String, dynamic>>> getMovePoolReport(
     String id,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move/$id');
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool/$id');
     final token = AppSession.getBearerToken();
 
     try {
@@ -63,7 +64,7 @@ class MovePoolReportDatasource {
     int quantity,
     XFile image,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move');
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool');
     final token = AppSession.getBearerToken();
 
     try {
@@ -101,7 +102,7 @@ class MovePoolReportDatasource {
   Future<Either<Failure, Map<String, dynamic>>> deleteMovePoolReport(
     String id,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move/$id');
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool/$id');
     final token = AppSession.getBearerToken();
 
     try {

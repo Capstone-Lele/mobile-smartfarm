@@ -18,14 +18,6 @@ class _ProfilePhotoInputState extends State<ProfilePhotoInput> {
   final ImagePicker _picker = ImagePicker();
   bool _hasUserChangedImage = false;
 
-  bool get _hasImage {
-    if (_hasUserChangedImage && _selectedImage == null) {
-      return false;
-    }
-    return _selectedImage != null ||
-        (widget.initialImageUrl != null && widget.initialImageUrl!.isNotEmpty);
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -148,25 +140,6 @@ class _ProfilePhotoInputState extends State<ProfilePhotoInput> {
                   await _pickImage(ImageSource.camera);
                 },
               ),
-              if (_hasImage)
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: AppColors.red,
-                    ),
-                  ),
-                  title: const Text('Hapus Gambar'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _removeImage();
-                  },
-                ),
             ],
           ),
         ),
@@ -200,13 +173,5 @@ class _ProfilePhotoInputState extends State<ProfilePhotoInput> {
         );
       }
     }
-  }
-
-  void _removeImage() {
-    setState(() {
-      _selectedImage = null;
-      _hasUserChangedImage = true;
-    });
-    widget.onChanged?.call(null);
   }
 }

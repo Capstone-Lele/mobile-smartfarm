@@ -12,8 +12,8 @@ class SickReportRepositoryImpl implements SickReportRepository {
   SickReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SickReport>>> getSickReports() async {
-    final result = await datasource.getSickReports();
+  Future<Either<Failure, List<SickReport>>> getSickReports(String poolId) async {
+    final result = await datasource.getSickReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final sickReports = data

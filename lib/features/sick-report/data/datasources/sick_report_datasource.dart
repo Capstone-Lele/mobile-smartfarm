@@ -11,7 +11,9 @@ import 'package:image_picker/image_picker.dart';
 
 class SickReportDatasource {
   // Get Sick Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSickReports() async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getSickReports(
+    String poolId,
+  ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/sick');
     final token = AppSession.getBearerToken();
 
@@ -94,7 +96,7 @@ class SickReportDatasource {
     }
   }
 
-   // Delete Sick Report
+  // Delete Sick Report
   Future<Either<Failure, Map<String, dynamic>>> deleteSickReport(
     String id,
   ) async {

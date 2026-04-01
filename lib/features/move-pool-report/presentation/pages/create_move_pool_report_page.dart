@@ -3,9 +3,13 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
+import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/providers/move_pool_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,11 +37,15 @@ class _CreateMovePoolReportPageState
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
+  Pool? _selectedDestinationPool;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => _getPoolDetail());
+    Future.microtask(() {
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
+      ref.read(poolListNotifierProvider.notifier).getPools();
+    });
   }
 
   @override
@@ -47,13 +55,35 @@ class _CreateMovePoolReportPageState
     super.dispose();
   }
 
-  Future<void> _getPoolDetail() async {
-    await ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(movePoolReportMutationNotifierProvider.notifier)
+        .createMovePoolReport(
+          widget.poolId,
+          widget.cycleId,
+          _selectedDestinationPool!.cycleId!,
+          AppFormat.toApiDateTime(_reportDateCtrl.text),
+          int.parse(_quantityCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(movePoolReportMutationNotifierProvider);
+
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final poolDetailState = ref.watch(poolDetailNotifierProvider);
+    final poolListState = ref.watch(poolListNotifierProvider);
+    final mutationState = ref.watch(movePoolReportMutationNotifierProvider);
 
     return Scaffold(
       appBar: _buildHeader(context),
@@ -68,7 +98,7 @@ class _CreateMovePoolReportPageState
               children: [
                 _buildPoolDetail(pool),
                 const SizedBox(height: 24),
-                _buildFormState(),
+                _buildFormState(poolListState, mutationState.isLoading),
               ],
             ),
           ),
@@ -114,7 +144,12 @@ class _CreateMovePoolReportPageState
           const SizedBox(height: 16),
           Text('Error: $error', textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getPoolDetail()),
+          AppButton(
+            label: 'Coba Lagi',
+            onPressed: () => ref
+                .read(poolDetailNotifierProvider.notifier)
+                .getPool(widget.poolId),
+          ),
         ],
       ),
     );
@@ -195,7 +230,7 @@ class _CreateMovePoolReportPageState
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(AsyncValue<List<Pool>> poolListState, bool isLoading) {
     return Form(
       key: _formKey,
       child: Column(
@@ -206,14 +241,19 @@ class _CreateMovePoolReportPageState
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          AppInputDropdown(
+          AppInputDropdown<Pool>(
             label: 'Tujuan Kolam',
-            hint: 'Tujuan Kolam',
-            items: const [],
-            itemLabel: (item) => '',
+            hint: 'Pilih Kolam Tujuan',
+            items: poolListState.value ?? [],
+            itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
             requiredField: true,
+            onChanged: (pool) {
+              setState(() {
+                _selectedDestinationPool = pool;
+              });
+            },
             validator: (value) {
-              if (value == null || value.isEmpty) {
+              if (value == null) {
                 return 'Kolam tujuan harus dipilih';
               }
               return null;
@@ -223,7 +263,7 @@ class _CreateMovePoolReportPageState
           AppInputDate(
             label: 'Tanggal Pindah Kolam',
             hint: 'Tanggal Pindah Kolam',
-            type: DateFieldType.date,
+            type: DateFieldType.dateTime,
             controller: _reportDateCtrl,
             requiredField: true,
             validator: (value) {
@@ -263,10 +303,12 @@ class _CreateMovePoolReportPageState
             },
           ),
           const SizedBox(height: 24),
-          AppButton(label: 'Pindah', onPressed: () {}),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : AppButton(label: 'Pindah', onPressed: _onSubmit),
           const SizedBox(height: 16),
           const Text(
-            'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah laporan dipindahkan, data tidak dapat diubah atau dihapus untuk menjaga keakuratan riwayat budidaya.',
+            'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah laporan dipindahkan, data tidak dapat diubah untuk menjaga keakuratan riwayat budidaya.',
             style: TextStyle(fontSize: 14, color: Colors.red),
           ),
         ],
