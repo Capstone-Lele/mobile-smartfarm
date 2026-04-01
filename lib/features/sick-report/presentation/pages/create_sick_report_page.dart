@@ -244,7 +244,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
             label: 'Kolam Karantina',
             hint: 'Pilih Kolam Karantina',
             items: poolListState.value ?? [],
-            itemLabel: (pool) => pool.name,
+            itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
             requiredField: true,
             onChanged: (pool) {
               setState(() {
