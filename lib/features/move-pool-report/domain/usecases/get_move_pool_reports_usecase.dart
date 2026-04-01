@@ -8,7 +8,7 @@ class GetMovePoolReportsUsecase {
 
   GetMovePoolReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<MovePoolReport>>> execute() {
-    return repository.getMovePoolReports();
+  Future<Either<Failure, List<MovePoolReport>>> execute(String poolId) {
+    return repository.getMovePoolReports(poolId);
   }
 }

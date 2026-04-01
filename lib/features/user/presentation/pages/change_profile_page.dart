@@ -56,7 +56,16 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final user = ref.watch(userInfoNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: user.when(
+        loading: () => _buildLoadingState(),
+        error: (error, stack) => _buildErrorState(error),
+        data: (_) => _buildFormState(),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -83,13 +92,34 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
     );
   }
 
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFormState() {
     final user = ref.watch(userProvider);
     final mutationState = ref.watch(userMutationNotifierProvider);
     final isLoading = mutationState.isLoading;
 
-    _emailCtrl.text = user?.email ?? '';
-    _nameCtrl.text = user?.name ?? '';
+    if (user != null) {
+      _emailCtrl.text = user.email;
+      _nameCtrl.text = user.name;
+    }
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -100,7 +130,7 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
             children: [
               Center(
                 child: ProfilePhotoInput(
-                  initialImageUrl: user?.image ?? '',
+                  initialImageUrl: user?.image,
                   onChanged: (file) {
                     setState(() {
                       _profileImage = file;

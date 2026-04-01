@@ -1,14 +1,21 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SickReportDetailPage extends StatefulWidget {
+class SickReportDetailPage extends ConsumerStatefulWidget {
   final String reportId;
   final String cycleId;
   final String poolId;
@@ -23,39 +30,51 @@ class SickReportDetailPage extends StatefulWidget {
   });
 
   @override
-  State<SickReportDetailPage> createState() => _SickReportDetailPageState();
+  ConsumerState<SickReportDetailPage> createState() =>
+      _SickReportDetailPageState();
 }
 
-class _SickReportDetailPageState extends State<SickReportDetailPage> {
+class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: '08-04-2026');
-  final _quantityCtrl = TextEditingController(text: '100');
+  final _reportDateCtrl = TextEditingController();
+  final _destinationCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
-  final List<String> _pools = [
-    'Kolam 1',
-    'Kolam 2',
-    'Kolam 3',
-    'Kolam 4',
-    'Kolam 5',
-    'Kolam 6',
-    'Kolam 7',
-    'Kolam 8',
-    'Kolam 9',
-    'Kolam 10',
-  ];
-
-  final String _selectedPool = 'Kolam 1';
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _getReportDetail());
+  }
 
   @override
   void dispose() {
     _reportDateCtrl.dispose();
+    _destinationCtrl.dispose();
     _quantityCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(sickReportDetailNotifierProvider.notifier)
+        .getSickReport(widget.reportId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final user = ref.watch(userProvider);
+    final reportAsync = ref.watch(sickReportDetailNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: reportAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report, user),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -82,78 +101,128 @@ class _SickReportDetailPageState extends State<SickReportDetailPage> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormState(SickReport? report, User? user) {
+    if (report == null) {
+      return const Center(child: Text('Laporan tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    _destinationCtrl.text = report.destinationPoolName;
+    _quantityCtrl.text = report.quantity.toString();
+    _userCtrl.text = report.user;
+
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Pindah Kolam',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12),
-              AppInputDropdown<String>(
-                label: 'Tujuan Kolam',
-                hint: 'Tujuan Kolam',
-                items: _pools,
-                value: _selectedPool,
-                itemLabel: (item) => item,
-                requiredField: true,
+              if (user?.role != 'pic') ...[
+                AppHintBoard(
+                  title: '📌 Petunjuk Laporan Sakit',
+                  desc: '• Tekan Hapus kalau laporannya tidak dipakai lagi.',
+                ),
+                const SizedBox(height: 16),
+              ],
+              AppInputText(
+                label: 'Kolam Karantina',
+                hint: 'Kolam Karantina',
+                controller: _destinationCtrl,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputDate(
-                label: 'Tanggal Sakit',
-                hint: 'Tanggal Sakit',
-                type: DateFieldType.date,
+                label: 'Tanggal Ikan Sakit',
+                hint: 'Tanggal Ikan Sakit',
+                type: DateFieldType.dateTime,
                 controller: _reportDateCtrl,
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
-                label: 'Jumlah Ikan Sakit (ekor)',
-                hint: 'Jumlah Ikan Sakit (ekor)',
+                label: 'Jumlah (ekor)',
+                hint: 'Jumlah',
                 controller: _quantityCtrl,
                 type: FieldType.number,
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
-                hint: 'Tambahkan foto laporan sakit',
+                hint: 'Tambahkan foto ikan sakit',
                 requiredField: true,
                 readOnly: true,
-                imageUrl: 'https://picsum.photos/201',
+                imageUrl: report.image,
               ),
-              SizedBox(height: 24),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Laporan',
-                    message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      AppRoutes.pop(context);
-                    },
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Laporan sakit bersifat permanen dan tidak dapat diubah',
-                style: TextStyle(fontSize: 15, color: AppColors.red),
-              ),
+              if (user?.role == 'pic') ...[
+                const SizedBox(height: 16),
+                AppInputText(
+                  label: 'Petugas',
+                  hint: 'Petugas',
+                  controller: _userCtrl,
+                  type: FieldType.text,
+                  requiredField: true,
+                  readOnly: true,
+                ),
+              ],
+              const SizedBox(height: 24),
+              if (user?.role != 'pic') ...[
+                AppButton(
+                  label: 'Hapus',
+                  color: AppColors.red,
+                  onPressed: () {
+                    AppDialog.showConfirmationDialog(
+                      context: context,
+                      color: AppColors.red,
+                      title: 'Hapus Laporan',
+                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
+                      confirmText: 'Iya',
+                      cancelText: 'Tidak',
+                      onConfirm: () async {
+                        await ref
+                            .read(sickReportMutationNotifierProvider.notifier)
+                            .deleteSickReport(widget.reportId, widget.poolId);
+
+                        final mutationState = ref.read(
+                          sickReportMutationNotifierProvider,
+                        );
+
+                        if (mutationState.hasError) {
+                          AppRoutes.pop(context);
+                          AppSnackbar.error(mutationState.error.toString());
+                        } else {
+                          AppRoutes.pop(context);
+                          AppSnackbar.success('Laporan berhasil dihapus');
+                          AppRoutes.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),

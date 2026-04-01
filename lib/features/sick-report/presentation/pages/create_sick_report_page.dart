@@ -3,12 +3,19 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateSickReportPage extends StatefulWidget {
+class CreateSickReportPage extends ConsumerStatefulWidget {
   final String cycleId;
   final String poolId;
   final String poolName;
@@ -21,39 +28,78 @@ class CreateSickReportPage extends StatefulWidget {
   });
 
   @override
-  State<CreateSickReportPage> createState() => _CreateSickReportPageState();
+  ConsumerState<CreateSickReportPage> createState() =>
+      _CreateSickReportPageState();
 }
 
-class _CreateSickReportPageState extends State<CreateSickReportPage> {
+class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
-  final _vitaminQuantityCtrl = TextEditingController();
   XFile? _selectedImage;
-  bool _showVitaminForm = false;
+  Pool? _selectedQuarantinePool;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
+      ref.read(poolListNotifierProvider.notifier).getPools();
+    });
+  }
 
   @override
   void dispose() {
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
-    _vitaminQuantityCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref
+        .read(sickReportMutationNotifierProvider.notifier)
+        .createSickReport(
+          widget.poolId,
+          widget.cycleId,
+          _selectedQuarantinePool!.cycleId!,
+          AppFormat.toApiDateTime(_reportDateCtrl.text),
+          int.parse(_quantityCtrl.text),
+          _selectedImage!,
+        );
+
+    final mutationState = ref.read(sickReportMutationNotifierProvider);
+    if (mutationState.hasError) {
+      AppSnackbar.error(mutationState.error.toString());
+    } else {
+      AppSnackbar.success('Laporan berhasil ditambahkan');
+      AppRoutes.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final poolDetailState = ref.watch(poolDetailNotifierProvider);
+    final poolListState = ref.watch(poolListNotifierProvider);
+    final mutationState = ref.watch(sickReportMutationNotifierProvider);
+
     return Scaffold(
       appBar: _buildHeader(context),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildPoolDetail(),
-              SizedBox(height: 12),
-              _buildFormState(),
-            ],
+          child: poolDetailState.when(
+            loading: () => _buildLoadingState(),
+            error: (err, stack) => _buildErrorState(err),
+            data: (pool) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPoolDetail(pool),
+                const SizedBox(height: 24),
+                _buildFormState(poolListState, mutationState.isLoading),
+              ],
+            ),
           ),
         ),
       ),
@@ -71,7 +117,7 @@ class _CreateSickReportPageState extends State<CreateSickReportPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Detail Kolam',
+            'Laporan Ikan Sakit',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 2),
@@ -84,128 +130,170 @@ class _CreateSickReportPageState extends State<CreateSickReportPage> {
     );
   }
 
-  Widget _buildPoolDetail() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(
+            label: 'Coba Lagi',
+            onPressed: () => ref
+                .read(poolDetailNotifierProvider.notifier)
+                .getPool(widget.poolId),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPoolDetail(Pool? pool) {
+    if (pool == null) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Detail Kolam',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Kategori', style: TextStyle(fontSize: 15)),
-            AppStatusBadge(label: 'Pembenihan', type: BadgeType.warning),
+            const Text('Kategori', style: TextStyle(fontSize: 15)),
+            AppStatusBadge(
+              label: pool.categoryLabel,
+              type: pool.category == 'breeding'
+                  ? BadgeType.warning
+                  : pool.category == 'growing'
+                  ? BadgeType.success
+                  : BadgeType.danger,
+            ),
           ],
         ),
-        SizedBox(height: 12),
-        Row(
+        const SizedBox(height: 12),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Jumlah Ikan', style: TextStyle(fontSize: 15)),
-            Text('1500 Ekor', style: TextStyle(fontSize: 15)),
+            Text('100 Ekor Bug', style: TextStyle(fontSize: 15)),
           ],
         ),
-        SizedBox(height: 12),
-        Row(
+        const SizedBox(height: 12),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('pH Sekarang', style: TextStyle(fontSize: 15)),
-            Text('7 pH', style: TextStyle(fontSize: 15)),
+            Text('7.0 pH Bug', style: TextStyle(fontSize: 15)),
           ],
         ),
-        SizedBox(height: 12),
-        Row(
+        const SizedBox(height: 12),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Suhu Sekarang', style: TextStyle(fontSize: 15)),
-            Text('30°C', style: TextStyle(fontSize: 15)),
+            Text('28 °C Bug', style: TextStyle(fontSize: 15)),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
-            Text('6.5 - 8.5 pH', style: TextStyle(fontSize: 15)),
+            const Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
+            Text(
+              '${pool.acidityMin} - ${pool.acidityMax} pH',
+              style: const TextStyle(fontSize: 15),
+            ),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
-            Text('26°C - 30°C', style: TextStyle(fontSize: 15)),
+            const Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
+            Text(
+              '${pool.temperatureMin}°C - ${pool.temperatureMax}°C',
+              style: const TextStyle(fontSize: 15),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(AsyncValue<List<Pool>> poolListState, bool isLoading) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Pindah Kolam Karantina',
+          const Text(
+            'Pindah Kolam Karantine',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 12),
-          AppInputDropdown(
-            label: 'Tujuan Kolam',
-            hint: 'Tujuan Kolam',
-            items: [],
-            itemLabel: (item) => item['name'] as String,
+          const SizedBox(height: 12),
+          AppInputDropdown<Pool>(
+            label: 'Kolam Karantina',
+            hint: 'Pilih Kolam Karantina',
+            items: poolListState.value ?? [],
+            itemLabel: (pool) => pool.name,
             requiredField: true,
+            onChanged: (pool) {
+              setState(() {
+                _selectedQuarantinePool = pool;
+              });
+            },
             validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Nama produk harus dipilih';
+              if (value == null) {
+                return 'Kolam karantina harus dipilih';
               }
               return null;
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           AppInputDate(
-            label: 'Tanggal Sakit',
-            hint: 'Tanggal Sakit',
-            type: DateFieldType.date,
+            label: 'Tanggal Ikan Sakit',
+            hint: 'Tanggal Ikan Sakit',
+            type: DateFieldType.dateTime,
             controller: _reportDateCtrl,
             requiredField: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Tanggal Sakit harus dipilih';
+                return 'Tanggal harus dipilih';
               }
               return null;
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           AppInputText(
-            label: 'Jumlah Ikan Sakit (ekor)',
-            hint: 'Jumlah Ikan Sakit',
+            label: 'Jumlah Ikan Sakit',
+            hint: 'Jumlah',
             controller: _quantityCtrl,
             type: FieldType.number,
             requiredField: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Jumlah Ikan Sakit harus diisi';
+                return 'Jumlah harus diisi';
               }
-
               final number = int.tryParse(value);
               if (number == null || number <= 0) {
-                return 'Jumlah Ikan Sakit harus berupa angka positif';
+                return 'Jumlah harus berupa angka positif';
               }
-
               return null;
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           AppInputImage(
             label: 'Foto',
-            hint: 'Tambahkan foto laporan sakit',
+            hint: 'Tambahkan foto ikan sakit',
             requiredField: true,
             onChanged: (image) {
               setState(() {
@@ -213,77 +301,14 @@ class _CreateSickReportPageState extends State<CreateSickReportPage> {
               });
             },
           ),
-          SizedBox(height: 16),
-          CheckboxListTile(
-            value: _showVitaminForm,
-            onChanged: (value) {
-              setState(() {
-                _showVitaminForm = value ?? false;
-              });
-            },
-            title: Text(
-              'Apakah Ingin melakukan Laporan Vitamin/Obat Juga?',
-              style: TextStyle(fontSize: 12),
-            ),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
-            checkboxShape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(2),
-              side: BorderSide(color: AppColors.gray, width: 2),
-            ),
-            activeColor: AppColors.green,
-            checkColor: Colors.white,
-            tileColor: Colors.grey[100],
-            side: BorderSide(color: AppColors.gray, width: 2),
-          ),
-          if (_showVitaminForm) ...[
-            SizedBox(height: 16),
-            Text(
-              'Laporan Vitamin/Obat',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            AppInputDropdown(
-              label: 'Nama Produk',
-              hint: 'Nama Produk',
-              items: [],
-              itemLabel: (item) => item['name'] as String,
-              requiredField: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Nama produk harus dipilih';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16),
-            AppInputText(
-              label: 'Jumlah Vitamin/Obat',
-              hint: 'Jumlah Vitamin/Obat',
-              controller: _quantityCtrl,
-              type: FieldType.number,
-              requiredField: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Jumlah Vitamin/Obat harus diisi';
-                }
-
-                final number = int.tryParse(value);
-                if (number == null || number <= 0) {
-                  return 'Jumlah Vitamin/Obat harus berupa angka positif';
-                }
-
-                return null;
-              },
-            ),
-          ],
-          SizedBox(height: 24),
-          AppButton(label: 'Pindah', onPressed: () {}),
-          SizedBox(height: 16),
-          Text(
-            'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah ikan sakit dipindahkan, data tidak dapat diubah untuk menjaga keakuratan riwayat budidaya.',
-            style: TextStyle(fontSize: 14, color: Colors.red),
+          const SizedBox(height: 24),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : AppButton(label: 'Pindah', onPressed: _onSubmit),
+          const SizedBox(height: 16),
+          const Text(
+            'Segera pindahkan ikan ke kolam karantina untuk mencegah penularan.',
+            style: TextStyle(fontSize: 14, color: AppColors.red),
           ),
         ],
       ),

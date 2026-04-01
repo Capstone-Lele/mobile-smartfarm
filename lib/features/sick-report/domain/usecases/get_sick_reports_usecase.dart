@@ -8,7 +8,7 @@ class GetSickReportsUsecase {
 
   GetSickReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<SickReport>>> execute() {
-    return repository.getSickReports();
+  Future<Either<Failure, List<SickReport>>> execute(String poolId) {
+    return repository.getSickReports(poolId);
   }
 }

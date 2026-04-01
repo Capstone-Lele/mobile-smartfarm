@@ -410,6 +410,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return MovePoolReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
@@ -439,6 +440,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return SickReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );

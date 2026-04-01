@@ -12,8 +12,10 @@ class MovePoolReportRepositoryImpl implements MovePoolReportRepository {
   MovePoolReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<MovePoolReport>>> getMovePoolReports() async {
-    final result = await datasource.getMovePoolReports();
+  Future<Either<Failure, List<MovePoolReport>>> getMovePoolReports(
+    String poolId,
+  ) async {
+    final result = await datasource.getMovePoolReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final movePoolReports = data

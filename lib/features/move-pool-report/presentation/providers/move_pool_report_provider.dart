@@ -57,9 +57,9 @@ class MovePoolReportListNotifier
   MovePoolReportListNotifier(this._getMovePoolReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getMovePoolReports() async {
+  Future<void> getMovePoolReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getMovePoolReportsUsecase.execute();
+    final result = await _getMovePoolReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -113,6 +113,7 @@ class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 
   // Create Move Pool Report
   Future<void> createMovePoolReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -137,13 +138,13 @@ class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (movePoolReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getMovePoolReports();
+        _listNotifier.getMovePoolReports(poolId);
       },
     );
   }
 
   // Delete move pool report
-  Future<void> deleteMovePoolReport(String id) async {
+  Future<void> deleteMovePoolReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteMovePoolReportUsecase.execute(id);
 
@@ -156,7 +157,7 @@ class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getMovePoolReports();
+        _listNotifier.getMovePoolReports(poolId);
       },
     );
   }

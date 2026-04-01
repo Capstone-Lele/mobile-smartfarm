@@ -15,7 +15,7 @@ class MovePoolReport {
   final String type;
   final String createdAt;
   final String updatedAt;
-  final String deletedAt;
+  final String? deletedAt;
 
   MovePoolReport({
     required this.originPoolName,

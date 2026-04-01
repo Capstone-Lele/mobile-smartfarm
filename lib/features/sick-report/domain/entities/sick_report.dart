@@ -15,7 +15,7 @@ class SickReport {
   final String type;
   final String createdAt;
   final String updatedAt;
-  final String deletedAt;
+  final String? deletedAt;
 
   SickReport({
     required this.originPoolName,

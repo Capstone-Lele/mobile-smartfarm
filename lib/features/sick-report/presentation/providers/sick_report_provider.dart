@@ -51,9 +51,9 @@ class SickReportListNotifier
   SickReportListNotifier(this._getSickReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getSickReports() async {
+  Future<void> getSickReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getSickReportsUsecase.execute();
+    final result = await _getSickReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -106,6 +106,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 
   // Create Sick Report
   Future<void> createSickReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -130,13 +131,13 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (sickReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getSickReports();
+        _listNotifier.getSickReports(poolId);
       },
     );
   }
 
   // Delete sick report
-  Future<void> deleteSickReport(String id) async {
+  Future<void> deleteSickReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteSickReportUsecase.execute(id);
 
@@ -149,7 +150,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getSickReports();
+        _listNotifier.getSickReports(poolId);
       },
     );
   }
