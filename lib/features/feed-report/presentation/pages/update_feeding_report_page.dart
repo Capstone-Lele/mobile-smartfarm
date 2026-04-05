@@ -68,7 +68,8 @@ class _UpdateFeedingReportPageState
 
     try {
       _selectedInventory = inventories.firstWhere(
-        (e) => e.product == report.feedName,
+        // (e) => e.product == report.feedName,
+        (e) => e.product == 'Pelet',
       );
     } catch (e) {
       _selectedInventory = null;

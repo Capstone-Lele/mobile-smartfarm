@@ -16,10 +16,16 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
     final result = await datasource.getFeedReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final feedReports = data
-          .map((json) => FeedReportModel.fromJson(json))
-          .toList();
-      return Right(feedReports);
+      try {
+        final feedReports = data
+            .map((json) => FeedReportModel.fromJson(json))
+            .toList();
+        return Right(feedReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data laporan pakan: $e'),
+        );
+      }
     });
   }
 
@@ -28,8 +34,14 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
     final result = await datasource.getFeedReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final feedReport = FeedReportModel.fromJson(data);
-      return Right(feedReport);
+      try {
+        final feedReport = FeedReportModel.fromJson(data);
+        return Right(feedReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data laporan pakan: $e'),
+        );
+      }
     });
   }
 

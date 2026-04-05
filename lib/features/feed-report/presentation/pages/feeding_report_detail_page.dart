@@ -128,7 +128,8 @@ class _FeedingReportDetailPageState
 
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
-    _productCtrl.text = report.feedName;
+    // _productCtrl.text = report.feedName;
+     _productCtrl.text = 'Pelet Bug';
     _userCtrl.text = report.user;
 
     return SafeArea(

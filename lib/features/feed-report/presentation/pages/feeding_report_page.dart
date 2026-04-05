@@ -266,7 +266,8 @@ class _FeedingReportPageState extends ConsumerState<FeedingReportPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Pakan yang digunakan ${report.feedName}',
+                        // 'Pakan yang digunakan ${report.feedName}',
+                        'Pakan yang digunakan Pelet Bug',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
