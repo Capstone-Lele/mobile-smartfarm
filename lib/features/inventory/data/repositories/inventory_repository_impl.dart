@@ -15,10 +15,15 @@ class InventoryRepositoryImpl implements InventoryRepository {
     final result = await datasource.getInventories();
 
     return result.fold((failure) => Left(failure), (data) {
-      final inventories = data
-          .map((json) => InventoryModel.fromJson(json))
-          .toList();
-      return Right(inventories);
+      try {
+        final inventories =
+            data.map((json) => InventoryModel.fromJson(json)).toList();
+        return Right(inventories);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data inventaris: $e'),
+        );
+      }
     });
   }
 
@@ -27,7 +32,14 @@ class InventoryRepositoryImpl implements InventoryRepository {
     final result = await datasource.getInventory(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      return Right(InventoryModel.fromJson(data));
+      try {
+        final inventory = InventoryModel.fromJson(data);
+        return Right(inventory);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data inventaris: $e'),
+        );
+      }
     });
   }
 }
