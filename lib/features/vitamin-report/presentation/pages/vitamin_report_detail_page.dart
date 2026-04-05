@@ -1,14 +1,21 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/providers/vitamin_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class VitaminReportDetailPage extends StatefulWidget {
+class VitaminReportDetailPage extends ConsumerStatefulWidget {
   final String reportId;
   final String cycleId;
   final String poolId;
@@ -23,40 +30,52 @@ class VitaminReportDetailPage extends StatefulWidget {
   });
 
   @override
-  State<VitaminReportDetailPage> createState() =>
+  ConsumerState<VitaminReportDetailPage> createState() =>
       _VitaminReportDetailPageState();
 }
 
-class _VitaminReportDetailPageState extends State<VitaminReportDetailPage> {
+class _VitaminReportDetailPageState
+    extends ConsumerState<VitaminReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: '08-04-2026 08:00');
-  final _quantityCtrl = TextEditingController(text: '100');
+  final _reportDateCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _productCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
-  final List<String> _vitaminProducts = [
-    'Vitamin C 1000mg',
-    'Multivitamin Lele Premium',
-    'Vitamin B Complex',
-    'Vitamin D3 + K2',
-    'Vitamin E 400IU',
-    'Fish Vitamin Booster',
-    'Aqua Vitamin Complete',
-    'Mineral + Vitamin Mix',
-    'Calcium Vitamin',
-    'Growth Vitamin Formula',
-  ];
-
-  final String _selectedVitaminProduct = 'Vitamin C 1000mg';
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _getReportDetail());
+  }
 
   @override
   void dispose() {
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
+    _productCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(vitaminReportDetailNotifierProvider.notifier)
+        .getVitaminReport(widget.reportId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final user = ref.watch(userProvider);
+    final reportAsync = ref.watch(vitaminReportDetailNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: reportAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report, user),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -83,25 +102,61 @@ class _VitaminReportDetailPageState extends State<VitaminReportDetailPage> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormState(VitaminReport? report, User? user) {
+    if (report == null) {
+      return const Center(child: Text('Laporan tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    _quantityCtrl.text = report.quantity.toString();
+    // _productCtrl.text = report.vitaminName;
+    _productCtrl.text = 'Vitamin A Bug';
+    _userCtrl.text = report.user;
+
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputDropdown<String>(
+              if (user?.role != 'pic') ...[
+                AppHintBoard(
+                  title: '📌 Petunjuk Laporan Vitamin',
+                  desc:
+                      'Tekan Ubah or Hapus jika ingin melakukan perubahan data.',
+                ),
+                const SizedBox(height: 16),
+              ],
+              AppInputText(
                 label: 'Nama Produk',
-                hint: 'Pilih Produk',
-                items: _vitaminProducts,
-                value: _selectedVitaminProduct,
-                itemLabel: (item) => item,
+                hint: 'Produk',
+                controller: _productCtrl,
+                type: FieldType.text,
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputDate(
                 label: 'Tanggal Pemberian Vitamin',
                 hint: 'Tanggal Pemberian Vitamin',
@@ -110,7 +165,7 @@ class _VitaminReportDetailPageState extends State<VitaminReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah',
                 hint: 'Jumlah',
@@ -119,48 +174,80 @@ class _VitaminReportDetailPageState extends State<VitaminReportDetailPage> {
                 requiredField: true,
                 readOnly: true,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               AppInputImage(
                 label: 'Foto',
-                hint: 'Tambahkan foto vitamin',
+                hint: 'Foto Vitamin',
                 requiredField: true,
                 readOnly: true,
-                imageUrl: 'https://picsum.photos/200',
+                imageUrl: report.image,
               ),
-              SizedBox(height: 24),
-              AppButton(
-                label: 'Ubah',
-                onPressed: () {
-                  AppRoutes.pushNamed(
-                    context,
-                    AppRoutes.updateVitaminReport,
-                    arguments: {
-                      'reportId': widget.reportId,
-                      'cycleId': widget.cycleId,
-                      'poolId': widget.poolId,
-                      'poolName': widget.poolName,
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Laporan',
-                    message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      AppRoutes.pop(context);
-                    },
-                  );
-                },
-              ),
+              if (user?.role == 'pic') ...[
+                const SizedBox(height: 16),
+                AppInputText(
+                  label: 'Petugas',
+                  hint: 'Petugas',
+                  controller: _userCtrl,
+                  type: FieldType.text,
+                  requiredField: true,
+                  readOnly: true,
+                ),
+              ],
+              const SizedBox(height: 24),
+              if (user?.role != 'pic') ...[
+                AppButton(
+                  label: 'Ubah',
+                  onPressed: () {
+                    AppRoutes.pushNamed(
+                      context,
+                      AppRoutes.updateVitaminReport,
+                      arguments: {
+                        'reportId': widget.reportId,
+                        'cycleId': widget.cycleId,
+                        'poolId': widget.poolId,
+                        'poolName': widget.poolName,
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: 'Hapus',
+                  color: AppColors.red,
+                  onPressed: () {
+                    AppDialog.showConfirmationDialog(
+                      context: context,
+                      color: AppColors.red,
+                      title: 'Hapus Laporan',
+                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
+                      confirmText: 'Iya',
+                      cancelText: 'Tidak',
+                      onConfirm: () async {
+                        await ref
+                            .read(
+                              vitaminReportMutationNotifierProvider.notifier,
+                            )
+                            .deleteVitaminReport(
+                              widget.reportId,
+                              widget.poolId,
+                            );
+
+                        final mutationState = ref.read(
+                          vitaminReportMutationNotifierProvider,
+                        );
+                        if (mutationState.hasError) {
+                          AppRoutes.pop(context);
+                          AppSnackbar.error(mutationState.error.toString());
+                        } else {
+                          AppRoutes.pop(context);
+                          AppSnackbar.success('Laporan berhasil dihapus');
+                          AppRoutes.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),

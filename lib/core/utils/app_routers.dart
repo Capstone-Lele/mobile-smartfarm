@@ -226,6 +226,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return VitaminReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );
@@ -265,6 +266,7 @@ class AppRoutes {
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
         return FeedingReportPage(
           cycleId: args?['cycleId'] as String? ?? '',
+          isCycle: args?['isCycle'] as bool? ?? false,
           poolId: args?['poolId'] as String? ?? '',
           poolName: args?['poolName'] as String? ?? '',
         );

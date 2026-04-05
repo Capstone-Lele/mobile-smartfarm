@@ -13,7 +13,7 @@ class UpdateVitaminReportUsecase {
     String inventoryId,
     String reportDate,
     int quantity,
-    XFile image,
+    XFile? image,
   ) {
     return repository.updateVitaminReport(
       id,

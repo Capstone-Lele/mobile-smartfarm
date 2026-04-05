@@ -1,18 +1,22 @@
 class VitaminReport {
-  final String id;
   final String userId;
+  final String user;
+  final String id;
+  final String cycleId;
   final String inventoryId;
   final String type;
   final String reportDate;
-  final int quantity;
+  final String quantity;
   final String image;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
 
   VitaminReport({
-    required this.id,
     required this.userId,
+    required this.user,
+    required this.id,
+    required this.cycleId,
     required this.inventoryId,
     required this.type,
     required this.reportDate,

@@ -4,11 +4,10 @@ import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class FeedReportRepository {
-  Future<Either<Failure, List<FeedReport>>> getFeedReports();
+  Future<Either<Failure, List<FeedReport>>> getFeedReports(String poolId);
   Future<Either<Failure, FeedReport>> getFeedReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createFeedReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,

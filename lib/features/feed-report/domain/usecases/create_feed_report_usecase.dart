@@ -10,7 +10,6 @@ class CreateFeedReportUsecase {
 
   Future<Either<Failure, Map<String, dynamic>>> execute(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -18,7 +17,6 @@ class CreateFeedReportUsecase {
   ) {
     return repository.createFeedReport(
       cycleId,
-      userId,
       inventoryId,
       reportDate,
       quantity,

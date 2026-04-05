@@ -12,14 +12,22 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
   VitaminReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<VitaminReport>>> getVitaminReports() async {
-    final result = await datasource.getVitaminReports();
+  Future<Either<Failure, List<VitaminReport>>> getVitaminReports(
+    String poolId,
+  ) async {
+    final result = await datasource.getVitaminReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final vitaminReports = data
-          .map((json) => VitaminReportModel.fromJson(json))
-          .toList();
-      return Right(vitaminReports);
+      try {
+        final vitaminReports = data
+            .map((json) => VitaminReportModel.fromJson(json))
+            .toList();
+        return Right(vitaminReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data laporan vitamin: $e'),
+        );
+      }
     });
   }
 
@@ -28,15 +36,20 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
     final result = await datasource.getVitaminReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final vitaminReport = VitaminReportModel.fromJson(data);
-      return Right(vitaminReport);
+      try {
+        final vitaminReport = VitaminReportModel.fromJson(data);
+        return Right(vitaminReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure('Gagal mengkonversi data laporan vitamin: $e'),
+        );
+      }
     });
   }
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> createVitaminReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -44,7 +57,6 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
   ) async {
     final result = await datasource.createVitaminReport(
       cycleId,
-      userId,
       inventoryId,
       reportDate,
       quantity,
@@ -78,7 +90,9 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteVitaminReport(String id) async {
+  Future<Either<Failure, Map<String, dynamic>>> deleteVitaminReport(
+    String id,
+  ) async {
     final result = await datasource.deleteVitaminReport(id);
 
     return result.fold((failure) => Left(failure), (data) {

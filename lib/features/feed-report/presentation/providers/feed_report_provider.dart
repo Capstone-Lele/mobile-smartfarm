@@ -59,9 +59,9 @@ class FeedReportListNotifier
   FeedReportListNotifier(this._getFeedReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getFeedReports() async {
+  Future<void> getFeedReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getFeedReportsUsecase.execute();
+    final result = await _getFeedReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -116,10 +116,9 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     this._detailNotifier,
   ) : super(const AsyncValue.data(null));
 
-  // Create Feed Report
   Future<void> createFeedReport(
+    String poolId,
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -128,7 +127,6 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     final result = await _createFeedReportUsecase.execute(
       cycleId,
-      userId,
       inventoryId,
       reportDate,
       quantity,
@@ -144,7 +142,7 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (feedReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getFeedReports();
+        _listNotifier.getFeedReports(poolId);
       },
     );
   }
@@ -152,6 +150,7 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   // Update feed report
   Future<void> updateFeedReport(
     String id,
+    String poolId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -175,14 +174,14 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (feedReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getFeedReports();
+        _listNotifier.getFeedReports(poolId);
         _detailNotifier.getFeedReport(id);
       },
     );
   }
 
   // Delete feed report
-  Future<void> deleteFeedReport(String id) async {
+  Future<void> deleteFeedReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteFeedReportUsecase.execute(id);
 
@@ -195,7 +194,7 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getFeedReports();
+        _listNotifier.getFeedReports(poolId);
       },
     );
   }
@@ -204,20 +203,19 @@ class FeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
 // provider Utama
 // Feed Report List Notifier Provider
 final feedReportListNotifierProvider =
-    StateNotifierProvider<FeedReportListNotifier, AsyncValue<List<FeedReport>>>((
-      ref,
-    ) {
-      final getFeedReportsUsecase = ref.read(getFeedReportsUseCaseProvider);
+    StateNotifierProvider<FeedReportListNotifier, AsyncValue<List<FeedReport>>>(
+      (ref) {
+        final getFeedReportsUsecase = ref.read(getFeedReportsUseCaseProvider);
 
-      return FeedReportListNotifier(getFeedReportsUsecase);
-    });
+        return FeedReportListNotifier(getFeedReportsUsecase);
+      },
+    );
 
 // Feed Report Detail Notifier Provider
 final feedReportDetailNotifierProvider =
-    StateNotifierProvider<
-      FeedReportDetailNotifier,
-      AsyncValue<FeedReport?>
-    >((ref) {
+    StateNotifierProvider<FeedReportDetailNotifier, AsyncValue<FeedReport?>>((
+      ref,
+    ) {
       final getFeedReportUsecase = ref.read(getFeedReportUseCaseProvider);
       return FeedReportDetailNotifier(getFeedReportUsecase);
     });
@@ -229,7 +227,9 @@ final feedReportMutationNotifierProvider =
       final updateFeedReportUsecase = ref.read(updateFeedReportUseCaseProvider);
       final deleteFeedReportUsecase = ref.read(deleteFeedReportUseCaseProvider);
       final listNotifier = ref.read(feedReportListNotifierProvider.notifier);
-      final detailNotifier = ref.read(feedReportDetailNotifierProvider.notifier);
+      final detailNotifier = ref.read(
+        feedReportDetailNotifierProvider.notifier,
+      );
 
       return FeedReportMutationNotifier(
         createFeedReportUsecase,
