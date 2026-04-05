@@ -12,8 +12,8 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   FeedReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<FeedReport>>> getFeedReports() async {
-    final result = await datasource.getFeedReports();
+  Future<Either<Failure, List<FeedReport>>> getFeedReports(String poolId) async {
+    final result = await datasource.getFeedReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
       final feedReports = data
@@ -36,7 +36,6 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   @override
   Future<Either<Failure, Map<String, dynamic>>> createFeedReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -44,7 +43,6 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   ) async {
     final result = await datasource.createFeedReport(
       cycleId,
-      userId,
       inventoryId,
       reportDate,
       quantity,

@@ -67,9 +67,9 @@ class VitaminReportListNotifier
   VitaminReportListNotifier(this._getVitaminReportsUsecase)
     : super(const AsyncValue.data([]));
 
-  Future<void> getVitaminReports() async {
+  Future<void> getVitaminReports(String poolId) async {
     state = const AsyncValue.loading();
-    final result = await _getVitaminReportsUsecase.execute();
+    final result = await _getVitaminReportsUsecase.execute(poolId);
 
     result.fold(
       (failure) {
@@ -125,10 +125,9 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     this._detailNotifier,
   ) : super(const AsyncValue.data(null));
 
-  // Create Vitamin Report
   Future<void> createVitaminReport(
+    String poolId,
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -137,7 +136,6 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     final result = await _createVitaminReportUsecase.execute(
       cycleId,
-      userId,
       inventoryId,
       reportDate,
       quantity,
@@ -153,7 +151,7 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (vitaminReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getVitaminReports();
+        _listNotifier.getVitaminReports(poolId);
       },
     );
   }
@@ -161,10 +159,11 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   // Update vitamin report
   Future<void> updateVitaminReport(
     String id,
+    String poolId,
     String inventoryId,
     String reportDate,
     int quantity,
-    XFile image,
+    XFile? image,
   ) async {
     state = const AsyncValue.loading();
     final result = await _updateVitaminReportUsecase.execute(
@@ -184,14 +183,14 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (vitaminReport) {
         state = AsyncValue.data(null);
-        _listNotifier.getVitaminReports();
+        _listNotifier.getVitaminReports(poolId);
         _detailNotifier.getVitaminReport(id);
       },
     );
   }
 
   // Delete vitamin report
-  Future<void> deleteVitaminReport(String id) async {
+  Future<void> deleteVitaminReport(String id, String poolId) async {
     state = const AsyncValue.loading();
     final result = await _deleteVitaminReportUsecase.execute(id);
 
@@ -204,7 +203,7 @@ class VitaminReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (data) {
         state = AsyncValue.data(null);
-        _listNotifier.getVitaminReports();
+        _listNotifier.getVitaminReports(poolId);
       },
     );
   }

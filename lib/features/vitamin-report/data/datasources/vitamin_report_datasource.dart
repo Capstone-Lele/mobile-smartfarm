@@ -10,9 +10,11 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
 class VitaminReportDatasource {
-   // Get Vitamin Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>> getVitaminReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/vitamin');
+  // Get Vitamin Reports
+  Future<Either<Failure, List<Map<String, dynamic>>>> getVitaminReports(
+    String poolId,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/vitamin?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {
@@ -32,7 +34,9 @@ class VitaminReportDatasource {
   }
 
   // Get Vitamin Report
-  Future<Either<Failure, Map<String, dynamic>>> getVitaminReport(String id) async {
+  Future<Either<Failure, Map<String, dynamic>>> getVitaminReport(
+    String id,
+  ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/vitamin/$id');
     final token = AppSession.getBearerToken();
 
@@ -55,7 +59,6 @@ class VitaminReportDatasource {
   // Create Vitamin Report
   Future<Either<Failure, Map<String, dynamic>>> createVitaminReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -68,7 +71,6 @@ class VitaminReportDatasource {
       var request = http.MultipartRequest('POST', url);
       request.headers.addAll(AppRequest.header(token));
       request.fields['cycleId'] = cycleId;
-      request.fields['userId'] = userId;
       request.fields['inventoryId'] = inventoryId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();

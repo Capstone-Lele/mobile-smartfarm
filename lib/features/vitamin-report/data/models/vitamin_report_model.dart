@@ -2,8 +2,10 @@ import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vit
 
 class VitaminReportModel extends VitaminReport {
   VitaminReportModel({
-    required super.id,
     required super.userId,
+    required super.user,
+    required super.id,
+    required super.cycleId,
     required super.inventoryId,
     required super.type,
     required super.reportDate,
@@ -16,8 +18,10 @@ class VitaminReportModel extends VitaminReport {
 
   factory VitaminReportModel.fromJson(Map<String, dynamic> json) {
     return VitaminReportModel(
-      id: json['id'],
       userId: json['userId'],
+      user: json['user'],
+      id: json['id'],
+      cycleId: json['cycleId'],
       inventoryId: json['inventoryId'],
       type: json['type'],
       reportDate: json['reportDate'],

@@ -8,7 +8,7 @@ class GetVitaminReportsUsecase {
 
   GetVitaminReportsUsecase(this.repository);
 
-  Future<Either<Failure, List<VitaminReport>>> execute() {
-    return repository.getVitaminReports();
+  Future<Either<Failure, List<VitaminReport>>> execute(String poolId) {
+    return repository.getVitaminReports(poolId);
   }
 }

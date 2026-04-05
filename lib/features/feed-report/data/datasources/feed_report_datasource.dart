@@ -11,8 +11,8 @@ import 'package:image_picker/image_picker.dart';
 
 class FeedReportDatasource {
   // Get Feed Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>> getFeedReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/feed');
+  Future<Either<Failure, List<Map<String, dynamic>>>> getFeedReports(String poolId) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/feed?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {
@@ -55,7 +55,6 @@ class FeedReportDatasource {
   // Create Feed Report
   Future<Either<Failure, Map<String, dynamic>>> createFeedReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,
@@ -68,7 +67,6 @@ class FeedReportDatasource {
       var request = http.MultipartRequest('POST', url);
       request.headers.addAll(AppRequest.header(token));
       request.fields['cycleId'] = cycleId;
-      request.fields['userId'] = userId;
       request.fields['inventoryId'] = inventoryId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();

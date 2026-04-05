@@ -4,11 +4,10 @@ import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class VitaminReportRepository {
-  Future<Either<Failure, List<VitaminReport>>> getVitaminReports();
+  Future<Either<Failure, List<VitaminReport>>> getVitaminReports(String poolId);
   Future<Either<Failure, VitaminReport>> getVitaminReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createVitaminReport(
     String cycleId,
-    String userId,
     String inventoryId,
     String reportDate,
     int quantity,

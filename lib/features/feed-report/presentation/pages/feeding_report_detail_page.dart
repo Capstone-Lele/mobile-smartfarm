@@ -1,14 +1,21 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/presentation/providers/feed_report_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FeedingReportDetailPage extends StatefulWidget {
+class FeedingReportDetailPage extends ConsumerStatefulWidget {
   final String reportId;
   final String cycleId;
   final String poolId;
@@ -23,34 +30,52 @@ class FeedingReportDetailPage extends StatefulWidget {
   });
 
   @override
-  State<FeedingReportDetailPage> createState() =>
+  ConsumerState<FeedingReportDetailPage> createState() =>
       _FeedingReportDetailPageState();
 }
 
-class _FeedingReportDetailPageState extends State<FeedingReportDetailPage> {
+class _FeedingReportDetailPageState
+    extends ConsumerState<FeedingReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: '08-04-2026 08:00');
-  final _quantityCtrl = TextEditingController(text: '5');
+  final _reportDateCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _productCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
-  final List<String> _feedProducts = [
-    'Pelet A1',
-    'Pelet B2',
-    'Pelet Pro-Growth',
-    'Pelet Super-Sinka',
-  ];
-
-  final String _selectedFeedProduct = 'Pelet A1';
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _getReportDetail());
+  }
 
   @override
   void dispose() {
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
+    _productCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(feedReportDetailNotifierProvider.notifier)
+        .getFeedReport(widget.reportId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final user = ref.watch(userProvider);
+    final reportAsync = ref.watch(feedReportDetailNotifierProvider);
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: reportAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report, user),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -77,7 +102,35 @@ class _FeedingReportDetailPageState extends State<FeedingReportDetailPage> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormState(FeedReport? report, User? user) {
+    if (report == null) {
+      return const Center(child: Text('Laporan tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    _quantityCtrl.text = report.quantity.toString();
+    _productCtrl.text = report.feedName;
+    _userCtrl.text = report.user;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -86,12 +139,19 @@ class _FeedingReportDetailPageState extends State<FeedingReportDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputDropdown<String>(
+              if (user?.role != 'pic') ...[
+                const AppHintBoard(
+                  title: '📌 Petunjuk Laporan Pakan',
+                  desc:
+                      'Tekan Ubah or Hapus jika ingin melakukan perubahan data.',
+                ),
+                const SizedBox(height: 16),
+              ],
+              AppInputText(
                 label: 'Nama Produk',
-                hint: 'Pilih Produk',
-                items: _feedProducts,
-                value: _selectedFeedProduct,
-                itemLabel: (item) => item,
+                hint: 'Produk',
+                controller: _productCtrl,
+                type: FieldType.text,
                 requiredField: true,
                 readOnly: true,
               ),
@@ -114,47 +174,74 @@ class _FeedingReportDetailPageState extends State<FeedingReportDetailPage> {
                 readOnly: true,
               ),
               const SizedBox(height: 16),
-              const AppInputImage(
+              AppInputImage(
                 label: 'Foto',
-                hint: 'Tambahkan foto pakan',
+                hint: 'Foto Pakan',
                 requiredField: true,
                 readOnly: true,
-                imageUrl: 'https://picsum.photos/200',
+                imageUrl: report.image,
               ),
+              if (user?.role == 'pic') ...[
+                const SizedBox(height: 16),
+                AppInputText(
+                  label: 'Petugas',
+                  hint: 'Petugas',
+                  controller: _userCtrl,
+                  type: FieldType.text,
+                  requiredField: true,
+                  readOnly: true,
+                ),
+              ],
               const SizedBox(height: 24),
-              AppButton(
-                label: 'Ubah',
-                onPressed: () {
-                  AppRoutes.pushNamed(
-                    context,
-                    AppRoutes.updateFeedingReport,
-                    arguments: {
-                      'reportId': widget.reportId,
-                      'cycleId': widget.cycleId,
-                      'poolId': widget.poolId,
-                      'poolName': widget.poolName,
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Laporan',
-                    message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      AppRoutes.pop(context);
-                    },
-                  );
-                },
-              ),
+              if (user?.role != 'pic') ...[
+                AppButton(
+                  label: 'Ubah',
+                  onPressed: () {
+                    AppRoutes.pushNamed(
+                      context,
+                      AppRoutes.updateFeedingReport,
+                      arguments: {
+                        'reportId': widget.reportId,
+                        'cycleId': widget.cycleId,
+                        'poolId': widget.poolId,
+                        'poolName': widget.poolName,
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: 'Hapus',
+                  color: AppColors.red,
+                  onPressed: () {
+                    AppDialog.showConfirmationDialog(
+                      context: context,
+                      color: AppColors.red,
+                      title: 'Hapus Laporan',
+                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
+                      confirmText: 'Iya',
+                      cancelText: 'Tidak',
+                      onConfirm: () async {
+                        await ref
+                            .read(feedReportMutationNotifierProvider.notifier)
+                            .deleteFeedReport(widget.reportId, widget.poolId);
+
+                        final mutationState = ref.read(
+                          feedReportMutationNotifierProvider,
+                        );
+                        if (mutationState.hasError) {
+                          AppSnackbar.error(mutationState.error.toString());
+                          AppRoutes.pop(context);
+                        } else {
+                          AppRoutes.pop(context);
+                          AppSnackbar.success('Laporan berhasil dihapus');
+                          AppRoutes.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),
