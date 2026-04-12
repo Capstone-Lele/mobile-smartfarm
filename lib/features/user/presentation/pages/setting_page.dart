@@ -69,7 +69,9 @@ class SettingPage extends ConsumerWidget {
                     _buildMenuItem(
                       Icons.local_parking,
                       "Manajemen Parameter",
-                      onTap: () {},
+                      onTap: () {
+                        AppRoutes.pushNamed(context, AppRoutes.parameter);
+                      },
                     ),
                   ],
                   _buildMenuItem(
