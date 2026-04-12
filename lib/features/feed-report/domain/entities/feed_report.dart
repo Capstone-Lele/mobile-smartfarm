@@ -1,6 +1,12 @@
 class FeedReport {
+  final String poolId;
   final String userId;
   final String user;
+  final String poolName;
+  final String poolCategory;
+  final String foodName;
+  final String unit;
+  final String startDate;
   final String id;
   final String cycleId;
   final String inventoryId;
@@ -13,8 +19,14 @@ class FeedReport {
   final String? deletedAt;
 
   FeedReport({
+    required this.poolId,
     required this.userId,
     required this.user,
+    required this.poolName,
+    required this.poolCategory,
+    required this.foodName,
+    required this.unit,
+    required this.startDate,
     required this.id,
     required this.cycleId,
     required this.inventoryId,

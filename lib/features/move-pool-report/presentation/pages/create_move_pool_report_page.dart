@@ -5,11 +5,14 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
+import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/providers/move_pool_report_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,6 +84,7 @@ class _CreateMovePoolReportPageState
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
     final poolDetailState = ref.watch(poolDetailNotifierProvider);
     final poolListState = ref.watch(poolListNotifierProvider);
     final mutationState = ref.watch(movePoolReportMutationNotifierProvider);
@@ -98,7 +102,13 @@ class _CreateMovePoolReportPageState
               children: [
                 _buildPoolDetail(pool),
                 const SizedBox(height: 24),
-                _buildFormState(poolListState, mutationState.isLoading),
+                if (user?.role != 'pic') ...[
+                  _buildFormState(
+                    poolListState,
+                    mutationState.isLoading,
+                    pool?.category,
+                  ),
+                ],
               ],
             ),
           ),
@@ -132,7 +142,10 @@ class _CreateMovePoolReportPageState
   }
 
   Widget _buildLoadingState() {
-    return const Center(child: CircularProgressIndicator());
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.8,
+      child: const Center(child: CircularProgressIndicator()),
+    );
   }
 
   Widget _buildErrorState(Object error) {
@@ -155,7 +168,7 @@ class _CreateMovePoolReportPageState
     );
   }
 
-  Widget _buildPoolDetail(Pool? pool) {
+  Widget _buildPoolDetail(PoolDetail? pool) {
     if (pool == null) return const SizedBox.shrink();
 
     return Column(
@@ -164,6 +177,19 @@ class _CreateMovePoolReportPageState
         const Text(
           'Detail Kolam',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Siklus', style: TextStyle(fontSize: 15)),
+            AppStatusBadge(
+              label: pool.cycleLabel,
+              type: pool.cycle == 'active_cultivation'
+                  ? BadgeType.success
+                  : BadgeType.danger,
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Row(
@@ -181,11 +207,14 @@ class _CreateMovePoolReportPageState
           ],
         ),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Jumlah Ikan', style: TextStyle(fontSize: 15)),
-            Text('100 Ekor Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '${pool.currentQuantity} Ekor',
+              style: TextStyle(fontSize: 15),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -193,7 +222,10 @@ class _CreateMovePoolReportPageState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('pH Sekarang', style: TextStyle(fontSize: 15)),
-            Text('7.0 pH Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '7.0 pH Bug',
+              style: TextStyle(fontSize: 15, color: AppColors.red),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -201,7 +233,10 @@ class _CreateMovePoolReportPageState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Suhu Sekarang', style: TextStyle(fontSize: 15)),
-            Text('28 °C Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '28 °C Bug',
+              style: TextStyle(fontSize: 15, color: AppColors.red),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -230,7 +265,27 @@ class _CreateMovePoolReportPageState
     );
   }
 
-  Widget _buildFormState(AsyncValue<List<Pool>> poolListState, bool isLoading) {
+  Widget _buildFormState(
+    AsyncValue<List<Pool>> poolListState,
+    bool isLoading,
+    String? sourcePoolCategory,
+  ) {
+    List<Pool> filteredPoolList = poolListState.value ?? [];
+
+    if (sourcePoolCategory == 'breeding') {
+      filteredPoolList = filteredPoolList
+          .where((p) => p.category == 'growing' || p.category == 'breeding')
+          .toList();
+    } else if (sourcePoolCategory == 'growing') {
+      filteredPoolList = filteredPoolList
+          .where((p) => p.category == 'growing')
+          .toList();
+    } else if (sourcePoolCategory == 'quarantine') {
+      filteredPoolList = filteredPoolList
+          .where((p) => p.category == 'growing' || p.category == 'breeding')
+          .toList();
+    }
+
     return Form(
       key: _formKey,
       child: Column(
@@ -244,7 +299,7 @@ class _CreateMovePoolReportPageState
           AppInputDropdown<Pool>(
             label: 'Tujuan Kolam',
             hint: 'Pilih Kolam Tujuan',
-            items: poolListState.value ?? [],
+            items: filteredPoolList,
             itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
             requiredField: true,
             onChanged: (pool) {
@@ -308,7 +363,7 @@ class _CreateMovePoolReportPageState
               : AppButton(label: 'Pindah', onPressed: _onSubmit),
           const SizedBox(height: 16),
           const Text(
-            'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah laporan dipindahkan, data tidak dapat diubah untuk menjaga keakuratan riwayat budidaya.',
+            'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah laporan dipindahkan, data tidak dapat diubah/dihapus untuk menjaga keakuratan riwayat budidaya.',
             style: TextStyle(fontSize: 14, color: Colors.red),
           ),
         ],

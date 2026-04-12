@@ -14,7 +14,9 @@ class MovePoolReportDatasource {
   Future<Either<Failure, List<Map<String, dynamic>>>> getMovePoolReports(
     String poolId,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool');
+    Uri url = Uri.parse(
+      '${AppConstants.baseURL}/note/move-pool?poolId=$poolId',
+    );
     final token = AppSession.getBearerToken();
 
     try {

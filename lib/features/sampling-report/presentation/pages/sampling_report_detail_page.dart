@@ -8,9 +8,9 @@ import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/providers/sampling_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,21 +107,24 @@ class _SamplingReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormState(SamplingReport? report, User? user) {
+  Widget _buildFormState(SamplingReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
@@ -193,7 +196,8 @@ class _SamplingReportDetailPageState
                 ),
               ],
               const SizedBox(height: 24),
-              if (user?.role != 'pic') ...[
+              if (user?.role != 'pic' &&
+                  report.cycleCondition == "active_cultivation") ...[
                 AppButton(
                   label: 'Ubah',
                   onPressed: () {
@@ -246,6 +250,11 @@ class _SamplingReportDetailPageState
                       },
                     );
                   },
+                ),
+              ] else ...[
+                const Text(
+                  'Laporan tidak bisa diubah atau dihapus karena siklus sudah tidak aktif',
+                  style: TextStyle(fontSize: 12, color: AppColors.red),
                 ),
               ],
             ],

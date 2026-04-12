@@ -1,6 +1,11 @@
 class Pool {
   final String? cycleId;
   final String? cycle;
+  final String? cycleStartDate;
+  final int? currentQuantity;
+  final String? image;
+  final int mortality;
+  final int movedQuantity;
   final String id;
   final String name;
   final String category;
@@ -19,6 +24,11 @@ class Pool {
   Pool({
     required this.cycleId,
     required this.cycle,
+    required this.cycleStartDate,
+    required this.currentQuantity,
+    required this.image,
+    required this.mortality,
+    required this.movedQuantity,
     required this.id,
     required this.name,
     required this.category,

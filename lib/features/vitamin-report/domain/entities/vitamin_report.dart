@@ -1,6 +1,11 @@
 class VitaminReport {
+  final String poolId;
   final String userId;
   final String user;
+  final String poolName;
+  final String poolCategory;
+  final String vitaminName;
+  final String unit;
   final String id;
   final String cycleId;
   final String inventoryId;
@@ -13,8 +18,13 @@ class VitaminReport {
   final String? deletedAt;
 
   VitaminReport({
+    required this.poolId,
     required this.userId,
     required this.user,
+    required this.poolName,
+    required this.poolCategory,
+    required this.vitaminName,
+    required this.unit,
     required this.id,
     required this.cycleId,
     required this.inventoryId,

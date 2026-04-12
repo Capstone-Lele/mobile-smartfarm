@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/data/datasources/sick_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/data/models/sick_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/data/models/sick_report_model.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/repositories/sick_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,24 +14,38 @@ class SickReportRepositoryImpl implements SickReportRepository {
   SickReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SickReport>>> getSickReports(String poolId) async {
+  Future<Either<Failure, List<SickReport>>> getSickReports(
+    String poolId,
+  ) async {
     final result = await datasource.getSickReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final sickReports = data
-          .map((json) => SickReportModel.fromJson(json))
-          .toList();
-      return Right(sickReports);
+      try {
+        final sickReports = data
+            .map((json) => SickReportModel.fromJson(json))
+            .toList();
+        return Right(sickReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan sakit: $e"),
+        );
+      }
     });
   }
 
   @override
-  Future<Either<Failure, SickReport>> getSickReport(String id) async {
+  Future<Either<Failure, SickReportDetail>> getSickReport(String id) async {
     final result = await datasource.getSickReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final sickReport = SickReportModel.fromJson(data);
-      return Right(sickReport);
+      try {
+        final sickReport = SickReportDetailModel.fromJson(data);
+        return Right(sickReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan sakit: $e"),
+        );
+      }
     });
   }
 

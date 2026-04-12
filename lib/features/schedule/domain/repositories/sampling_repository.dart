@@ -5,12 +5,12 @@ import 'package:dartz/dartz.dart';
 abstract class SamplingRepository {
   Future<Either<Failure, List<Schedule>>> getSamplingSchedules();
   Future<Either<Failure, Schedule>> getSamplingSchedule(String id);
-  Future<Either<Failure, Schedule>> createSamplingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createSamplingSchedule(
     String poolId,
     String userId,
     String scheduleDate,
   );
-  Future<Either<Failure, Schedule>> updateSamplingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateSamplingSchedule(
     String id,
     String poolId,
     String userId,

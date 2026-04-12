@@ -69,7 +69,16 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                       : '• Ketuk laporan untuk lihat detailnya.',
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value ?? [], user),
+                reportState.when(
+                  loading: () => _buildSummaryCardsLoading(user),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: AppColors.red),
+                    ),
+                  ),
+                  data: (data) => _buildSummaryCards(data, user),
+                ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
@@ -259,7 +268,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                         'Laporan Pindah Kolam #${index + 1}',
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
@@ -269,6 +278,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -277,10 +287,32 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text(
+                  'Kolam Asal ${report.originPoolName}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.darkGray,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'Kolam Tujuan ${report.destinationPoolName}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.darkGray,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -292,7 +324,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.darkGray,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -300,6 +332,24 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSummaryCardsLoading(User? user) {
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          ],
+        ),
+      );
+    } else {
+      return AppLoading(height: 50, borderRadius: 12);
+    }
   }
 
   Widget _buildSummaryCards(List<MovePoolReport> reports, User? user) {

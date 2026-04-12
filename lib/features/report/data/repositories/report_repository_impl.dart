@@ -17,10 +17,15 @@ class ReportRepositoryImpl implements ReportRepository {
     final result = await datasource.getActivityLogs();
 
     return result.fold((failure) => Left(failure), (data) {
-      final activityLogs = data
-          .map((json) => ActivityLogModel.fromJson(json))
-          .toList();
-      return Right(activityLogs);
+      try {
+        final activityLogs =
+            data.map((json) => ActivityLogModel.fromJson(json)).toList();
+        return Right(activityLogs);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data catatan aktivitas: $e"),
+        );
+      }
     });
   }
 
@@ -28,9 +33,15 @@ class ReportRepositoryImpl implements ReportRepository {
   Future<Either<Failure, TotalReport>> getTotalReports() async {
     final result = await datasource.getTotalReports();
 
-     return result.fold((failure) => Left(failure), (data) {
-      final totalReports = TotalReportModel.fromJson(data);
-      return Right(totalReports);
+    return result.fold((failure) => Left(failure), (data) {
+      try {
+        final totalReports = TotalReportModel.fromJson(data);
+        return Right(totalReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan total: $e"),
+        );
+      }
     });
   }
 
@@ -39,8 +50,14 @@ class ReportRepositoryImpl implements ReportRepository {
     final result = await datasource.getTotalReportsByPool(poolId);
 
      return result.fold((failure) => Left(failure), (data) {
-      final totalReports = TotalReportModel.fromJson(data);
-      return Right(totalReports);
+      try {
+        final totalReports = TotalReportModel.fromJson(data);
+        return Right(totalReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan total: $e"),
+        );
+      }
     });
   }
 }

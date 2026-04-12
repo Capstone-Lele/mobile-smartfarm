@@ -14,7 +14,7 @@ class SickReportDatasource {
   Future<Either<Failure, List<Map<String, dynamic>>>> getSickReports(
     String poolId,
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/sick');
+    Uri url = Uri.parse('${AppConstants.baseURL}/note/sick?poolId=$poolId');
     final token = AppSession.getBearerToken();
 
     try {

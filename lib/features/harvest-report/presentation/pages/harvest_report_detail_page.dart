@@ -1,10 +1,11 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/providers/harvest_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,26 +99,29 @@ class _HarvestReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormState(HarvestReport? report, User? user) {
+  Widget _buildFormState(HarvestReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
-    _reportDateCtrl.text = AppFormat.toUiDate(report.date);
+    _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
     _amountCtrl.text = report.amount.toString();
     _userCtrl.text = report.user.toString();
 
@@ -145,6 +149,14 @@ class _HarvestReportDetailPageState
                 type: FieldType.number,
                 requiredField: true,
                 readOnly: true,
+              ),
+              const SizedBox(height: 16),
+              AppInputImage(
+                label: 'Foto',
+                hint: 'Tambahkan foto panen',
+                requiredField: true,
+                readOnly: true,
+                imageUrl: report.image,
               ),
               if (user?.role == 'pic') ...[
                 const SizedBox(height: 16),

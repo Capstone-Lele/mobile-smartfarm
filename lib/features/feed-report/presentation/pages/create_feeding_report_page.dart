@@ -140,81 +140,87 @@ class _CreateFeedingReportPageState
         child: inventoryState.when(
           loading: () => _buildLoadingState(),
           error: (err, stack) => _buildErrorState(err),
-          data: (feedInventories) => Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppInputDropdown<Inventory>(
-                  label: 'Nama Produk',
-                  hint: 'Pilih Produk Pakan',
-                  items: feedInventories,
-                  itemLabel: (item) => item.product,
-                  requiredField: true,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedInventory = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Nama produk harus dipilih';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputDate(
-                  label: 'Tanggal Pemberian Pakan',
-                  hint: 'Tanggal Pemberian Pakan',
-                  type: DateFieldType.dateTime,
-                  controller: _reportDateCtrl,
-                  requiredField: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Tanggal pemberian pakan harus dipilih';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputText(
-                  label: 'Jumlah',
-                  hint: 'Jumlah',
-                  controller: _quantityCtrl,
-                  type: FieldType.number,
-                  requiredField: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Jumlah harus diisi';
-                    }
+          data: (allInventories) {
+            final foodInventories = allInventories
+                .where((inv) => inv.category.toLowerCase() == 'pakan')
+                .toList();
 
-                    final number = int.tryParse(value);
-                    if (number == null || number <= 0) {
-                      return 'Jumlah harus berupa angka positif';
-                    }
+            return Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppInputDropdown<Inventory>(
+                    label: 'Nama Produk',
+                    hint: 'Pilih Produk Pakan',
+                    items: foodInventories,
+                    itemLabel: (item) => item.product,
+                    requiredField: true,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedInventory = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Nama produk harus dipilih';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputDate(
+                    label: 'Tanggal Pemberian Pakan',
+                    hint: 'Tanggal Pemberian Pakan',
+                    type: DateFieldType.dateTime,
+                    controller: _reportDateCtrl,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tanggal pemberian pakan harus dipilih';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputText(
+                    label: 'Jumlah Bug (${_selectedInventory?.unit ?? ""})',
+                    hint: 'Jumlah',
+                    controller: _quantityCtrl,
+                    type: FieldType.number,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Jumlah harus diisi';
+                      }
 
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputImage(
-                  label: 'Foto',
-                  hint: 'Tambahkan foto pakan yang diberikan',
-                  requiredField: true,
-                  onChanged: (image) {
-                    setState(() {
-                      _selectedImage = image;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Submit', onPressed: _onSubmit),
-              ],
-            ),
-          ),
+                      final number = int.tryParse(value);
+                      if (number == null || number <= 0) {
+                        return 'Jumlah harus berupa angka positif';
+                      }
+
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputImage(
+                    label: 'Foto',
+                    hint: 'Tambahkan foto pakan yang diberikan',
+                    requiredField: true,
+                    onChanged: (image) {
+                      setState(() {
+                        _selectedImage = image;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : AppButton(label: 'Submit', onPressed: _onSubmit),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

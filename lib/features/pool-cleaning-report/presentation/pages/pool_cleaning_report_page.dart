@@ -86,7 +86,16 @@ class _PoolCleaningReportPageState
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value?.length ?? 0, user),
+                reportState.when(
+                  loading: () => _buildSummaryCardsLoading(user),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: AppColors.red),
+                    ),
+                  ),
+                  data: (data) => _buildSummaryCards(data.length, user),
+                ),
                 const SizedBox(height: 16),
                 reportState.when(
                   loading: () => ListView.separated(
@@ -258,7 +267,7 @@ class _PoolCleaningReportPageState
                         'Laporan Pembersihan #${index + 1}',
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
@@ -268,7 +277,7 @@ class _PoolCleaningReportPageState
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ],
@@ -285,7 +294,7 @@ class _PoolCleaningReportPageState
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -295,6 +304,22 @@ class _PoolCleaningReportPageState
         ),
       ),
     );
+  }
+
+  Widget _buildSummaryCardsLoading(User? user) {
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          ],
+        ),
+      );
+    } else {
+      return AppLoading(height: 50, borderRadius: 12);
+    }
   }
 
   Widget _buildSummaryCards(int totalReports, User? user) {

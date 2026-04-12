@@ -18,10 +18,14 @@ class MovePoolReportRepositoryImpl implements MovePoolReportRepository {
     final result = await datasource.getMovePoolReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final movePoolReports = data
-          .map((json) => MovePoolReportModel.fromJson(json))
-          .toList();
-      return Right(movePoolReports);
+      try {
+        final movePoolReports = data
+            .map((json) => MovePoolReportModel.fromJson(json))
+            .toList();
+        return Right(movePoolReports);
+      } catch (e) {
+        return Left(InvalidInputFailure("Gagal mengkonversi data laporan pindah kolam: $e"));
+      }
     });
   }
 
@@ -30,8 +34,12 @@ class MovePoolReportRepositoryImpl implements MovePoolReportRepository {
     final result = await datasource.getMovePoolReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final movePoolReport = MovePoolReportModel.fromJson(data);
-      return Right(movePoolReport);
+      try {
+        final movePoolReport = MovePoolReportModel.fromJson(data);
+        return Right(movePoolReport);
+      } catch (e) {
+        return Left(InvalidInputFailure("Gagal mengkonversi data laporan pindah kolam: $e"));
+      }
     });
   }
 

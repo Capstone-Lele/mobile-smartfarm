@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/data/datasources/pool_cleaning_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/data/repositories/pool_cleaning_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/repositories/pool_cleaning_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/usecases/create_pool_cleaning_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/usecases/delete_pool_cleaning_report_usecase.dart';
@@ -80,7 +81,7 @@ class PoolCleaningReportListNotifier
 }
 
 class PoolCleaningReportDetailNotifier
-    extends StateNotifier<AsyncValue<PoolCleaningReport?>> {
+    extends StateNotifier<AsyncValue<PoolCleaningReportDetail?>> {
   final GetPoolCleaningReportUsecase _getPoolCleaningReportUsecase;
 
   PoolCleaningReportDetailNotifier(this._getPoolCleaningReportUsecase)
@@ -214,7 +215,7 @@ final poolCleaningReportListNotifierProvider =
 final poolCleaningReportDetailNotifierProvider =
     StateNotifierProvider<
       PoolCleaningReportDetailNotifier,
-      AsyncValue<PoolCleaningReport?>
+      AsyncValue<PoolCleaningReportDetail?>
     >((ref) {
       final getPoolCleaningReportUsecase = ref.read(
         getPoolCleaningReportUseCaseProvider,

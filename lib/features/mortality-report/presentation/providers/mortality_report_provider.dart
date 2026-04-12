@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/mortality-report/data/datasources/mortality_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/data/repositories/mortality_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/repositories/mortality_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/create_mortality_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/delete_mortality_report_usecase.dart';
@@ -83,7 +84,7 @@ class MortalityReportListNotifier
 }
 
 class MortalityReportDetailNotifier
-    extends StateNotifier<AsyncValue<MortalityReport?>> {
+    extends StateNotifier<AsyncValue<MortalityReportDetail?>> {
   final GetMortalityReportUsecase _getMortalityReportUsecase;
 
   MortalityReportDetailNotifier(this._getMortalityReportUsecase)
@@ -223,7 +224,7 @@ final mortalityReportListNotifierProvider =
 final mortalityReportDetailNotifierProvider =
     StateNotifierProvider<
       MortalityReportDetailNotifier,
-      AsyncValue<MortalityReport?>
+      AsyncValue<MortalityReportDetail?>
     >((ref) {
       final getMortalityReportUsecase = ref.read(
         getMortalityReportUseCaseProvider,

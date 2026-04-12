@@ -8,7 +8,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/presentation/providers/feed_report_provider.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
@@ -121,15 +121,14 @@ class _FeedingReportDetailPageState
     );
   }
 
-  Widget _buildFormState(FeedReport? report, User? user) {
+  Widget _buildFormState(FeedReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
-    // _productCtrl.text = report.feedName;
-     _productCtrl.text = 'Pelet Bug';
+    _productCtrl.text = report.foodName;
     _userCtrl.text = report.user;
 
     return SafeArea(
@@ -141,10 +140,10 @@ class _FeedingReportDetailPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (user?.role != 'pic') ...[
-                const AppHintBoard(
+                AppHintBoard(
                   title: '📌 Petunjuk Laporan Pakan',
                   desc:
-                      'Tekan Ubah or Hapus jika ingin melakukan perubahan data.',
+                      '• Tekan Ubah kalau datanya mau diganti.\n• Tekan Hapus kalau laporannya tidak dipakai lagi.',
                 ),
                 const SizedBox(height: 16),
               ],

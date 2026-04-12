@@ -5,12 +5,12 @@ import 'package:dartz/dartz.dart';
 abstract class FeedingRepository {
   Future<Either<Failure, List<Schedule>>> getFeedingSchedules();
   Future<Either<Failure, Schedule>> getFeedingSchedule(String id);
-  Future<Either<Failure, Schedule>> createFeedingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createFeedingSchedule(
     String poolId,
     String userId,
     String scheduleDate,
   );
-  Future<Either<Failure, Schedule>> updateFeedingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateFeedingSchedule(
     String id,
     String poolId,
     String userId,

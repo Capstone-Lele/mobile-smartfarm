@@ -8,9 +8,9 @@ import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/providers/pool_cleaning_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -101,21 +101,24 @@ class _PoolCleaningReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormState(PoolCleaningReport? report, User? user) {
+  Widget _buildFormState(PoolCleaningReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }

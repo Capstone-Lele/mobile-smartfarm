@@ -15,10 +15,14 @@ class FeedingRepositoryImpl implements FeedingRepository {
     final result = await datasource.getFeedingSchedules();
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedules = data
-          .map((json) => ScheduleModel.fromJson(json))
-          .toList();
-      return Right(schedules);
+      try {
+        final schedules = data
+            .map((json) => ScheduleModel.fromJson(json))
+            .toList();
+        return Right(schedules);
+      } catch (e) {
+        return Left(InvalidInputFailure('Gagal mengkonversi data jadwal pemberian makan: $e'));
+      }
     });
   }
 
@@ -27,13 +31,17 @@ class FeedingRepositoryImpl implements FeedingRepository {
     final result = await datasource.getFeedingSchedule(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      try {
+        final schedule = ScheduleModel.fromJson(data);
+        return Right(schedule);
+      } catch (e) {
+        return Left(InvalidInputFailure('Gagal mengkonversi data jadwal pemberian makan: $e'));
+      }
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> createFeedingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createFeedingSchedule(
     String poolId,
     String userId,
     String scheduleDate,
@@ -45,13 +53,12 @@ class FeedingRepositoryImpl implements FeedingRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> updateFeedingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateFeedingSchedule(
     String id,
     String poolId,
     String userId,
@@ -65,8 +72,7 @@ class FeedingRepositoryImpl implements FeedingRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      return Right(data);
     });
   }
 

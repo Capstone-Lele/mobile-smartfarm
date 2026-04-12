@@ -8,11 +8,9 @@ import 'package:dartz/dartz.dart';
 import 'package:http/http.dart' as http;
 
 class ReportDatasource {
-   // Get Activity Logs
+  // Get Activity Logs
   Future<Either<Failure, List<Map<String, dynamic>>>> getActivityLogs() async {
-    Uri url = Uri.parse(
-      '${AppConstants.baseURL}/activity-log',
-    );
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/activity-logs');
     final token = AppSession.getBearerToken();
 
     try {
@@ -33,7 +31,7 @@ class ReportDatasource {
 
   // Get Total Reports
   Future<Either<Failure, Map<String, dynamic>>> getTotalReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/total-reports');
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-reports');
     final token = AppSession.getBearerToken();
 
     try {
@@ -52,9 +50,11 @@ class ReportDatasource {
     }
   }
 
-   // Get Total Reports
-  Future<Either<Failure, Map<String, dynamic>>> getTotalReportsByPool(String poolId) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/total-reports/$poolId');
+  // Get Total Reports
+  Future<Either<Failure, Map<String, dynamic>>> getTotalReportsByPool(
+    String poolId,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-reports/$poolId');
     final token = AppSession.getBearerToken();
 
     try {
@@ -72,5 +72,4 @@ class ReportDatasource {
       return Left(FetchFailure(e.toString()));
     }
   }
-
 }

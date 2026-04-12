@@ -8,7 +8,6 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_provider.dart';
-import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/presentation/providers/feed_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +39,6 @@ class _UpdateFeedingReportPageState
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Inventory? _selectedInventory;
-  bool _initialized = false;
 
   @override
   void initState() {
@@ -58,24 +56,6 @@ class _UpdateFeedingReportPageState
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
     super.dispose();
-  }
-
-  void _initialData(FeedReport report, List<Inventory> inventories) {
-    if (_initialized) return;
-
-    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
-    _quantityCtrl.text = report.quantity.toString();
-
-    try {
-      _selectedInventory = inventories.firstWhere(
-        // (e) => e.product == report.feedName,
-        (e) => e.product == 'Pelet',
-      );
-    } catch (e) {
-      _selectedInventory = null;
-    }
-
-    _initialized = true;
   }
 
   Future<void> _onSubmit() async {
@@ -152,6 +132,10 @@ class _UpdateFeedingReportPageState
   }
 
   Widget _buildFormState(List<Inventory> inventories) {
+    final foodInventories = inventories
+        .where((inventory) => inventory.category.toLowerCase() == 'pakan')
+        .toList();
+
     final reportDetailState = ref.watch(feedReportDetailNotifierProvider);
     final mutationState = ref.watch(feedReportMutationNotifierProvider);
     final isLoading = mutationState.isLoading;
@@ -173,21 +157,28 @@ class _UpdateFeedingReportPageState
             ),
           ),
           data: (report) {
-            if (report != null) {
-              _initialData(report, inventories);
-            }
-
             if (report == null) {
               return const Center(child: Text('Data laporan tidak ditemukan'));
+            }
+
+            if (_reportDateCtrl.text.isEmpty) {
+              _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+              _quantityCtrl.text = report.quantity.toString();
+              if (foodInventories.isNotEmpty) {
+                _selectedInventory = foodInventories.firstWhere(
+                  (e) => e.id == report.inventoryId,
+                  orElse: () => foodInventories[0],
+                );
+              }
             }
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInputDropdown<Inventory>(
-                  label: 'Nama Produk',
+                  label: 'Nama Produk Bug',
                   hint: 'Pilih Produk Pakan',
-                  items: inventories,
+                  items: foodInventories,
                   value: _selectedInventory,
                   itemLabel: (item) => item.product,
                   requiredField: true,

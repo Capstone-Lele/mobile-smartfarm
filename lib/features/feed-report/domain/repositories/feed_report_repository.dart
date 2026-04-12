@@ -1,11 +1,12 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report_detail.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 
 abstract class FeedReportRepository {
   Future<Either<Failure, List<FeedReport>>> getFeedReports(String poolId);
-  Future<Either<Failure, FeedReport>> getFeedReport(String id);
+  Future<Either<Failure, FeedReportDetail>> getFeedReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createFeedReport(
     String cycleId,
     String inventoryId,

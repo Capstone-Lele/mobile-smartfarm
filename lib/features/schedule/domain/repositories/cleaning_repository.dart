@@ -5,12 +5,12 @@ import 'package:dartz/dartz.dart';
 abstract class CleaningRepository {
   Future<Either<Failure, List<Schedule>>> getCleaningSchedules();
   Future<Either<Failure, Schedule>> getCleaningSchedule(String id);
-  Future<Either<Failure, Schedule>> createCleaningSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createCleaningSchedule(
     String poolId,
     String userId,
     String scheduleDate,
   );
-  Future<Either<Failure, Schedule>> updateCleaningSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateCleaningSchedule(
     String id,
     String poolId,
     String userId,

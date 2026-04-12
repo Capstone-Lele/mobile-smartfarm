@@ -1,9 +1,10 @@
 class SamplingReport {
   final String userId;
   final String user;
-  // final String poolId;
+  final String poolId;
   final String poolName;
-  // final String poolCategory;
+  final String poolCategory;
+  final String? cycleCondition;
   final String id;
   final String cycleId;
   final String reportDate;
@@ -17,9 +18,10 @@ class SamplingReport {
   SamplingReport({
     required this.userId,
     required this.user,
-    // required this.poolId,
+    required this.poolId,
     required this.poolName,
-    // required this.poolCategory,
+    required this.poolCategory,
+    required this.cycleCondition,
     required this.id,
     required this.cycleId,
     required this.reportDate,

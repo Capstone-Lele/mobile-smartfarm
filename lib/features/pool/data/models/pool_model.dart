@@ -4,6 +4,11 @@ class PoolModel extends Pool {
   PoolModel({
     required super.cycleId,
     required super.cycle,
+    required super.cycleStartDate,
+    required super.currentQuantity,
+    required super.image,
+    required super.mortality,
+    required super.movedQuantity,
     required super.id,
     required super.name,
     required super.category,
@@ -24,6 +29,11 @@ class PoolModel extends Pool {
     return PoolModel(
       cycleId: json['cycleId'],
       cycle: json['cycle'],
+      cycleStartDate: json['cycleStartDate'],
+      currentQuantity: json['currentQuantity'],
+      image: json['image'],
+      mortality: json['mortality'],
+      movedQuantity: json['movedQuantity'],
       id: json['id'],
       name: json['name'],
       category: json['category'],

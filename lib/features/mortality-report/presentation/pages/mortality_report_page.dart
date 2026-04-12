@@ -70,7 +70,16 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
                       : '• Ketuk laporan untuk lihat detailnya.',
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value ?? [], user),
+                reportState.when(
+                  loading: () => _buildSummaryCardsLoading(user),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: AppColors.red),
+                    ),
+                  ),
+                  data: (data) => _buildSummaryCards(data, user),
+                ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
@@ -260,7 +269,7 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
                         'Laporan Kematian #${index + 1}',
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
@@ -270,6 +279,7 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -278,7 +288,7 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ],
@@ -293,7 +303,7 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.darkGray,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -301,6 +311,24 @@ class _MortalityReportPageState extends ConsumerState<MortalityReportPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSummaryCardsLoading(User? user) {
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          ],
+        ),
+      );
+    } else {
+      return AppLoading(height: 50, borderRadius: 12);
+    }
   }
 
   Widget _buildSummaryCards(List<MortalityReport> reports, User? user) {

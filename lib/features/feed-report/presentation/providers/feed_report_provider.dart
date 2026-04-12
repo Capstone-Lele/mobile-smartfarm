@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/feed-report/data/datasources/feed_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/data/repositories/feed_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/repositories/feed_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/usecases/create_feed_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/usecases/delete_feed_report_usecase.dart';
@@ -77,7 +78,8 @@ class FeedReportListNotifier
   }
 }
 
-class FeedReportDetailNotifier extends StateNotifier<AsyncValue<FeedReport?>> {
+class FeedReportDetailNotifier
+    extends StateNotifier<AsyncValue<FeedReportDetail?>> {
   final GetFeedReportUsecase _getFeedReportUsecase;
 
   FeedReportDetailNotifier(this._getFeedReportUsecase)
@@ -213,7 +215,7 @@ final feedReportListNotifierProvider =
 
 // Feed Report Detail Notifier Provider
 final feedReportDetailNotifierProvider =
-    StateNotifierProvider<FeedReportDetailNotifier, AsyncValue<FeedReport?>>((
+    StateNotifierProvider<FeedReportDetailNotifier, AsyncValue<FeedReportDetail?>>((
       ref,
     ) {
       final getFeedReportUsecase = ref.read(getFeedReportUseCaseProvider);

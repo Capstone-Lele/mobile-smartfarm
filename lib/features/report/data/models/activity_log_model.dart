@@ -3,8 +3,9 @@ import 'package:budidaya_lele_mobile/features/report/domain/entities/activity_lo
 class ActivityLogModel extends ActivityLog {
   ActivityLogModel({
     required super.id,
-    required super.reportId,
-    required super.user,
+    required super.userId,
+    required super.noteId,
+    required super.userName,
     required super.poolName,
     required super.activity,
     required super.createdAt,
@@ -15,8 +16,9 @@ class ActivityLogModel extends ActivityLog {
   factory ActivityLogModel.fromJson(Map<String, dynamic> json) {
     return ActivityLogModel(
       id: json['id'],
-      reportId: json['reportId'],
-      user: json['user'],
+      userId: json['userId'],
+      noteId: json['noteId'],
+      userName: json['userName'],
       poolName: json['poolName'],
       activity: json['activity'],
       createdAt: json['createdAt'],
@@ -25,5 +27,3 @@ class ActivityLogModel extends ActivityLog {
     );
   }
 }
-
-

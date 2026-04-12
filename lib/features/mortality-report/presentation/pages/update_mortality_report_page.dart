@@ -5,7 +5,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report.dart';
+import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/providers/mortality_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -138,13 +138,15 @@ class _UpdateMortalityReportPageState
     );
   }
 
-  Widget _buildFormState(MortalityReport? report) {
+  Widget _buildFormState(MortalityReportDetail? report) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
-    _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
-    _quantityCtrl.text = report.quantity.toString();
+    if (_reportDateCtrl.text.isEmpty) {
+      _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
+      _quantityCtrl.text = report.quantity.toString();
+    }
 
     final mutationState = ref.watch(mortalityReportMutationNotifierProvider);
     final isLoading = mutationState.isLoading;

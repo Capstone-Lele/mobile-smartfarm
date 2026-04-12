@@ -15,10 +15,14 @@ class AutoFillRepositoryImpl implements AutoFillRepository {
     final result = await datasource.getAutoFills(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final autoFills = data
-          .map((json) => AutoFillModel.fromJson(json))
-          .toList();
-      return Right(autoFills);
+      try {
+        final autoFills = data
+            .map((json) => AutoFillModel.fromJson(json))
+            .toList();
+        return Right(autoFills);
+      } catch (e) {
+        return Left(InvalidInputFailure("Gagal mengkonversi data auto fill: $e"));
+      }
     });
   }
 }

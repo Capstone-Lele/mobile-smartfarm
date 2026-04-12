@@ -1,13 +1,9 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
-import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/entities/move_pool_report.dart';
@@ -39,6 +35,7 @@ class _MovePoolReportDetailPageState
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _destinationCtrl = TextEditingController();
+  final _destinationCategoryCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _userCtrl = TextEditingController();
 
@@ -52,6 +49,7 @@ class _MovePoolReportDetailPageState
   void dispose() {
     _reportDateCtrl.dispose();
     _destinationCtrl.dispose();
+    _destinationCategoryCtrl.dispose();
     _quantityCtrl.dispose();
     _userCtrl.dispose();
     super.dispose();
@@ -107,16 +105,19 @@ class _MovePoolReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
@@ -128,6 +129,7 @@ class _MovePoolReportDetailPageState
 
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _destinationCtrl.text = report.destinationPoolName;
+    _destinationCategoryCtrl.text = report.destinationCategoryLabel;
     _quantityCtrl.text = report.quantity.toString();
     _userCtrl.text = report.user;
 
@@ -139,17 +141,19 @@ class _MovePoolReportDetailPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (user?.role != 'pic') ...[
-                AppHintBoard(
-                  title: '📌 Petunjuk Laporan Pindah Kolam',
-                  desc: '• Tekan Hapus kalau laporannya tidak dipakai lagi.',
-                ),
-                const SizedBox(height: 16),
-              ],
               AppInputText(
                 label: 'Kolam Tujuan',
                 hint: 'Kolam Tujuan',
                 controller: _destinationCtrl,
+                type: FieldType.text,
+                requiredField: true,
+                readOnly: true,
+              ),
+              const SizedBox(height: 16),
+              AppInputText(
+                label: 'Kategori Kolam Tujuan',
+                hint: 'Kategori Kolam Tujuan',
+                controller: _destinationCategoryCtrl,
                 type: FieldType.text,
                 requiredField: true,
                 readOnly: true,
@@ -193,46 +197,8 @@ class _MovePoolReportDetailPageState
               ],
               const SizedBox(height: 24),
               if (user?.role != 'pic') ...[
-                AppButton(
-                  label: 'Hapus',
-                  color: AppColors.red,
-                  onPressed: () {
-                    AppDialog.showConfirmationDialog(
-                      context: context,
-                      color: AppColors.red,
-                      title: 'Hapus Laporan',
-                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                      confirmText: 'Iya',
-                      cancelText: 'Tidak',
-                      onConfirm: () async {
-                        await ref
-                            .read(
-                              movePoolReportMutationNotifierProvider.notifier,
-                            )
-                            .deleteMovePoolReport(
-                              widget.reportId,
-                              widget.poolId,
-                            );
-
-                        final mutationState = ref.read(
-                          movePoolReportMutationNotifierProvider,
-                        );
-
-                        if (mutationState.hasError) {
-                          AppRoutes.pop(context);
-                          AppSnackbar.error(mutationState.error.toString());
-                        } else {
-                          AppRoutes.pop(context);
-                          AppSnackbar.success('Laporan berhasil dihapus');
-                          AppRoutes.pop(context);
-                        }
-                      },
-                    );
-                  },
-                ),
-                SizedBox(height: 16),
                 Text(
-                  'Laporan pindah kolam bersifat permanen dan tidak dapat diubah',
+                  'Laporan pindah kolam bersifat permanen dan tidak dapat di ubah/hapus',
                   style: TextStyle(fontSize: 15, color: AppColors.red),
                 ),
               ],

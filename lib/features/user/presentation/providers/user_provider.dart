@@ -36,7 +36,7 @@ final changeProfileUseCaseProvider = Provider<ChangeProfileUsecase>((ref) {
 });
 
 // Notifier Provider
-class UserNotifier extends StateNotifier<AsyncValue<void>> {
+class UserNotifier extends StateNotifier<AsyncValue<User?>> {
   final GetUserInfoUsecase _getUserInfoUsecase;
   final Ref _ref;
 
@@ -58,7 +58,7 @@ class UserNotifier extends StateNotifier<AsyncValue<void>> {
       },
       (user) {
         _ref.read(userProvider.notifier).state = user;
-        state = const AsyncValue.data(null);
+        state = AsyncValue.data(user);
       },
     );
   }
@@ -116,7 +116,7 @@ final userProvider = StateProvider<User?>((ref) => null);
 
 // Provider Utama
 final userInfoNotifierProvider =
-    StateNotifierProvider<UserNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider<UserNotifier, AsyncValue<User?>>((ref) {
       final getUserInfoUsecase = ref.read(getUserInfoUseCaseProvider);
       return UserNotifier(getUserInfoUsecase, ref);
     });

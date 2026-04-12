@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/data/datasources/pool_cleaning_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/data/models/pool_cleaning_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/data/models/pool_cleaning_report_model.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/repositories/pool_cleaning_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,22 +20,38 @@ class PoolCleaningReportRepositoryImpl implements PoolCleaningReportRepository {
     final result = await datasource.getPoolCleaningReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final poolCleaningReports = data
-          .map((json) => PoolCleaningReportModel.fromJson(json))
-          .toList();
-      return Right(poolCleaningReports);
+      try {
+        final poolCleaningReports = data
+            .map((json) => PoolCleaningReportModel.fromJson(json))
+            .toList();
+        return Right(poolCleaningReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan pembersihan kolam: $e",
+          ),
+        );
+      }
     });
   }
 
   @override
-  Future<Either<Failure, PoolCleaningReport>> getPoolCleaningReport(
+  Future<Either<Failure, PoolCleaningReportDetail>> getPoolCleaningReport(
     String id,
   ) async {
     final result = await datasource.getPoolCleaningReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final poolCleaningReport = PoolCleaningReportModel.fromJson(data);
-      return Right(poolCleaningReport);
+      try {
+        final poolCleaningReport = PoolCleaningReportDetailModel.fromJson(data);
+        return Right(poolCleaningReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan pembersihan kolam: $e",
+          ),
+        );
+      }
     });
   }
 

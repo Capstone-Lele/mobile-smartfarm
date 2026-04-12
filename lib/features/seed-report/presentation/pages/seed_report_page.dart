@@ -67,7 +67,16 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                       : '• Ketuk laporan untuk lihat detailnya.',
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value ?? [], user),
+                reportState.when(
+                  loading: () => _buildSummaryCardsLoading(user),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: AppColors.red),
+                    ),
+                  ),
+                  data: (data) => _buildSummaryCards(data, user),
+                ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
@@ -256,7 +265,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                         'Laporan Tebar Benih #${index + 1}',
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
@@ -266,6 +275,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -274,7 +284,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.darkGray,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ],
@@ -285,12 +295,11 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
             if (user?.role == 'pic') ...[
               const SizedBox(height: 12),
               Text(
-                // 'Dilaporkan Oleh ${report.user}',
-                'Dilaporkan Oleh Bug',
+                'Dilaporkan Oleh ${report.user}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.darkGray,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -298,6 +307,24 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSummaryCardsLoading(User? user) {
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          ],
+        ),
+      );
+    } else {
+      return AppLoading(height: 50, borderRadius: 12);
+    }
   }
 
   Widget _buildSummaryCards(List<SeedReport> reports, User? user) {
@@ -459,7 +486,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
   }
 
   Widget _buildFloatingActionButton(User? user) {
-    if (user?.role != 'pic' && !widget.isCycle) {
+    if (user?.role != 'pic') {
       return FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: AppColors.secondary,

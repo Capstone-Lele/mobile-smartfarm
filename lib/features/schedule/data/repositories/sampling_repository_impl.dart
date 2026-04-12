@@ -14,10 +14,14 @@ class SamplingRepositoryImpl implements SamplingRepository {
   Future<Either<Failure, List<Schedule>>> getSamplingSchedules() async {
     final result = await datasource.getSamplingSchedules();
     return result.fold((failure) => Left(failure), (data) {
-      final schedules = data
+     try{
+       final schedules = data
           .map((json) => ScheduleModel.fromJson(json))
           .toList();
       return Right(schedules);
+     }catch(e){
+        return Left(InvalidInputFailure('Gagal mengkonversi data jadwal sampling: $e'));
+     }
     });
   }
 
@@ -26,37 +30,48 @@ class SamplingRepositoryImpl implements SamplingRepository {
     final result = await datasource.getSamplingSchedule(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      try{
+        final schedule = ScheduleModel.fromJson(data);
+        return Right(schedule);
+      }catch(e){
+        return Left(InvalidInputFailure('Gagal mengkonversi data jadwal sampling: $e'));
+      }
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> createSamplingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createSamplingSchedule(
     String poolId,
     String userId,
     String scheduleDate,
-  ) async{
-    final result = await datasource.createSamplingSchedule(poolId, userId, scheduleDate);
+  ) async {
+    final result = await datasource.createSamplingSchedule(
+      poolId,
+      userId,
+      scheduleDate,
+    );
 
-    return result.fold((failure) => Left(failure), (data){
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+    return result.fold((failure) => Left(failure), (data) {
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> updateSamplingSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateSamplingSchedule(
     String id,
     String poolId,
     String userId,
     String scheduleDate,
-  ) async{
-    final result = await datasource.updateSamplingSchedule(id, poolId, userId, scheduleDate);
+  ) async {
+    final result = await datasource.updateSamplingSchedule(
+      id,
+      poolId,
+      userId,
+      scheduleDate,
+    );
 
-    return result.fold((failure) => Left(failure), (data){
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+    return result.fold((failure) => Left(failure), (data) {
+      return Right(data);
     });
   }
 

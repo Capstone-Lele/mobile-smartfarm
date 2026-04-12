@@ -14,9 +14,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, Auth>> login(String email, String password) async {
     final result = await datasource.login(email, password);
 
-    return result.fold(
-      (failure) => Left(failure),
-      (data) => Right(AuthModel.fromJson(data)),
-    );
+    return result.fold((failure) => Left(failure), (data) {
+      try {
+        final auth = AuthModel.fromJson(data);
+        return Right(auth);
+      } catch (e) {
+        return Left(InvalidInputFailure('Gagal mengkonversi data login: $e'));
+      }
+    });
   }
 }
