@@ -24,8 +24,11 @@ class SettingPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppHeader(
-                  subtitle: user?.roleLabel ?? 'User',
-                  title: "Selamat Datang, ${user?.name ?? 'Pengguna'}",
+                  title: 'Selamat Datang, ${user?.name}',
+                  subtitle: '${user?.roleLabel}',
+                  onNotificationPressed: () {
+                    AppRoutes.pushNamed(context, AppRoutes.notification);
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildSectionTitle("Pengaturan Utama"),

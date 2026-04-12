@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_bottom_bar.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:budidaya_lele_mobile/features/auth/presentation/pages/splash_page.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/presentation/pages/pool_condition_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/create_harvest_report_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/pages/harvest_report_page.dart';
@@ -18,6 +19,7 @@ import 'package:budidaya_lele_mobile/features/mortality-report/presentation/page
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/create_move_pool_report_page.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_page.dart';
+import 'package:budidaya_lele_mobile/features/notification/presentation/pages/notification_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/create_pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
@@ -53,6 +55,7 @@ class AppRoutes {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
   static const String dashboard = '/dashboard';
+  static const String poolCondition = '/pool-condition';
   // Auth
   static const String splash = '/';
   static const String login = '/login';
@@ -120,9 +123,12 @@ class AppRoutes {
   static const String inventoryReportDetail = '/inventory/report-detail';
   static const String updateInventoryReport = '/inventory/update-report';
 
+  static const String notification = '/notification';
+
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       dashboard: (context) => const AppBottomBar(),
+      poolCondition: (context) => const PoolConditionPage(),
       // Auth
       splash: (context) => const SplashPage(),
       login: (context) => const LoginPage(),
@@ -481,6 +487,8 @@ class AppRoutes {
       createInventoryReport: (context) => const CreateInventoryReportPage(),
       inventoryReportDetail: (context) => const InventoryReportDetailPage(),
       updateInventoryReport: (context) => const UpdateInventoryReportPage(),
+      // Notification
+      notification: (context) => const NotificationPage(),
     };
   }
 
