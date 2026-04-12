@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/vitamin-report/data/datasources/vitamin_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/data/repositories/vitamin_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/repositories/vitamin_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/usecases/create_vitamin_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/usecases/delete_vitamin_report_usecase.dart';
@@ -86,7 +87,7 @@ class VitaminReportListNotifier
 }
 
 class VitaminReportDetailNotifier
-    extends StateNotifier<AsyncValue<VitaminReport?>> {
+    extends StateNotifier<AsyncValue<VitaminReportDetail?>> {
   final GetVitaminReportUsecase _getVitaminReportUsecase;
 
   VitaminReportDetailNotifier(this._getVitaminReportUsecase)
@@ -227,7 +228,7 @@ final vitaminReportListNotifierProvider =
 final vitaminReportDetailNotifierProvider =
     StateNotifierProvider<
       VitaminReportDetailNotifier,
-      AsyncValue<VitaminReport?>
+      AsyncValue<VitaminReportDetail?>
     >((ref) {
       final getVitaminReportUsecase = ref.read(getVitaminReportUseCaseProvider);
       return VitaminReportDetailNotifier(getVitaminReportUsecase);

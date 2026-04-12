@@ -1,5 +1,5 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
-import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/repositories/pool_cleaning_report_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -8,7 +8,7 @@ class GetPoolCleaningReportUsecase {
 
   GetPoolCleaningReportUsecase(this.repository);
 
-  Future<Either<Failure, PoolCleaningReport>> execute(String id) {
+  Future<Either<Failure, PoolCleaningReportDetail>> execute(String id) {
     return repository.getPoolCleaningReport(id);
   }
 }

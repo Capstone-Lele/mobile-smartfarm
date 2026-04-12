@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/pool/data/datasource/pool_datasource.dart';
 import 'package:budidaya_lele_mobile/features/pool/data/repositories/pool_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/repositories/pool_repository.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/usecases/get_pool_usecase.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/usecases/get_pools_usecase.dart';
@@ -46,7 +47,7 @@ class PoolListNotifier extends StateNotifier<AsyncValue<List<Pool>>> {
   }
 }
 
-class PoolDetailNotifier extends StateNotifier<AsyncValue<Pool?>> {
+class PoolDetailNotifier extends StateNotifier<AsyncValue<PoolDetail?>> {
   final GetPoolUsecase _getPoolUsecase;
 
   PoolDetailNotifier(this._getPoolUsecase) : super(const AsyncValue.data(null));
@@ -75,7 +76,7 @@ final poolListNotifierProvider =
 
 // Pool Detail Notifier Provider
 final poolDetailNotifierProvider =
-    StateNotifierProvider<PoolDetailNotifier, AsyncValue<Pool?>>((ref) {
+    StateNotifierProvider<PoolDetailNotifier, AsyncValue<PoolDetail?>>((ref) {
       final getPoolUseCase = ref.read(getPoolUseCaseProvider);
       return PoolDetailNotifier(getPoolUseCase);
     });

@@ -2,6 +2,9 @@ import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_r
 
 class SeedReportModel extends SeedReport {
   SeedReportModel({
+    required super.user,
+    required super.poolName,
+    required super.poolCategory,
     required super.id,
     required super.poolId,
     required super.userId,
@@ -18,6 +21,9 @@ class SeedReportModel extends SeedReport {
 
   factory SeedReportModel.fromJson(Map<String, dynamic> json) {
     return SeedReportModel(
+      user: json['user'],
+      poolName: json['poolName'],
+      poolCategory: json['poolCategory'],
       id: json['id'],
       poolId: json['poolId'],
       userId: json['userId'],

@@ -2,8 +2,10 @@ import 'package:budidaya_lele_mobile/features/move-pool-report/domain/entities/m
 
 class MovePoolReportModel extends MovePoolReport {
   MovePoolReportModel({
+    required super.originPoolId,
     required super.originPoolName,
     required super.originCategory,
+    required super.destinationPoolId,
     required super.destinationPoolName,
     required super.destinationCategory,
     required super.user,
@@ -23,8 +25,10 @@ class MovePoolReportModel extends MovePoolReport {
 
   factory MovePoolReportModel.fromJson(Map<String, dynamic> json) {
     return MovePoolReportModel(
+      originPoolId: json['originPoolId'],
       originPoolName: json['originPoolName'],
       originCategory: json['originCategory'],
+      destinationPoolId: json['destinationPoolId'],
       destinationPoolName: json['destinationPoolName'],
       destinationCategory: json['destinationCategory'],
       user: json['user'],

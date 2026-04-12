@@ -69,7 +69,16 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                       : '• Ketuk laporan untuk lihat detailnya.',
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCards(reportState.value ?? [], user),
+                reportState.when(
+                  loading: () => _buildSummaryCardsLoading(user),
+                  error: (error, stack) => Center(
+                    child: Text(
+                      error.toString(),
+                      style: const TextStyle(color: AppColors.red),
+                    ),
+                  ),
+                  data: (data) => _buildSummaryCards(data, user),
+                ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
                   startDate: _startDate,
@@ -235,7 +244,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    'https://source.unsplash.com/60x60/?harvest',
+                    report.image,
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -300,6 +309,24 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSummaryCardsLoading(User? user) {
+    if (user?.role == 'pic') {
+      return IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+            const SizedBox(width: 8),
+            Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          ],
+        ),
+      );
+    } else {
+      return AppLoading(height: 50, borderRadius: 12);
+    }
   }
 
   Widget _buildSummaryCards(List<HarvestReport> reports, User? user) {

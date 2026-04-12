@@ -10,7 +10,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/providers/vitamin_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,29 +107,31 @@ class _VitaminReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormState(VitaminReport? report, User? user) {
+  Widget _buildFormState(VitaminReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
-    // _productCtrl.text = report.vitaminName;
-    _productCtrl.text = 'Vitamin A Bug';
+    _productCtrl.text = report.vitaminName;
     _userCtrl.text = report.user;
 
     return SafeArea(
@@ -144,7 +146,7 @@ class _VitaminReportDetailPageState
                 AppHintBoard(
                   title: '📌 Petunjuk Laporan Vitamin',
                   desc:
-                      'Tekan Ubah or Hapus jika ingin melakukan perubahan data.',
+                      '• Tekan Ubah kalau datanya mau diganti.\n• Tekan Hapus kalau laporannya tidak dipakai lagi.',
                 ),
                 const SizedBox(height: 16),
               ],
@@ -167,7 +169,7 @@ class _VitaminReportDetailPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
-                label: 'Jumlah',
+                label: 'Jumlah (${report.unit})',
                 hint: 'Jumlah',
                 controller: _quantityCtrl,
                 type: FieldType.number,

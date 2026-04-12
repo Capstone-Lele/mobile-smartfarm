@@ -5,7 +5,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/providers/sampling_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,28 +127,33 @@ class _UpdateSamplingReportPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFormState(SamplingReport? report) {
+  Widget _buildFormState(SamplingReportDetail? report) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
-    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
-    _quantityCtrl.text = report.quantity.toString();
-    _averageWeightCtrl.text = report.averageWeight.toString();
+    if (_reportDateCtrl.text.isEmpty) {
+      _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+      _quantityCtrl.text = report.quantity.toString();
+      _averageWeightCtrl.text = report.averageWeight.toString();
+    }
 
     final mutationState = ref.watch(samplingReportMutationNotifierProvider);
     final isLoading = mutationState.isLoading;

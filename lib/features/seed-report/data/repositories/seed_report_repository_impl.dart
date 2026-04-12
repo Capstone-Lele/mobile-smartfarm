@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/data/datasources/seed_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/data/models/seed_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/data/models/seed_report_model.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/repositories/seed_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,24 +14,42 @@ class SeedReportRepositoryImpl implements SeedReportRepository {
   SeedReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SeedReport>>> getSeedReports(String poolId) async {
+  Future<Either<Failure, List<SeedReport>>> getSeedReports(
+    String poolId,
+  ) async {
     final result = await datasource.getSeedReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final seedReports = data
-          .map((json) => SeedReportModel.fromJson(json))
-          .toList();
-      return Right(seedReports);
+      try {
+        final seedReports = data
+            .map((json) => SeedReportModel.fromJson(json))
+            .toList();
+        return Right(seedReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan tebar benih: $e",
+          ),
+        );
+      }
     });
   }
 
   @override
-  Future<Either<Failure, SeedReport>> getSeedReport(String id) async {
+  Future<Either<Failure, SeedReportDetail>> getSeedReport(String id) async {
     final result = await datasource.getSeedReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final seedReport = SeedReportModel.fromJson(data);
-      return Right(seedReport);
+      try {
+        final seedReport = SeedReportDetailModel.fromJson(data);
+        return Right(seedReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan tebar benih: $e",
+          ),
+        );
+      }
     });
   }
 

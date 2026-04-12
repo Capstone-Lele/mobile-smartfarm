@@ -28,24 +28,6 @@ class ReportPage extends ConsumerStatefulWidget {
 class _ReportPageState extends ConsumerState<ReportPage> {
   Pool? _selectedPool;
 
-  final List<Map<String, String>> _activities = [
-    {
-      'tag': '#Kolam 1',
-      'title': 'Pak Adib telah melaporkan kematian',
-      'subtitle': 'Senin, 29 September 2025 08:30',
-    },
-    {
-      'tag': '#Kolam 2',
-      'title': 'Pak Adib telah melaporkan hasil panen',
-      'subtitle': 'Minggu, 28 September 2025 09:30',
-    },
-    {
-      'tag': '#Kolam 3',
-      'title': 'Pak Adib telah melaporkan tebar benih',
-      'subtitle': 'Sabtu, 27 September 2025 11:30',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -103,10 +85,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                     _buildStatisticsSection(),
                     const SizedBox(height: 16),
                   ],
-                  _buildPoolListSection(poolsAsync),
-                  const SizedBox(height: 16),
-                  // _buildActivitiesSection(activityLogsAsync),
-                  _buildActivitiesSection(),
+                  // _buildPoolListSection(poolsAsync),
+                  // const SizedBox(height: 16),
+                  _buildActivitiesSection(activityLogsAsync),
                 ],
               ),
             ),
@@ -297,7 +278,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 context,
                 AppRoutes.feedingReport,
                 arguments: {
-                  'cycleId': 'cycle-1',
+                  'cycleId': _selectedPool!.cycleId,
+                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
@@ -666,7 +648,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    'https://source.unsplash.com/60x60/?pond,fish',
+                    pool.image ?? '',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -711,8 +693,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                       Row(
                         children: [
                           Text(
-                            // 'Jumlah Ikan Saat ini ${pool.currentQuantity} Ekor',
-                            'Jumlah Ikan Saat ini 1000 Ekor Bug',
+                            'Jumlah Ikan Saat ini ${pool.currentQuantity ?? 0} Ekor',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
@@ -732,7 +713,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     );
   }
 
-  Widget _buildActivitiesSection() {
+  Widget _buildActivitiesSection(
+    AsyncValue<List<ActivityLog>> activityLogsAsync,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -745,76 +728,47 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.gray),
-            borderRadius: BorderRadius.circular(8),
+        activityLogsAsync.when(
+          loading: () => AppLoading(height: 300, borderRadius: 8),
+          error: (err, stack) => Center(
+            child: Text(
+              'Gagal memuat aktivitas terbaru',
+              style: TextStyle(color: AppColors.red),
+            ),
           ),
-          child: Column(
-            children: _activities
-                .asMap()
-                .entries
-                .map(
-                  (entry) => ReportActivityItem(
-                    tag: entry.value['tag']!,
-                    title: entry.value['title']!,
-                    subtitle: entry.value['subtitle']!,
-                    isLast: entry.key == _activities.length - 1,
+          data: (activityLogs) => activityLogs.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      'Belom ada aktifitas terbaru',
+                      style: TextStyle(fontSize: 14, color: AppColors.darkGray),
+                    ),
                   ),
                 )
-                .toList(),
-          ),
+              : Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.gray),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: activityLogs
+                        .asMap()
+                        .entries
+                        .map(
+                          (entry) => ReportActivityItem(
+                            tag: '#${entry.value.poolName}',
+                            title:
+                                '${entry.value.userName} telah melaporkan ${entry.value.activity}',
+                            subtitle: entry.value.createdAt,
+                            isLast: entry.key == activityLogs.length - 1,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
         ),
       ],
     );
   }
-
-  // Widget _buildActivitiesSection(
-  //   AsyncValue<List<ActivityLog>> activityLogsAsync,
-  // ) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Text(
-  //         'Aktivitas Terbaru',
-  //         style: TextStyle(
-  //           fontSize: 14,
-  //           fontWeight: FontWeight.w600,
-  //           color: AppColors.darkGray,
-  //         ),
-  //       ),
-  //       const SizedBox(height: 8),
-  //       activityLogsAsync.when(
-  //         loading: () => AppLoading(height: 300, borderRadius: 8),
-  //         error: (err, stack) => Center(
-  //           child: Text(
-  //             'Gagal memuat aktivitas terbaru',
-  //             style: TextStyle(color: AppColors.red),
-  //           ),
-  //         ),
-  //         data: (activityLogs) => Container(
-  //           decoration: BoxDecoration(
-  //             border: Border.all(color: AppColors.gray),
-  //             borderRadius: BorderRadius.circular(8),
-  //           ),
-  //           child: Column(
-  //             children: activityLogs
-  //                 .asMap()
-  //                 .entries
-  //                 .map(
-  //                   (entry) => ReportActivityItem(
-  //                     tag: '#${entry.value.poolName}',
-  //                     title:
-  //                         '${entry.value.user} telah melaporkan ${entry.value.activity}',
-  //                     subtitle: entry.value.createdAt,
-  //                     isLast: entry.key == activityLogs.length - 1,
-  //                   ),
-  //                 )
-  //                 .toList(),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 }

@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/data/datasources/sampling_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/data/models/sampling_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/data/models/sampling_report_model.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/repositories/sampling_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,24 +14,40 @@ class SamplingReportRepositoryImpl implements SamplingReportRepository {
   SamplingReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<SamplingReport>>> getSamplingReports(String poolId) async {
+  Future<Either<Failure, List<SamplingReport>>> getSamplingReports(
+    String poolId,
+  ) async {
     final result = await datasource.getSamplingReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
-      final samplingReports = data
-          .map((json) => SamplingReportModel.fromJson(json))
-          .toList();
-      return Right(samplingReports);
+      try {
+        final samplingReports = data
+            .map((json) => SamplingReportModel.fromJson(json))
+            .toList();
+        return Right(samplingReports);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan sampling: $e"),
+        );
+      }
     });
   }
 
   @override
-  Future<Either<Failure, SamplingReport>> getSamplingReport(String id) async {
+  Future<Either<Failure, SamplingReportDetail>> getSamplingReport(
+    String id,
+  ) async {
     final result = await datasource.getSamplingReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final samplingReport = SamplingReportModel.fromJson(data);
-      return Right(samplingReport);
+      try {
+        final samplingReport = SamplingReportDetailModel.fromJson(data);
+        return Right(samplingReport);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan sampling: $e"),
+        );
+      }
     });
   }
 

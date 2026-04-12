@@ -15,10 +15,16 @@ class CleaningRepositoryImpl implements CleaningRepository {
     final result = await datasource.getCleaningSchedules();
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedules = data
-          .map((json) => ScheduleModel.fromJson(json))
-          .toList();
-      return Right(schedules);
+      try {
+        final schedules = data
+            .map((json) => ScheduleModel.fromJson(json))
+            .toList();
+        return Right(schedules);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data jadwal pembersihan: $e"),
+        );
+      }
     });
   }
 
@@ -27,13 +33,19 @@ class CleaningRepositoryImpl implements CleaningRepository {
     final result = await datasource.getCleaningSchedule(id);
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      try {
+        final schedule = ScheduleModel.fromJson(data);
+        return Right(schedule);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data jadwal pembersihan: $e"),
+        );
+      }
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> createCleaningSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> createCleaningSchedule(
     String poolId,
     String userId,
     String scheduleDate,
@@ -45,13 +57,12 @@ class CleaningRepositoryImpl implements CleaningRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, Schedule>> updateCleaningSchedule(
+  Future<Either<Failure, Map<String, dynamic>>> updateCleaningSchedule(
     String id,
     String poolId,
     String userId,
@@ -65,8 +76,7 @@ class CleaningRepositoryImpl implements CleaningRepository {
     );
 
     return result.fold((failure) => Left(failure), (data) {
-      final schedule = ScheduleModel.fromJson(data);
-      return Right(schedule);
+      return Right(data);
     });
   }
 

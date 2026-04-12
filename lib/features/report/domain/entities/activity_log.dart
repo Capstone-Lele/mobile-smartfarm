@@ -1,7 +1,8 @@
 class ActivityLog {
   final String id;
-  final String reportId;
-  final String user;
+  final String noteId;
+  final String userId;
+  final String userName;
   final String poolName;
   final String activity;
   final String createdAt;
@@ -10,8 +11,9 @@ class ActivityLog {
 
   ActivityLog({
     required this.id,
-    required this.reportId,
-    required this.user,
+    required this.noteId,
+    required this.userId,
+    required this.userName,
     required this.poolName,
     required this.activity,
     required this.createdAt,

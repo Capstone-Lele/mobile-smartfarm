@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/sampling-report/data/datasources/sampling_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/data/repositories/sampling_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/repositories/sampling_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/usecases/create_sampling_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/usecases/delete_sampling_report_usecase.dart';
@@ -83,7 +84,7 @@ class SamplingReportListNotifier
 }
 
 class SamplingReportDetailNotifier
-    extends StateNotifier<AsyncValue<SamplingReport?>> {
+    extends StateNotifier<AsyncValue<SamplingReportDetail?>> {
   final GetSamplingReportUsecase _getSamplingReportUsecase;
 
   SamplingReportDetailNotifier(this._getSamplingReportUsecase)
@@ -225,7 +226,7 @@ final samplingReportListNotifierProvider =
 final samplingReportDetailNotifierProvider =
     StateNotifierProvider<
       SamplingReportDetailNotifier,
-      AsyncValue<SamplingReport?>
+      AsyncValue<SamplingReportDetail?>
     >((ref) {
       final getSamplingReportUsecase = ref.read(
         getSamplingReportUseCaseProvider,

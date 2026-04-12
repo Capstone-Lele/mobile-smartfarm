@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/seed-report/data/datasources/seed_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/data/repositories/seed_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/repositories/seed_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/create_seed_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/delete_seed_report_usecase.dart';
@@ -69,7 +70,8 @@ class SeedReportListNotifier
   }
 }
 
-class SeedReportDetailNotifier extends StateNotifier<AsyncValue<SeedReport?>> {
+class SeedReportDetailNotifier
+    extends StateNotifier<AsyncValue<SeedReportDetail?>> {
   final GetSeedReportUsecase _getSeedReportUsecase;
 
   SeedReportDetailNotifier(this._getSeedReportUsecase)
@@ -172,9 +174,10 @@ final seedReportListNotifierProvider =
 
 // Seed Report Detail Notifier Provider
 final seedReportDetailNotifierProvider =
-    StateNotifierProvider<SeedReportDetailNotifier, AsyncValue<SeedReport?>>((
-      ref,
-    ) {
+    StateNotifierProvider<
+      SeedReportDetailNotifier,
+      AsyncValue<SeedReportDetail?>
+    >((ref) {
       final getSeedReportUsecase = ref.read(getSeedReportUseCaseProvider);
       return SeedReportDetailNotifier(getSeedReportUsecase);
     });

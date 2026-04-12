@@ -58,7 +58,16 @@ class _PoolPageState extends ConsumerState<PoolPage> {
                 ),
                 const SizedBox(height: 16),
                 if (user?.role == 'pic') ...[
-                  _buildSummaryCards(poolState.value ?? []),
+                  poolState.when(
+                    loading: () => _buildSummaryCardsLoading(),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        error.toString(),
+                        style: const TextStyle(color: AppColors.red),
+                      ),
+                    ),
+                    data: (pools) => _buildSummaryCards(pools),
+                  ),
                   const SizedBox(height: 16),
                 ],
                 AppInputText(
@@ -140,11 +149,104 @@ class _PoolPageState extends ConsumerState<PoolPage> {
             'Daftar Kolam',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 2),
-          const Text(
-            'Siklus Sedang Aktif Bug',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPoolItem(Pool pool) {
+    return GestureDetector(
+      onTap: () {
+        AppRoutes.pushNamed(
+          context,
+          AppRoutes.createMovePoolReport,
+          arguments: {
+            'poolId': pool.id,
+            'poolName': pool.name,
+            'cycleId': pool.cycleId ?? '',
+          },
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.lightGray,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.darkGray),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.image_not_supported,
+                    color: AppColors.darkGray,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            pool.name,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          AppStatusBadge(
+                            label: pool.categoryLabel,
+                            type: pool.category == 'breeding'
+                                ? BadgeType.warning
+                                : pool.category == 'growing'
+                                ? BadgeType.success
+                                : BadgeType.danger,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jumlah Ikan Saat ini ${pool.currentQuantity ?? '0'} Ekor',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkGray,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCardsLoading() {
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+          Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          const SizedBox(width: 8),
+          Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+          const SizedBox(width: 8),
+          Expanded(child: AppLoading(height: 100, borderRadius: 12)),
         ],
       ),
     );
@@ -221,86 +323,6 @@ class _PoolPageState extends ConsumerState<PoolPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPoolItem(Pool pool) {
-    return GestureDetector(
-      onTap: () {
-        AppRoutes.pushNamed(
-          context,
-          AppRoutes.createMovePoolReport,
-          arguments: {
-            'poolId': pool.id,
-            'poolName': pool.name,
-            'cycleId': pool.cycleId ?? '',
-          },
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.lightGray,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.darkGray),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.gray,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.image_not_supported,
-                color: AppColors.darkGray,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        pool.name,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      ),
-                      AppStatusBadge(
-                        label: pool.categoryLabel,
-                        type: pool.category == 'breeding'
-                            ? BadgeType.warning
-                            : pool.category == 'growing'
-                            ? BadgeType.success
-                            : BadgeType.danger,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    // 'Jumlah Ikan Saat ini ${pool.currentQuantity} Ekor',
-                    'Jumlah Ikan Saat ini 1000 Ekor Bug',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.darkGray,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

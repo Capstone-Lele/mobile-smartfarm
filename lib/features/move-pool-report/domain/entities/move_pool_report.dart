@@ -1,6 +1,8 @@
 class MovePoolReport {
+  final String originPoolId;
   final String originPoolName;
   final String originCategory;
+  final String destinationPoolId;
   final String destinationPoolName;
   final String destinationCategory;
   final String user;
@@ -18,8 +20,10 @@ class MovePoolReport {
   final String? deletedAt;
 
   MovePoolReport({
+    required this.originPoolId,
     required this.originPoolName,
     required this.originCategory,
+    required this.destinationPoolId,
     required this.destinationPoolName,
     required this.destinationCategory,
     required this.user,
@@ -36,4 +40,30 @@ class MovePoolReport {
     required this.updatedAt,
     required this.deletedAt,
   });
+
+  String get originCategoryLabel {
+    switch (originCategory) {
+      case 'growing':
+        return 'Pembesaran';
+      case 'breeding':
+        return 'Pembenihan';
+      case 'quarantine':
+        return 'Karantina';
+      default:
+        return 'Category Tidak Diketahui';
+    }
+  }
+
+  String get destinationCategoryLabel {
+    switch (destinationCategory) {
+      case 'growing':
+        return 'Pembesaran';
+      case 'breeding':
+        return 'Pembenihan';
+      case 'quarantine':
+        return 'Karantina';
+      default:
+        return 'Category Tidak Diketahui';
+    }
+  }
 }

@@ -15,10 +15,16 @@ class UserRepositoryImpl implements UserRepository {
   Future<Either<Failure, User>> getUserInfo() async {
     final result = await datasource.getUserInfo();
 
-    return result.fold(
-      (failure) => Left(failure),
-      (data) => Right(UserModel.fromJson(data)),
-    );
+    return result.fold((failure) => Left(failure), (data) {
+      try {
+        final user = UserModel.fromJson(data);
+        return Right(user);
+      } catch (e) {
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data pengguna: $e"),
+        );
+      }
+    });
   }
 
   @override

@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/data/datasources/feed_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/data/models/feed_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/data/models/feed_report_model.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report.dart';
+import 'package:budidaya_lele_mobile/features/feed-report/domain/entities/feed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/feed-report/domain/repositories/feed_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,7 +14,9 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   FeedReportRepositoryImpl(this.datasource);
 
   @override
-  Future<Either<Failure, List<FeedReport>>> getFeedReports(String poolId) async {
+  Future<Either<Failure, List<FeedReport>>> getFeedReports(
+    String poolId,
+  ) async {
     final result = await datasource.getFeedReports(poolId);
 
     return result.fold((failure) => Left(failure), (data) {
@@ -30,12 +34,12 @@ class FeedReportRepositoryImpl implements FeedReportRepository {
   }
 
   @override
-  Future<Either<Failure, FeedReport>> getFeedReport(String id) async {
+  Future<Either<Failure, FeedReportDetail>> getFeedReport(String id) async {
     final result = await datasource.getFeedReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
       try {
-        final feedReport = FeedReportModel.fromJson(data);
+        final feedReport = FeedReportDetailModel.fromJson(data);
         return Right(feedReport);
       } catch (e) {
         return Left(

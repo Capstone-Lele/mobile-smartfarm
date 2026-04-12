@@ -9,6 +9,7 @@ import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -154,7 +155,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
     );
   }
 
-  Widget _buildPoolDetail(Pool? pool) {
+  Widget _buildPoolDetail(PoolDetail? pool) {
     if (pool == null) return const SizedBox.shrink();
 
     return Column(
@@ -163,6 +164,19 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
         const Text(
           'Detail Kolam',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Siklus', style: TextStyle(fontSize: 15)),
+            AppStatusBadge(
+              label: pool.cycleLabel,
+              type: pool.cycle == 'active_cultivation'
+                  ? BadgeType.success
+                  : BadgeType.danger,
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Row(
@@ -180,11 +194,14 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ],
         ),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Jumlah Ikan', style: TextStyle(fontSize: 15)),
-            Text('100 Ekor Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '${pool.currentQuantity} Ekor',
+              style: TextStyle(fontSize: 15),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -192,7 +209,10 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('pH Sekarang', style: TextStyle(fontSize: 15)),
-            Text('7.0 pH Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '7.0 pH Bug',
+              style: TextStyle(fontSize: 15, color: AppColors.red),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -200,7 +220,10 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Suhu Sekarang', style: TextStyle(fontSize: 15)),
-            Text('28 °C Bug', style: TextStyle(fontSize: 15)),
+            Text(
+              '28 °C Bug',
+              style: TextStyle(fontSize: 15, color: AppColors.red),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -230,20 +253,25 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
   }
 
   Widget _buildFormState(AsyncValue<List<Pool>> poolListState, bool isLoading) {
+    List<Pool> filteredPoolList = poolListState.value ?? [];
+    filteredPoolList = filteredPoolList
+        .where((p) => p.category == 'quarantine')
+        .toList();
+
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Pindah Kolam Karantine',
+            'Pindah Kolam Karantina',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           AppInputDropdown<Pool>(
             label: 'Kolam Karantina',
             hint: 'Pilih Kolam Karantina',
-            items: poolListState.value ?? [],
+            items: filteredPoolList,
             itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
             requiredField: true,
             onChanged: (pool) {

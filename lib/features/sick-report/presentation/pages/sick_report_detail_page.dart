@@ -1,16 +1,12 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
-import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,6 +34,7 @@ class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _destinationCtrl = TextEditingController();
+  final _destinationCategoryCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _userCtrl = TextEditingController();
 
@@ -51,6 +48,7 @@ class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
   void dispose() {
     _reportDateCtrl.dispose();
     _destinationCtrl.dispose();
+    _destinationCategoryCtrl.dispose();
     _quantityCtrl.dispose();
     _userCtrl.dispose();
     super.dispose();
@@ -120,13 +118,14 @@ class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
     );
   }
 
-  Widget _buildFormState(SickReport? report, User? user) {
+  Widget _buildFormState(SickReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _destinationCtrl.text = report.destinationPoolName;
+    _destinationCategoryCtrl.text = report.destinationCategoryLabel;
     _quantityCtrl.text = report.quantity.toString();
     _userCtrl.text = report.user;
 
@@ -138,17 +137,21 @@ class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (user?.role != 'pic') ...[
-                AppHintBoard(
-                  title: '📌 Petunjuk Laporan Sakit',
-                  desc: '• Tekan Hapus kalau laporannya tidak dipakai lagi.',
-                ),
-                const SizedBox(height: 16),
-              ],
               AppInputText(
-                label: 'Kolam Karantina',
-                hint: 'Kolam Karantina',
+                label: 'Kolam Tujuan',
+                hint: 'Kolam Tujuan',
                 controller: _destinationCtrl,
+                type: FieldType.text,
+                requiredField: true,
+                readOnly: true,
+              ),
+              const SizedBox(height: 16),
+              AppInputText(
+                label: 'Kategori Kolam Tujuan',
+                hint: 'Kategori Kolam Tujuan',
+                controller: _destinationCategoryCtrl,
+                type: FieldType.text,
+                requiredField: true,
                 readOnly: true,
               ),
               const SizedBox(height: 16),
@@ -190,37 +193,9 @@ class _SickReportDetailPageState extends ConsumerState<SickReportDetailPage> {
               ],
               const SizedBox(height: 24),
               if (user?.role != 'pic') ...[
-                AppButton(
-                  label: 'Hapus',
-                  color: AppColors.red,
-                  onPressed: () {
-                    AppDialog.showConfirmationDialog(
-                      context: context,
-                      color: AppColors.red,
-                      title: 'Hapus Laporan',
-                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                      confirmText: 'Iya',
-                      cancelText: 'Tidak',
-                      onConfirm: () async {
-                        await ref
-                            .read(sickReportMutationNotifierProvider.notifier)
-                            .deleteSickReport(widget.reportId, widget.poolId);
-
-                        final mutationState = ref.read(
-                          sickReportMutationNotifierProvider,
-                        );
-
-                        if (mutationState.hasError) {
-                          AppRoutes.pop(context);
-                          AppSnackbar.error(mutationState.error.toString());
-                        } else {
-                          AppRoutes.pop(context);
-                          AppSnackbar.success('Laporan berhasil dihapus');
-                          AppRoutes.pop(context);
-                        }
-                      },
-                    );
-                  },
+                Text(
+                  'Laporan Sakit bersifat permanen dan tidak dapat di ubah/hapus',
+                  style: TextStyle(fontSize: 15, color: AppColors.red),
                 ),
               ],
             ],

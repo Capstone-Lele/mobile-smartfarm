@@ -2,6 +2,7 @@
 import 'package:budidaya_lele_mobile/features/harvest-report/data/datasources/harvest_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/data/repositories/harvest_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report.dart';
+import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/repositories/harvest_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/usecases/create_harvest_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/usecases/get_harvest_report_usecase.dart';
@@ -70,7 +71,7 @@ class HarvestReportListNotifier
 }
 
 class HarvestReportDetailNotifier
-    extends StateNotifier<AsyncValue<HarvestReport?>> {
+    extends StateNotifier<AsyncValue<HarvestReportDetail?>> {
   final GetHarvestReportUsecase _getHarvestReportUsecase;
 
   HarvestReportDetailNotifier(this._getHarvestReportUsecase)
@@ -152,7 +153,7 @@ final harvestReportListNotifierProvider =
 final harvestReportDetailNotifierProvider =
     StateNotifierProvider<
       HarvestReportDetailNotifier,
-      AsyncValue<HarvestReport?>
+      AsyncValue<HarvestReportDetail?>
     >((ref) {
       final getHarvestReportUsecase = ref.read(getHarvestReportUseCaseProvider);
       return HarvestReportDetailNotifier(getHarvestReportUsecase);

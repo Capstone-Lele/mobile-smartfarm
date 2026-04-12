@@ -110,21 +110,24 @@ class _CreateVitaminReportPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(
-            label: 'Coba Lagi',
-            onPressed: () => ref
-                .read(inventoryListNotifierProvider.notifier)
-                .getInventories(),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(
+              label: 'Coba Lagi',
+              onPressed: () => ref
+                  .read(inventoryListNotifierProvider.notifier)
+                  .getInventories(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -140,81 +143,87 @@ class _CreateVitaminReportPageState
         child: inventoryState.when(
           loading: () => _buildLoadingState(),
           error: (err, stack) => _buildErrorState(err),
-          data: (vitaminInventories) => Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppInputDropdown<Inventory>(
-                  label: 'Nama Produk',
-                  hint: 'Pilih Produk Vitamin',
-                  items: vitaminInventories,
-                  itemLabel: (item) => item.product,
-                  requiredField: true,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedInventory = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Nama produk harus dipilih';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputDate(
-                  label: 'Tanggal Pemberian Vitamin',
-                  hint: 'Tanggal Pemberian Vitamin',
-                  type: DateFieldType.dateTime,
-                  controller: _reportDateCtrl,
-                  requiredField: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Tanggal pemberian vitamin harus dipilih';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputText(
-                  label: 'Jumlah',
-                  hint: 'Jumlah',
-                  controller: _quantityCtrl,
-                  type: FieldType.number,
-                  requiredField: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Jumlah harus diisi';
-                    }
+          data: (allInventories) {
+            final vitaminInventories = allInventories
+                .where((inv) => inv.category.toLowerCase() == 'vitamin')
+                .toList();
 
-                    final number = int.tryParse(value);
-                    if (number == null || number <= 0) {
-                      return 'Jumlah harus berupa angka positif';
-                    }
+            return Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppInputDropdown<Inventory>(
+                    label: 'Nama Produk',
+                    hint: 'Pilih Produk Vitamin',
+                    items: vitaminInventories,
+                    itemLabel: (item) => item.product,
+                    requiredField: true,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedInventory = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Nama produk harus dipilih';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputDate(
+                    label: 'Tanggal Pemberian Vitamin',
+                    hint: 'Tanggal Pemberian Vitamin',
+                    type: DateFieldType.dateTime,
+                    controller: _reportDateCtrl,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tanggal pemberian vitamin harus dipilih';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputText(
+                    label: 'Jumlah Bug (${_selectedInventory?.unit ?? ""})',
+                    hint: 'Jumlah',
+                    controller: _quantityCtrl,
+                    type: FieldType.number,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Jumlah harus diisi';
+                      }
 
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                AppInputImage(
-                  label: 'Foto',
-                  hint: 'Tambahkan foto vitamin yang diberikan',
-                  requiredField: true,
-                  onChanged: (image) {
-                    setState(() {
-                      _selectedImage = image;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Submit', onPressed: _onSubmit),
-              ],
-            ),
-          ),
+                      final number = int.tryParse(value);
+                      if (number == null || number <= 0) {
+                        return 'Jumlah harus berupa angka positif';
+                      }
+
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppInputImage(
+                    label: 'Foto',
+                    hint: 'Tambahkan foto vitamin yang diberikan',
+                    requiredField: true,
+                    onChanged: (image) {
+                      setState(() {
+                        _selectedImage = image;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : AppButton(label: 'Submit', onPressed: _onSubmit),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

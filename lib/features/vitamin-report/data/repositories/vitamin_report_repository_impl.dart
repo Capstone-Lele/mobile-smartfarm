@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/data/datasources/vitamin_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/data/models/vitamin_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/data/models/vitamin_report_model.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report.dart';
+import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/repositories/vitamin_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,12 +34,12 @@ class VitaminReportRepositoryImpl implements VitaminReportRepository {
   }
 
   @override
-  Future<Either<Failure, VitaminReport>> getVitaminReport(String id) async {
+  Future<Either<Failure, VitaminReportDetail>> getVitaminReport(String id) async {
     final result = await datasource.getVitaminReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
       try {
-        final vitaminReport = VitaminReportModel.fromJson(data);
+        final vitaminReport = VitaminReportDetailModel.fromJson(data);
         return Right(vitaminReport);
       } catch (e) {
         return Left(

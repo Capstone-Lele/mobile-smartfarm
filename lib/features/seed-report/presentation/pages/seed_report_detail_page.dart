@@ -8,9 +8,9 @@ import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
-import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,12 +120,12 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
     );
   }
 
-  Widget _buildFormState(SeedReport? report, User? user) {
+  Widget _buildFormState(SeedReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
-    _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _initialQuantityCtrl.text = report.initialQuantity.toString();
     _currentQuantityCtrl.text = report.currentQuantity.toString();
     _initialAverageWeightCtrl.text = report.initialAverageWeight;
@@ -150,7 +150,7 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
               AppInputDate(
                 label: 'Tanggal Tebar Benih',
                 hint: 'Tanggal Tebar Benih',
-                type: DateFieldType.date,
+                type: DateFieldType.dateTime,
                 controller: _reportDateCtrl,
                 requiredField: true,
                 readOnly: true,
@@ -236,11 +236,11 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
                   },
                 ),
                 const SizedBox(height: 16),
+                const Text(
+                  'Catatan: Laporan ini tidak dapat diubah.',
+                  style: TextStyle(fontSize: 14, color: Colors.red),
+                ),
               ],
-              const Text(
-                'Catatan: Laporan ini tidak dapat diubah.',
-                style: TextStyle(fontSize: 14, color: Colors.red),
-              ),
             ],
           ),
         ),

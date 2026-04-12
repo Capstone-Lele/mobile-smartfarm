@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/sick-report/data/datasources/sick_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/data/repositories/sick_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
+import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/repositories/sick_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/create_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/delete_sick_report_usecase.dart';
@@ -69,7 +70,8 @@ class SickReportListNotifier
   }
 }
 
-class SickReportDetailNotifier extends StateNotifier<AsyncValue<SickReport?>> {
+class SickReportDetailNotifier
+    extends StateNotifier<AsyncValue<SickReportDetail?>> {
   final GetSickReportUsecase _getSickReportUsecase;
 
   SickReportDetailNotifier(this._getSickReportUsecase)
@@ -169,9 +171,10 @@ final sickReportListNotifierProvider =
 
 // Sick Report Detail Notifier Provider
 final sickReportDetailNotifierProvider =
-    StateNotifierProvider<SickReportDetailNotifier, AsyncValue<SickReport?>>((
-      ref,
-    ) {
+    StateNotifierProvider<
+      SickReportDetailNotifier,
+      AsyncValue<SickReportDetail?>
+    >((ref) {
       final getSickReportUsecase = ref.read(getSickReportUseCaseProvider);
       return SickReportDetailNotifier(getSickReportUsecase);
     });

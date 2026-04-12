@@ -4,7 +4,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report.dart';
+import 'package:budidaya_lele_mobile/features/pool-cleaning-report/domain/entities/pool_cleaning_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/providers/pool_cleaning_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,12 +132,14 @@ class _UpdatePoolCleaningReportPageState
     );
   }
 
-  Widget _buildFormState(PoolCleaningReport? report) {
+  Widget _buildFormState(PoolCleaningReportDetail? report) {
     if (report == null) {
       return const Center(child: Text('Laporan tidak ditemukan'));
     }
 
-    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    if (_reportDateCtrl.text.isEmpty) {
+      _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    }
 
     final mutationState = ref.watch(poolCleaningReportMutationNotifierProvider);
     final isLoading = mutationState.isLoading;
