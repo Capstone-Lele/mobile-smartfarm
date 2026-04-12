@@ -20,6 +20,7 @@ import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/page
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/pages/move_pool_report_page.dart';
 import 'package:budidaya_lele_mobile/features/notification/presentation/pages/notification_page.dart';
+import 'package:budidaya_lele_mobile/features/parameter/presentation/pages/parameter_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/create_pool_cleaning_report_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/pool-cleaning-report/presentation/pages/pool_cleaning_report_page.dart';
@@ -124,6 +125,7 @@ class AppRoutes {
   static const String updateInventoryReport = '/inventory/update-report';
 
   static const String notification = '/notification';
+  static const String parameter = '/parameter';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -489,6 +491,8 @@ class AppRoutes {
       updateInventoryReport: (context) => const UpdateInventoryReportPage(),
       // Notification
       notification: (context) => const NotificationPage(),
+      // Parameter
+      parameter: (context) => const ParameterPage(),
     };
   }
 
