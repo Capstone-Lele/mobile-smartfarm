@@ -39,7 +39,7 @@ import 'package:budidaya_lele_mobile/features/seed-report/presentation/pages/see
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/create_sick_report_page.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sick_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sick_report_page.dart';
-import 'package:budidaya_lele_mobile/features/status-device/presentation/status_device_page.dart';
+import 'package:budidaya_lele_mobile/features/parameter/presentation/pages/status_device_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_profile_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';

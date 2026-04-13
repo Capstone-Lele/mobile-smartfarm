@@ -34,8 +34,18 @@ class NotificationItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (isUnread)
+            Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.only(top: 8, right: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            ),
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.transparent,

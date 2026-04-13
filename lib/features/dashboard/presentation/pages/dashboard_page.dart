@@ -50,9 +50,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            setState(() {
-              _selectedPool = null;
-            });
             await ref.read(poolListNotifierProvider.notifier).getPools();
           },
           child: SingleChildScrollView(
