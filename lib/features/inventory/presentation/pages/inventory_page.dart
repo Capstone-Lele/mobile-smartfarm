@@ -124,18 +124,21 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  if (selectedTab == 0) ...[
-                    AppCategoryFilter(
-                      categories: const [
-                        "Semua",
-                        "Material",
-                        "Pakan",
-                        "Vitamin",
-                      ],
-                      selectedIndex: selectedCategory,
-                      onCategoryChanged: (index) {
-                        ref.read(inventoryCategoryProvider.notifier).state =
-                            index;
+                  if (selectedTab == 2) ...[
+                    AppDateRangeFilter(
+                      startDate: _startDate,
+                      endDate: _endDate,
+                      onFilter: (start, end) {
+                        setState(() {
+                          _startDate = start;
+                          _endDate = end;
+                        });
+                      },
+                      onReset: () {
+                        setState(() {
+                          _startDate = null;
+                          _endDate = null;
+                        });
                       },
                     ),
                     const SizedBox(height: 16),
@@ -154,6 +157,20 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                           _startDate = null;
                           _endDate = null;
                         });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    AppCategoryFilter(
+                      categories: const [
+                        "Semua",
+                        "Material",
+                        "Pakan",
+                        "Vitamin",
+                      ],
+                      selectedIndex: selectedCategory,
+                      onCategoryChanged: (index) {
+                        ref.read(inventoryCategoryProvider.notifier).state =
+                            index;
                       },
                     ),
                     const SizedBox(height: 16),
