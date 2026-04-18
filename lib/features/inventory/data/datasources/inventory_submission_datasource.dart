@@ -11,7 +11,7 @@ class InventorySubmissionDatasource {
   // Get Inventory Submissions
   Future<Either<Failure, List<Map<String, dynamic>>>>
   getInventorySubmissions() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/inventory/submissions');
+    Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submissions');
     final token = AppSession.getBearerToken();
 
     try {
@@ -34,9 +34,7 @@ class InventorySubmissionDatasource {
   Future<Either<Failure, Map<String, dynamic>>> getInventorySubmission(
     String id,
   ) async {
-    Uri url = Uri.parse(
-      '${AppConstants.baseURL}/note/inventory/submission/$id',
-    );
+    Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submission/$id');
     final token = AppSession.getBearerToken();
 
     try {
@@ -126,7 +124,7 @@ class InventorySubmissionDatasource {
     }
   }
 
-   // Delete Inventory Submission
+  // Delete Inventory Submission
   Future<Either<Failure, Map<String, dynamic>>> deleteInventorySubmission(
     String id,
   ) async {

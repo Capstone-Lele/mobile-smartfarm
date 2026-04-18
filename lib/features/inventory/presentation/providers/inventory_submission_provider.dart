@@ -2,6 +2,7 @@
 import 'package:budidaya_lele_mobile/features/inventory/data/datasources/inventory_submission_datasource.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/repositories/inventory_submission_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/repositories/inventory_submission_repository.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory-submission/create_inventory_submission_usecase.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory-submission/delete_inventory_submission_usecase.dart';
@@ -79,7 +80,7 @@ class InventorySubmissionListNotifier
 }
 
 class InventorySubmissionDetailNotifier
-    extends StateNotifier<AsyncValue<InventorySubmission?>> {
+    extends StateNotifier<AsyncValue<InventorySubmissionDetail?>> {
   final GetInventorySubmissionUsecase _getInventorySubmissionUsecase;
 
   InventorySubmissionDetailNotifier(this._getInventorySubmissionUsecase)
@@ -218,7 +219,7 @@ final inventorySubmissionListNotifierProvider =
 final inventorySubmissionDetailNotifierProvider =
     StateNotifierProvider<
       InventorySubmissionDetailNotifier,
-      AsyncValue<InventorySubmission?>
+      AsyncValue<InventorySubmissionDetail?>
     >((ref) {
       final getInventorySubmissionUsecase = ref.read(
         getInventorySubmissionUseCaseProvider,

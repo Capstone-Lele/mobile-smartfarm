@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/datasources/inventory_report_datasource.dart';
+import 'package:budidaya_lele_mobile/features/inventory/data/models/inventory_report_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/models/inventory_report_model.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/repositories/inventory_report_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,12 +32,12 @@ class InventoryReportRepositoryImpl implements InventoryReportRepository {
   }
 
   @override
-  Future<Either<Failure, InventoryReport>> getInventoryReport(String id) async {
+  Future<Either<Failure, InventoryReportDetail>> getInventoryReport(String id) async {
     final result = await datasource.getInventoryReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
       try {
-        final inventoryReport = InventoryReportModel.fromJson(data);
+        final inventoryReport = InventoryReportDetailModel.fromJson(data);
         return Right(inventoryReport);
       } catch (e) {
         return Left(

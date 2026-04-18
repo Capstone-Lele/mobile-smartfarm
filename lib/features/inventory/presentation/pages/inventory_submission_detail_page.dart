@@ -1,48 +1,71 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
+
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission_detail.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_submission_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class InventorySubmissionDetailPage extends StatefulWidget {
-  const InventorySubmissionDetailPage({super.key});
+class InventorySubmissionDetailPage extends ConsumerStatefulWidget {
+  final String inventorySubmissionId;
+
+  const InventorySubmissionDetailPage({
+    super.key,
+    required this.inventorySubmissionId,
+  });
 
   @override
-  State<InventorySubmissionDetailPage> createState() =>
+  ConsumerState<InventorySubmissionDetailPage> createState() =>
       _InventorySubmissionDetailPageState();
 }
 
 class _InventorySubmissionDetailPageState
-    extends State<InventorySubmissionDetailPage> {
+    extends ConsumerState<InventorySubmissionDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _quantityCtrl = TextEditingController(text: "10");
-  final _notesCtrl = TextEditingController(text: "Pengajuan Pakan 100 kg");
+  final _productNameCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _statusCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
 
-  final List<String> _inventorySubmission = [
-    'Pakan Pelet 781-1',
-    'Pakan Pelet 781-2',
-    'Pakan Pelet 781-3',
-    'Pakan Pelet 781-4',
-  ];
-
-  final String _selectedInventorySubmission = 'Pakan Pelet 781-1';
-
-  final List<String> _status = ['Disetujui', 'Tertunda', 'Ditolak'];
-
-  final String _selectedStatus = 'Disetujui';
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _getReportDetail());
+  }
 
   @override
   void dispose() {
+    _productNameCtrl.dispose();
     _quantityCtrl.dispose();
+    _statusCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
 
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(inventorySubmissionDetailNotifierProvider.notifier)
+        .getInventorySubmission(widget.inventorySubmissionId);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final inventorySubmissionAsync = ref.watch(
+      inventorySubmissionDetailNotifierProvider,
+    );
+
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: inventorySubmissionAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (inventorySubmission) => _buildFormState(inventorySubmission),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -64,7 +87,38 @@ class _InventorySubmissionDetailPageState
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormState(InventorySubmissionDetail? inventorySubmission) {
+    if (inventorySubmission == null) {
+      return const Center(child: Text('Pengajuan inventaris tidak ditemukan'));
+    }
+
+    _productNameCtrl.text = inventorySubmission.product;
+    _quantityCtrl.text = inventorySubmission.quantity.toString();
+    _statusCtrl.text = inventorySubmission.status;
+    _notesCtrl.text = inventorySubmission.notes ?? '';
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -73,16 +127,15 @@ class _InventorySubmissionDetailPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputDropdown(
+              AppInputText(
                 label: 'Nama Produk',
-                hint: 'Pilh Produk',
-                items: _inventorySubmission,
-                value: _selectedInventorySubmission,
-                itemLabel: (item) => item,
+                hint: 'Nama Produk',
+                controller: _productNameCtrl,
+                type: FieldType.text,
                 requiredField: true,
                 readOnly: true,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               AppInputText(
                 label: 'Jumlah',
                 hint: 'Jumlah',
@@ -92,12 +145,11 @@ class _InventorySubmissionDetailPageState
                 readOnly: true,
               ),
               SizedBox(height: 16),
-              AppInputDropdown(
+              AppInputText(
                 label: 'Status',
-                hint: 'Pilh Status',
-                items: _status,
-                value: _selectedStatus,
-                itemLabel: (item) => item,
+                hint: 'Status',
+                controller: _statusCtrl,
+                type: FieldType.text,
                 requiredField: true,
                 readOnly: true,
               ),
@@ -135,7 +187,26 @@ class _InventorySubmissionDetailPageState
                     confirmText: 'Iya',
                     cancelText: 'Tidak',
                     onConfirm: () async {
-                      AppRoutes.pop(context);
+                      await ref
+                          .read(
+                            inventorySubmissionMutationNotifierProvider
+                                .notifier,
+                          )
+                          .deleteInventorySubmission(
+                            widget.inventorySubmissionId,
+                          );
+
+                      final mutationState = ref.read(
+                        inventorySubmissionMutationNotifierProvider,
+                      );
+                      if (mutationState.hasError) {
+                        AppSnackbar.error(mutationState.error.toString());
+                        AppRoutes.pop(context);
+                      } else {
+                        AppRoutes.pop(context);
+                        AppSnackbar.success('Pengajuan berhasil dihapus');
+                        AppRoutes.pop(context);
+                      }
                     },
                   );
                 },
