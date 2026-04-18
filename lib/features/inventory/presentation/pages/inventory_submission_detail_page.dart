@@ -1,5 +1,6 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
@@ -26,10 +27,10 @@ class InventorySubmissionDetailPage extends ConsumerStatefulWidget {
 class _InventorySubmissionDetailPageState
     extends ConsumerState<InventorySubmissionDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _productNameCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _statusCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -39,10 +40,10 @@ class _InventorySubmissionDetailPageState
 
   @override
   void dispose() {
-    _productNameCtrl.dispose();
     _quantityCtrl.dispose();
     _statusCtrl.dispose();
     _notesCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
   }
 
@@ -114,10 +115,10 @@ class _InventorySubmissionDetailPageState
       return const Center(child: Text('Pengajuan inventaris tidak ditemukan'));
     }
 
-    _productNameCtrl.text = inventorySubmission.product;
     _quantityCtrl.text = inventorySubmission.quantity.toString();
     _statusCtrl.text = inventorySubmission.status;
     _notesCtrl.text = inventorySubmission.notes ?? '';
+    _userCtrl.text = inventorySubmission.user;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -127,11 +128,12 @@ class _InventorySubmissionDetailPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputText(
+              AppInputDropdown<String>(
                 label: 'Nama Produk',
-                hint: 'Nama Produk',
-                controller: _productNameCtrl,
-                type: FieldType.text,
+                hint: 'Pilh Produk',
+                items: [inventorySubmission.product],
+                value: inventorySubmission.product,
+                itemLabel: (item) => item,
                 requiredField: true,
                 readOnly: true,
               ),
@@ -164,53 +166,68 @@ class _InventorySubmissionDetailPageState
                 requiredField: false,
                 readOnly: true,
               ),
+              SizedBox(height: 16),
+              AppInputText(
+                label: 'Pengaju',
+                hint: 'Pengaju',
+                controller: _userCtrl,
+                type: FieldType.text,
+                requiredField: true,
+                readOnly: true,
+              ),
               const SizedBox(height: 24),
-              AppButton(
-                label: 'Ubah',
-                onPressed: () {
-                  AppRoutes.pushNamed(
-                    context,
-                    AppRoutes.updateInventorySubmission,
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Pengajuan',
-                    message: 'Apakah anda yakin ingin menghapus pengajuan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      await ref
-                          .read(
-                            inventorySubmissionMutationNotifierProvider
-                                .notifier,
-                          )
-                          .deleteInventorySubmission(
-                            widget.inventorySubmissionId,
-                          );
+              if (inventorySubmission.status == 'pending') ...[
+                AppButton(
+                  label: 'Ubah',
+                  onPressed: () {
+                    AppRoutes.pushNamed(
+                      context,
+                      AppRoutes.updateInventorySubmission,
+                      arguments: {
+                        'inventorySubmissionId': widget.inventorySubmissionId,
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: 'Hapus',
+                  color: AppColors.red,
+                  onPressed: () {
+                    AppDialog.showConfirmationDialog(
+                      context: context,
+                      color: AppColors.red,
+                      title: 'Hapus Pengajuan',
+                      message:
+                          'Apakah anda yakin ingin menghapus pengajuan ini?',
+                      confirmText: 'Iya',
+                      cancelText: 'Tidak',
+                      onConfirm: () async {
+                        await ref
+                            .read(
+                              inventorySubmissionMutationNotifierProvider
+                                  .notifier,
+                            )
+                            .deleteInventorySubmission(
+                              widget.inventorySubmissionId,
+                            );
 
-                      final mutationState = ref.read(
-                        inventorySubmissionMutationNotifierProvider,
-                      );
-                      if (mutationState.hasError) {
-                        AppSnackbar.error(mutationState.error.toString());
-                        AppRoutes.pop(context);
-                      } else {
-                        AppRoutes.pop(context);
-                        AppSnackbar.success('Pengajuan berhasil dihapus');
-                        AppRoutes.pop(context);
-                      }
-                    },
-                  );
-                },
-              ),
+                        final mutationState = ref.read(
+                          inventorySubmissionMutationNotifierProvider,
+                        );
+                        if (mutationState.hasError) {
+                          AppSnackbar.error(mutationState.error.toString());
+                          AppRoutes.pop(context);
+                        } else {
+                          AppRoutes.pop(context);
+                          AppSnackbar.success('Pengajuan berhasil dihapus');
+                          AppRoutes.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),

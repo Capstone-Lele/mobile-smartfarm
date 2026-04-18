@@ -7,6 +7,7 @@ class InventorySubmissionCard extends StatelessWidget {
   final String productName;
   final String quantity;
   final String submissionDate;
+  final String user;
   final String status;
   final BadgeType badgeType;
   final VoidCallback? onTap;
@@ -16,6 +17,7 @@ class InventorySubmissionCard extends StatelessWidget {
     required this.productName,
     required this.quantity,
     required this.submissionDate,
+    required this.user,
     required this.status,
     required this.badgeType,
     this.onTap,
@@ -72,7 +74,22 @@ class InventorySubmissionCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Diajukan: $submissionDate',
+                    'Diajukan $submissionDate',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.darkGray,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Oleh $user',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.darkGray,
