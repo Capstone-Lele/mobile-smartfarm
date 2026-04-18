@@ -11,20 +11,7 @@ abstract class InventoryReportRepository {
     String inventoryId,
     String reportDate,
     int quantity,
-    String type,
     XFile image,
     String? notes,
-  );
-  Future<Either<Failure, Map<String, dynamic>>> updateInventoryReport(
-    String id,
-    String inventoryId,
-    String reportDate,
-    int quantity,
-    String type,
-    XFile? image,
-    String? notes,
-  );
-  Future<Either<Failure, Map<String, dynamic>>> deleteInventoryReport(
-    String id,
   );
 }
