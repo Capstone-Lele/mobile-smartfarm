@@ -12,7 +12,6 @@ class CreateInventoryReportUsecase {
     String inventoryId,
     String reportDate,
     int quantity,
-    String type,
     XFile image,
     String? notes,
   ) {
@@ -20,7 +19,6 @@ class CreateInventoryReportUsecase {
       inventoryId,
       reportDate,
       quantity,
-      type,
       image,
       notes,
     );

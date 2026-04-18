@@ -60,7 +60,6 @@ class InventoryReportDatasource {
     String inventoryId,
     String reportDate,
     int quantity,
-    String type,
     XFile image,
     String? notes,
   ) async {
@@ -73,7 +72,6 @@ class InventoryReportDatasource {
       request.fields['inventoryId'] = inventoryId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
-      request.fields['type'] = type;
       request.fields['notes'] = notes ?? '';
 
       request.files.add(
@@ -94,74 +92,6 @@ class InventoryReportDatasource {
       final data = AppResponse.data(response);
       final inventoryReport = data['data'][0];
       return Right(inventoryReport);
-    } catch (e) {
-      if (e is Failure) return Left(e);
-      return Left(FetchFailure(e.toString()));
-    }
-  }
-
-  // Update Inventory Report
-  Future<Either<Failure, Map<String, dynamic>>> updateInventoryReport(
-    String id,
-    String inventoryId,
-    String reportDate,
-    int quantity,
-    String type,
-    XFile? image,
-    String? notes,
-  ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/inventory/$id');
-    final token = AppSession.getBearerToken();
-
-    try {
-      var request = http.MultipartRequest('PUT', url);
-      request.headers.addAll(AppRequest.header(token));
-      request.fields['inventoryId'] = inventoryId;
-      request.fields['reportDate'] = reportDate;
-      request.fields['quantity'] = quantity.toString();
-      request.fields['type'] = type;
-      request.fields['notes'] = notes ?? '';
-      if (image != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'image',
-            image.path,
-            contentType: MediaType('image', 'jpeg'),
-          ),
-        );
-      }
-      final streamedResponse = await request.send();
-      final response = await safeRequest(
-        () => http.Response.fromStream(
-          streamedResponse,
-        ).timeout(const Duration(seconds: 10)),
-      );
-
-      final data = AppResponse.data(response);
-      final inventoryReport = data['data'][0];
-      return Right(inventoryReport);
-    } catch (e) {
-      if (e is Failure) return Left(e);
-      return Left(FetchFailure(e.toString()));
-    }
-  }
-
-  // Delete Inventory Report
-  Future<Either<Failure, Map<String, dynamic>>> deleteInventoryReport(
-    String id,
-  ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/inventory/$id');
-    final token = AppSession.getBearerToken();
-
-    try {
-      final response = await safeRequest(
-        () => http
-            .delete(url, headers: AppRequest.header(token))
-            .timeout(const Duration(seconds: 10)),
-      );
-
-      final data = AppResponse.data(response);
-      return Right(data);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

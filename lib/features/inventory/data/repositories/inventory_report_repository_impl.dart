@@ -32,7 +32,9 @@ class InventoryReportRepositoryImpl implements InventoryReportRepository {
   }
 
   @override
-  Future<Either<Failure, InventoryReportDetail>> getInventoryReport(String id) async {
+  Future<Either<Failure, InventoryReportDetail>> getInventoryReport(
+    String id,
+  ) async {
     final result = await datasource.getInventoryReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
@@ -52,7 +54,6 @@ class InventoryReportRepositoryImpl implements InventoryReportRepository {
     String inventoryId,
     String reportDate,
     int quantity,
-    String type,
     XFile image,
     String? notes,
   ) async {
@@ -60,46 +61,9 @@ class InventoryReportRepositoryImpl implements InventoryReportRepository {
       inventoryId,
       reportDate,
       quantity,
-      type,
       image,
       notes,
     );
-
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> updateInventoryReport(
-    String id,
-    String inventoryId,
-    String reportDate,
-    int quantity,
-    String type,
-    XFile? image,
-    String? notes,
-  ) async {
-    final result = await datasource.updateInventoryReport(
-      id,
-      inventoryId,
-      reportDate,
-      quantity,
-      type,
-      image,
-      notes,
-    );
-
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteInventoryReport(
-    String id,
-  ) async {
-    final result = await datasource.deleteInventoryReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
       return Right(data);
