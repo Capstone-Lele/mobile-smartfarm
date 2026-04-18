@@ -9,6 +9,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/category_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_report_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_submission_provider.dart';
@@ -40,6 +41,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ref
           .read(inventoryReportListNotifierProvider.notifier)
           .getInventoryReports();
+      ref.read(categoryListNotifierProvider.notifier).getCategories();
     });
   }
 
@@ -70,6 +72,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     final inventoryState = ref.watch(inventoryListNotifierProvider);
     final submissionState = ref.watch(inventorySubmissionListNotifierProvider);
     final reportState = ref.watch(inventoryReportListNotifierProvider);
+    final categoryState = ref.watch(categoryListNotifierProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -167,17 +170,41 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    AppCategoryFilter(
-                      categories: const [
-                        "Semua",
-                        "Material",
-                        "Pakan",
-                        "Vitamin",
-                      ],
-                      selectedIndex: selectedCategory,
-                      onCategoryChanged: (index) {
-                        ref.read(inventoryCategoryProvider.notifier).state =
-                            index;
+                    categoryState.when(
+                      loading: () => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: List.generate(3, (index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AppLoading(
+                                width: 60,
+                                height: 32,
+                                borderRadius: 20,
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      error: (error, stack) => Center(
+                        child: Text(
+                          error.toString(),
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      data: (categories) {
+                        final categoryNames = [
+                          "Semua",
+                          ...categories.map((c) => c.name),
+                        ];
+                        return AppCategoryFilter(
+                          categories: categoryNames,
+                          selectedIndex: selectedCategory,
+                          onCategoryChanged: (index) {
+                            ref.read(inventoryCategoryProvider.notifier).state =
+                                index;
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 16),
