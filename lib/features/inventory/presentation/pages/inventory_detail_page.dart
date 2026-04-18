@@ -1,5 +1,6 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
@@ -20,7 +21,6 @@ class InventoryDetailPage extends ConsumerStatefulWidget {
 
 class _InventoryDetailPageState extends ConsumerState<InventoryDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _productNameCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
 
@@ -32,7 +32,6 @@ class _InventoryDetailPageState extends ConsumerState<InventoryDetailPage> {
 
   @override
   void dispose() {
-    _productNameCtrl.dispose();
     _quantityCtrl.dispose();
     _dateCtrl.dispose();
     super.dispose();
@@ -104,7 +103,6 @@ class _InventoryDetailPageState extends ConsumerState<InventoryDetailPage> {
       return const Center(child: Text('Inventaris tidak ditemukan'));
     }
 
-    _productNameCtrl.text = inventory.product;
     _quantityCtrl.text = inventory.totalQuantity.toString();
     _dateCtrl.text = AppFormat.toUiDate(inventory.updatedAt);
 
@@ -116,11 +114,12 @@ class _InventoryDetailPageState extends ConsumerState<InventoryDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputText(
+              AppInputDropdown<String>(
                 label: 'Nama Produk',
-                hint: 'Nama Produk',
-                controller: _productNameCtrl,
-                type: FieldType.text,
+                hint: 'Pilh Produk',
+                items: [inventory.product],
+                value: inventory.product,
+                itemLabel: (item) => item,
                 requiredField: true,
                 readOnly: true,
               ),

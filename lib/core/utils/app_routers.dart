@@ -495,8 +495,14 @@ class AppRoutes {
               args?['inventorySubmissionId'] as String? ?? '',
         );
       },
-      updateInventorySubmission: (context) =>
-          const UpdateInventorySubmissionPage(),
+      updateInventorySubmission: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return UpdateInventorySubmissionPage(
+          inventorySubmissionId:
+              args?['inventorySubmissionId'] as String? ?? '',
+        );
+      },
       createInventoryReport: (context) => const CreateInventoryReportPage(),
       inventoryReportDetail: (context) {
         final args =

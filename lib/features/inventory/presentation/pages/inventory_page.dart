@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/category.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission.dart';
@@ -50,11 +51,13 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     switch (selectedTab) {
       case 0:
         await ref.read(inventoryListNotifierProvider.notifier).getInventories();
+        await ref.read(categoryListNotifierProvider.notifier).getCategories();
         break;
       case 1:
         await ref
             .read(inventorySubmissionListNotifierProvider.notifier)
             .getInventorySubmissions();
+        await ref.read(categoryListNotifierProvider.notifier).getCategories();
         break;
       case 2:
         await ref
@@ -227,9 +230,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
                   // Lists
                   if (selectedTab == 0)
-                    _buildInventoryList(inventoryState)
+                    _buildInventoryList(inventoryState, categoryState)
                   else if (selectedTab == 1)
-                    _buildSubmissionList(submissionState)
+                    _buildSubmissionList(submissionState, categoryState)
                   else
                     _buildReportList(reportState),
                 ],
@@ -488,7 +491,10 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Widget _buildInventoryList(AsyncValue<List<Inventory>> state) {
+  Widget _buildInventoryList(
+    AsyncValue<List<Inventory>> state,
+    AsyncValue<List<Category>> categoryState,
+  ) {
     final selectedCategory = ref.watch(inventoryCategoryProvider);
 
     return state.when(
@@ -512,10 +518,18 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             .where((item) {
               if (selectedCategory == 0) return true;
 
-              final categoryMap = {1: "Material", 2: "Pakan", 3: "Vitamin"};
-
-              return item.category.toLowerCase() ==
-                  (categoryMap[selectedCategory] ?? "").toLowerCase();
+              // Ambil dari categoryState parameter
+              if (categoryState.hasValue) {
+                final categories = categoryState.value ?? [];
+                if (selectedCategory > 0 &&
+                    selectedCategory <= categories.length) {
+                  final selectedCategoryName =
+                      categories[selectedCategory - 1].name;
+                  return item.category.toLowerCase() ==
+                      selectedCategoryName.toLowerCase();
+                }
+              }
+              return false;
             })
             .where((item) {
               // Filter berdasarkan date range
@@ -592,7 +606,10 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     );
   }
 
-  Widget _buildSubmissionList(AsyncValue<List<InventorySubmission>> state) {
+  Widget _buildSubmissionList(
+    AsyncValue<List<InventorySubmission>> state,
+    AsyncValue<List<Category>> categoryState,
+  ) {
     final selectedCategory = ref.watch(inventoryCategoryProvider);
 
     return state.when(
@@ -616,16 +633,24 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             .where((item) {
               if (selectedCategory == 0) return true;
 
-              final categoryMap = {1: "Material", 2: "Pakan", 3: "Vitamin"};
-
-              return item.category.toLowerCase() ==
-                  (categoryMap[selectedCategory] ?? "").toLowerCase();
+              // Ambil dari categoryState parameter
+              if (categoryState.hasValue) {
+                final categories = categoryState.value ?? [];
+                if (selectedCategory > 0 &&
+                    selectedCategory <= categories.length) {
+                  final selectedCategoryName =
+                      categories[selectedCategory - 1].name;
+                  return item.category.toLowerCase() ==
+                      selectedCategoryName.toLowerCase();
+                }
+              }
+              return false;
             })
             .where((item) {
               // Filter berdasarkan date range
               if (_startDate != null && _endDate != null) {
                 try {
-                  final parsed = DateTime.parse(item.createdAt);
+                  final parsed = DateTime.parse(item.updatedAt);
                   final dateOnly = DateTime(
                     parsed.year,
                     parsed.month,
@@ -679,6 +704,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               productName: item.product,
               quantity: '${item.quantity} ${item.unit}',
               submissionDate: AppFormat.date(item.createdAt),
+              user: item.user,
               status: statusLabel,
               badgeType: badgeType,
               onTap: () {
