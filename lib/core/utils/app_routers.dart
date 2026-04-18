@@ -10,7 +10,6 @@ import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/creat
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_report_detail_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/inventory_submission_detail_page.dart';
-import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/update_inventory_report_page.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/pages/update_inventory_submission_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/create_mortality_report_page.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/pages/mortality_report_detail_page.dart';
@@ -479,16 +478,33 @@ class AppRoutes {
       // Status Device
       statusDevice: (context) => const StatusDevicePage(),
       // Inventory
-      inventoryDetail: (context) => const InventoryDetailPage(),
+      inventoryDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return InventoryDetailPage(
+          inventoryId: args?['inventoryId'] as String? ?? '',
+        );
+      },
       createInventorySubmission: (context) =>
           const CreateInventorySubmissionPage(),
-      inventorySubmissionDetail: (context) =>
-          const InventorySubmissionDetailPage(),
+      inventorySubmissionDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return InventorySubmissionDetailPage(
+          inventorySubmissionId:
+              args?['inventorySubmissionId'] as String? ?? '',
+        );
+      },
       updateInventorySubmission: (context) =>
           const UpdateInventorySubmissionPage(),
       createInventoryReport: (context) => const CreateInventoryReportPage(),
-      inventoryReportDetail: (context) => const InventoryReportDetailPage(),
-      updateInventoryReport: (context) => const UpdateInventoryReportPage(),
+      inventoryReportDetail: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return InventoryReportDetailPage(
+          reportId: args?['reportId'] as String? ?? '',
+        );
+      },
       // Notification
       notification: (context) => const NotificationPage(),
       // Parameter

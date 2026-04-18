@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/features/inventory/data/datasources/inventory_datasource.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/repositories/inventory_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory/get_inventories_usecase.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory/get_inventory_usecase.dart';
@@ -54,7 +55,7 @@ class InventoryListNotifier extends StateNotifier<AsyncValue<List<Inventory>>> {
   }
 }
 
-class InventoryDetailNotifier extends StateNotifier<AsyncValue<Inventory?>> {
+class InventoryDetailNotifier extends StateNotifier<AsyncValue<InventoryDetail?>> {
   final GetInventoryUsecase _getInventoryUsecase;
 
   InventoryDetailNotifier(this._getInventoryUsecase)
@@ -96,7 +97,7 @@ final inventoryListNotifierProvider =
 final inventoryDetailNotifierProvider =
     StateNotifierProvider<
       InventoryDetailNotifier,
-      AsyncValue<Inventory?>
+      AsyncValue<InventoryDetail?>
     >((ref) {
       final getInventoryUsecase = ref.read(
         getInventoryUseCaseProvider,

@@ -1,7 +1,7 @@
-// Provider Datasource
 import 'package:budidaya_lele_mobile/features/inventory/data/datasources/inventory_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/repositories/inventory_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/repositories/inventory_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory-report/create_inventory_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/usecases/inventory-report/delete_inventory_report_usecase.dart';
@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 
+// Provider Datasource
 final inventoryReportDatasourceProvider = Provider(
   (ref) => InventoryReportDatasource(),
 );
@@ -83,7 +84,7 @@ class InventoryReportListNotifier
 }
 
 class InventoryReportDetailNotifier
-    extends StateNotifier<AsyncValue<InventoryReport?>> {
+    extends StateNotifier<AsyncValue<InventoryReportDetail?>> {
   final GetInventoryReportUsecase _getInventoryReportUsecase;
 
   InventoryReportDetailNotifier(this._getInventoryReportUsecase)
@@ -229,7 +230,7 @@ final inventoryReportListNotifierProvider =
 final inventoryReportDetailNotifierProvider =
     StateNotifierProvider<
       InventoryReportDetailNotifier,
-      AsyncValue<InventoryReport?>
+      AsyncValue<InventoryReportDetail?>
     >((ref) {
       final getInventoryReportUsecase = ref.read(
         getInventoryReportUseCaseProvider,

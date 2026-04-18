@@ -1,35 +1,37 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
-import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report_detail.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_report_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class InventoryReportDetailPage extends StatefulWidget {
-  const InventoryReportDetailPage({super.key});
+class InventoryReportDetailPage extends ConsumerStatefulWidget {
+  final String reportId;
+
+  const InventoryReportDetailPage({super.key, required this.reportId});
 
   @override
-  State<InventoryReportDetailPage> createState() =>
+  ConsumerState<InventoryReportDetailPage> createState() =>
       _InventoryReportDetailPageState();
 }
 
-class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
+class _InventoryReportDetailPageState
+    extends ConsumerState<InventoryReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
-  final _reportDateCtrl = TextEditingController(text: "2024-06-01");
-  final _quantityCtrl = TextEditingController(text: "10");
-  final _notesCtrl = TextEditingController(text: "Pengajuan Pakan 100 kg");
+  final _reportDateCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
 
-  final List<String> _inventoryReports = [
-    'Pakan Pelet 781-1',
-    'Pakan Pelet 781-2',
-    'Pakan Pelet 781-3',
-    'Pakan Pelet 781-4',
-  ];
-
-  final String _selectedInventoryReport = 'Pakan Pelet 781-1';
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => _getReportDetail());
+  }
 
   @override
   void dispose() {
@@ -39,9 +41,25 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
     super.dispose();
   }
 
+  Future<void> _getReportDetail() async {
+    await ref
+        .read(inventoryReportDetailNotifierProvider.notifier)
+        .getInventoryReport(widget.reportId);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
+    final inventoryReportAsync = ref.watch(
+      inventoryReportDetailNotifierProvider,
+    );
+    return Scaffold(
+      appBar: _buildHeader(context),
+      body: inventoryReportAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (err, stack) => _buildErrorState(err),
+        data: (report) => _buildFormState(report),
+      ),
+    );
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -63,7 +81,37 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildLoadingState() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormState(InventoryReportDetail? report) {
+    if (report == null) {
+      return const Center(child: Text('Laporan inventaris tidak ditemukan'));
+    }
+
+    _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
+    _quantityCtrl.text = report.quantity.toString();
+    _notesCtrl.text = report.notes ?? '';
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -72,12 +120,12 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppInputDropdown(
+              AppInputDropdown<String>(
                 label: 'Nama Produk',
                 hint: 'Pilh Produk',
-                items: _inventoryReports,
-                value: _selectedInventoryReport,
-                itemLabel: (item) => item,
+                items: [report.type],
+                value: report.type,
+                itemLabel: (item) => "item Bug",
                 requiredField: true,
                 readOnly: true,
               ),
@@ -85,7 +133,7 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
               AppInputDate(
                 label: 'Tanggal Pemakaian Inventaris',
                 hint: 'Tanggal Pemakaian Inventaris',
-                type: DateFieldType.date,
+                type: DateFieldType.dateTime,
                 controller: _reportDateCtrl,
                 requiredField: true,
                 readOnly: true,
@@ -105,7 +153,7 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
                 hint: 'Tambahkan foto Laporan Inventaris',
                 requiredField: true,
                 readOnly: true,
-                imageUrl: 'https://picsum.photos/200',
+                imageUrl: report.image,
               ),
               const SizedBox(height: 16),
               AppInputText(
@@ -119,29 +167,9 @@ class _InventoryReportDetailPageState extends State<InventoryReportDetailPage> {
                 readOnly: true,
               ),
               const SizedBox(height: 24),
-              AppButton(
-                label: 'Ubah',
-                onPressed: () {
-                  AppRoutes.pushNamed(context, AppRoutes.updateInventoryReport);
-                },
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'Hapus',
-                color: AppColors.red,
-                onPressed: () {
-                  AppDialog.showConfirmationDialog(
-                    context: context,
-                    color: AppColors.red,
-                    title: 'Hapus Laporan',
-                    message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                    confirmText: 'Iya',
-                    cancelText: 'Tidak',
-                    onConfirm: () async {
-                      AppRoutes.pop(context);
-                    },
-                  );
-                },
+              Text(
+                'Laporan inventaris bersifat permanen dan tidak dapat di ubah/hapus',
+                style: TextStyle(fontSize: 15, color: AppColors.red),
               ),
             ],
           ),

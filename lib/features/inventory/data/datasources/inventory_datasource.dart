@@ -30,10 +30,10 @@ class InventoryDatasource {
   }
 
   // Get Inventory
-  Future<Either<Failure, Map<String, dynamic>>> getInventory(
-    String id,
-  ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/inventory/$id');
+  Future<Either<Failure, Map<String, dynamic>>> getInventory(String id) async {
+    Uri url = Uri.parse(
+      '${AppConstants.baseURL}/inventory/$id?inventoryType=all',
+    );
     final token = AppSession.getBearerToken();
 
     try {

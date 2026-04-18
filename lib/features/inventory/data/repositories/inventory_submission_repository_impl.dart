@@ -1,7 +1,9 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/datasources/inventory_submission_datasource.dart';
+import 'package:budidaya_lele_mobile/features/inventory/data/models/inventory_submission_detail_model.dart';
 import 'package:budidaya_lele_mobile/features/inventory/data/models/inventory_submission_model.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission.dart';
+import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/repositories/inventory_submission_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -33,14 +35,16 @@ class InventorySubmissionRepositoryImpl
   }
 
   @override
-  Future<Either<Failure, InventorySubmission>> getInventorySubmission(
+  Future<Either<Failure, InventorySubmissionDetail>> getInventorySubmission(
     String id,
   ) async {
     final result = await datasource.getInventorySubmission(id);
 
     return result.fold((failure) => Left(failure), (data) {
       try {
-        final inventorySubmission = InventorySubmissionModel.fromJson(data);
+        final inventorySubmission = InventorySubmissionDetailModel.fromJson(
+          data,
+        );
         return Right(inventorySubmission);
       } catch (e) {
         return Left(
