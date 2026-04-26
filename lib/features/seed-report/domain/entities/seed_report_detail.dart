@@ -11,6 +11,7 @@ class SeedReportDetail {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
+  final String user;
 
   SeedReportDetail({
     required this.id,
@@ -25,5 +26,6 @@ class SeedReportDetail {
     required this.createdAt,
     required this.updatedAt,
     required this.deletedAt,
+    required this.user,
   });
 }

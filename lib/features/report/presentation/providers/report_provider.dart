@@ -70,9 +70,9 @@ class TotalReportsNotifier extends StateNotifier<AsyncValue<TotalReport?>> {
   TotalReportsNotifier(this._getTotalReportsUsecase)
     : super(const AsyncValue.data(null));
 
-  Future<void> getTotalReports() async {
+  Future<void> getTotalReports(int month) async {
     state = const AsyncValue.loading();
-    final result = await _getTotalReportsUsecase.execute();
+    final result = await _getTotalReportsUsecase.execute(month);
 
     result.fold(
       (failure) {
@@ -95,9 +95,9 @@ class TotalReportsByPoolNotifier
   TotalReportsByPoolNotifier(this._getTotalReportsByPoolUsecase)
     : super(const AsyncValue.data(null));
 
-  Future<void> getTotalReportsByPool(String poolId) async {
+  Future<void> getTotalReportsByPool(String poolId, int month) async {
     state = const AsyncValue.loading();
-    final result = await _getTotalReportsByPoolUsecase.execute(poolId);
+    final result = await _getTotalReportsByPoolUsecase.execute(poolId, month);
 
     result.fold(
       (failure) {

@@ -7,6 +7,7 @@ class AppButton extends StatelessWidget {
   final Color color;
   final bool enabled;
   final bool isOutlined;
+  final bool isLoading;
 
   const AppButton({
     super.key,
@@ -15,6 +16,7 @@ class AppButton extends StatelessWidget {
     this.color = AppColors.primary,
     this.enabled = true,
     this.isOutlined = false,
+    this.isLoading = false,
   });
 
   @override
@@ -32,14 +34,23 @@ class AppButton extends StatelessWidget {
                 ),
                 elevation: 0,
               ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: color,
-                ),
-              ),
+              child: isLoading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: color,
+                      ),
+                    ),
             )
           : ElevatedButton(
               onPressed: enabled ? onPressed : null,
@@ -51,14 +62,25 @@ class AppButton extends StatelessWidget {
                 ),
                 elevation: 0,
               ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: AppColors.white,
-                ),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.white,
+                        ),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.white,
+                      ),
+                    ),
             ),
     );
   }

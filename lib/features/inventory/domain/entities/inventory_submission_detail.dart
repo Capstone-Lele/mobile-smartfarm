@@ -13,7 +13,7 @@ class InventorySubmissionDetail {
   final String updatedAt;
   final String? deletedAt;
 
-  InventorySubmissionDetail({
+  const InventorySubmissionDetail({
     required this.id,
     required this.userId,
     required this.user,

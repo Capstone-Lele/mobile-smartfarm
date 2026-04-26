@@ -1,8 +1,10 @@
 // Provider Datasource
 import 'package:budidaya_lele_mobile/features/dashboard/data/datasources/iot_datasource.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/data/repositories/iot_repository_impl.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/chart_iots.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/iot.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/repositories/iot_repository.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/domain/usecases/get_chart_iots_usecase.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/usecases/get_iot_usecase.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/usecases/get_iots_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,11 @@ final getIotsUseCaseProvider = Provider<GetIotsUsecase>((ref) {
 final getIotUseCaseProvider = Provider<GetIotUsecase>((ref) {
   final repository = ref.read(iotRepositoryProvider);
   return GetIotUsecase(repository);
+});
+
+final getChartIotsUseCaseProvider = Provider<GetChartIotsUsecase>((ref) {
+  final repository = ref.read(iotRepositoryProvider);
+  return GetChartIotsUsecase(repository);
 });
 
 class IotListNotifier extends StateNotifier<AsyncValue<List<Iot>>> {
@@ -73,6 +80,38 @@ class IotDetailNotifier extends StateNotifier<AsyncValue<Iot?>> {
   }
 }
 
+class ChartIotsNotifier extends StateNotifier<AsyncValue<List<ChartIots>>> {
+  final GetChartIotsUsecase _getChartIotsUsecase;
+
+  ChartIotsNotifier(this._getChartIotsUsecase)
+    : super(const AsyncValue.data([]));
+
+  Future<void> getChartIots(
+    String nodeId,
+    String startDate,
+    String endDate,
+  ) async {
+    state = const AsyncValue.loading();
+    final result = await _getChartIotsUsecase.execute(
+      nodeId,
+      startDate,
+      endDate,
+    );
+
+    result.fold(
+      (failure) {
+        state = AsyncValue.error(
+          failure.message ?? 'Terjadi kesalahan',
+          StackTrace.current,
+        );
+      },
+      (iots) {
+        state = AsyncValue.data(iots);
+      },
+    );
+  }
+}
+
 // provider Utama
 // Iot List Notifier Provider
 final iotListNotifierProvider =
@@ -87,4 +126,14 @@ final iotDetailNotifierProvider =
     StateNotifierProvider<IotDetailNotifier, AsyncValue<Iot?>>((ref) {
       final getIotUsecase = ref.read(getIotUseCaseProvider);
       return IotDetailNotifier(getIotUsecase);
+    });
+
+// Chart Iots Notifier Provider
+final chartIotsNotifierProvider =
+    StateNotifierProvider<ChartIotsNotifier, AsyncValue<List<ChartIots>>>((
+      ref,
+    ) {
+      final getChartIotsUsecase = ref.read(getChartIotsUseCaseProvider);
+
+      return ChartIotsNotifier(getChartIotsUsecase);
     });

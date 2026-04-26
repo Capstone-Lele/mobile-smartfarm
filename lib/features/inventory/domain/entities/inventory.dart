@@ -1,4 +1,6 @@
-class Inventory {
+import 'package:equatable/equatable.dart';
+
+class Inventory extends Equatable {
   final String id;
   final String productId;
   final String product;
@@ -12,7 +14,7 @@ class Inventory {
   final String updatedAt;
   final String? deletedAt;
 
-  Inventory({
+  const Inventory({
     required this.id,
     required this.productId,
     required this.product,
@@ -26,4 +28,7 @@ class Inventory {
     required this.updatedAt,
     required this.deletedAt,
   });
+
+  @override
+  List<Object?> get props => [id];
 }

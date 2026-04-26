@@ -169,9 +169,11 @@ class _CreateSamplingReportPageState
                 },
               ),
               const SizedBox(height: 24),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : AppButton(label: 'Submit', onPressed: _onSubmit),
+              AppButton(
+                label: 'Submit',
+                onPressed: _onSubmit,
+                isLoading: isLoading,
+              ),
             ],
           ),
         ),

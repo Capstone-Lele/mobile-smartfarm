@@ -2,6 +2,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
@@ -107,16 +108,19 @@ class _FeedingReportDetailPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
@@ -147,11 +151,12 @@ class _FeedingReportDetailPageState
                 ),
                 const SizedBox(height: 16),
               ],
-              AppInputText(
+              AppInputDropdown<String>(
                 label: 'Nama Produk',
-                hint: 'Produk',
-                controller: _productCtrl,
-                type: FieldType.text,
+                hint: 'Pilh Produk',
+                items: [report.foodName],
+                value: report.foodName,
+                itemLabel: (item) => item,
                 requiredField: true,
                 readOnly: true,
               ),

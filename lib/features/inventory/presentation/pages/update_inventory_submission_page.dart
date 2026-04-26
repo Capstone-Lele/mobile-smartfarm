@@ -147,15 +147,15 @@ class _UpdateInventorySubmissionPageState
               );
             }
 
-            if (_quantityCtrl.text.isEmpty) {
+            if (_selectedInventory == null && inventories.isNotEmpty) {
               _quantityCtrl.text = inventorySubmission.quantity.toString();
               _notesCtrl.text = inventorySubmission.notes ?? '';
-              if (inventories.isNotEmpty) {
-                _selectedInventory = inventories.firstWhere(
-                  (e) => e.id == inventorySubmission.inventoryId,
-                  orElse: () => inventories[0],
-                );
-              }
+
+              final matchingInventory = inventories
+                  .where((e) => e.id == inventorySubmission.inventoryId)
+                  .firstOrNull;
+
+              _selectedInventory = matchingInventory ?? inventories.first;
             }
 
             return Column(
@@ -211,9 +211,11 @@ class _UpdateInventorySubmissionPageState
                   requiredField: false,
                 ),
                 const SizedBox(height: 24),
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Submit', onPressed: _onSubmit),
+                AppButton(
+                  label: 'Submit',
+                  onPressed: _onSubmit,
+                  isLoading: isLoading,
+                ),
               ],
             );
           },

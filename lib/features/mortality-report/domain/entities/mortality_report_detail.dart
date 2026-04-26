@@ -1,6 +1,7 @@
 class MortalityReportDetail {
   final String userId;
   final String user;
+  final String cycleCondition;
   final String id;
   final String cycleId;
   final String reportDate;
@@ -13,6 +14,7 @@ class MortalityReportDetail {
   MortalityReportDetail({
     required this.userId,
     required this.user,
+    required this.cycleCondition,
     required this.id,
     required this.cycleId,
     required this.reportDate,

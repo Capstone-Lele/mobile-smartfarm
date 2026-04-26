@@ -161,15 +161,16 @@ class _UpdateVitaminReportPageState
               return const Center(child: Text('Data laporan tidak ditemukan'));
             }
 
-            if (_reportDateCtrl.text.isEmpty) {
+            if (_selectedInventory == null && inventories.isNotEmpty) {
               _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
               _quantityCtrl.text = report.quantity.toString();
-              if (vitaminInventories.isNotEmpty) {
-                _selectedInventory = vitaminInventories.firstWhere(
-                  (e) => e.id == report.inventoryId,
-                  orElse: () => vitaminInventories[0],
-                );
-              }
+
+              final matchingInventory = vitaminInventories
+                  .where((e) => e.id == report.inventoryId)
+                  .firstOrNull;
+
+              _selectedInventory =
+                  matchingInventory ?? vitaminInventories.first;
             }
 
             return Column(
@@ -242,9 +243,11 @@ class _UpdateVitaminReportPageState
                   },
                 ),
                 const SizedBox(height: 24),
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : AppButton(label: 'Submit', onPressed: _onSubmit),
+                AppButton(
+                  label: 'Submit',
+                  onPressed: _onSubmit,
+                  isLoading: isLoading,
+                ),
               ],
             );
           },

@@ -89,11 +89,19 @@ class _AppInputDropdownState<T> extends State<AppInputDropdown<T>> {
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.gray, width: 1),
+              borderSide: BorderSide(
+                color: widget.readOnly ? Colors.transparent : AppColors.gray,
+                width: 1,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.darkGray, width: 2),
+              borderSide: BorderSide(
+                color: widget.readOnly
+                    ? Colors.transparent
+                    : AppColors.darkGray,
+                width: widget.readOnly ? 1 : 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),

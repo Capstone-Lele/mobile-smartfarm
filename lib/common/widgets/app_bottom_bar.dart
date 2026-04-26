@@ -43,33 +43,57 @@ class _AppBottomBarState extends State<AppBottomBar> {
           fontSize: 12,
           height: 1.5,
         ),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.space_dashboard_outlined, size: 34),
-            activeIcon: Icon(Icons.space_dashboard_rounded, size: 34),
-            label: "Beranda",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined, size: 34),
-            activeIcon: Icon(Icons.analytics_rounded, size: 34),
-            label: "Laporan",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined, size: 34),
-            activeIcon: Icon(Icons.inventory_2_rounded, size: 34),
-            label: "Inventaris",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event_note_outlined, size: 34),
-            activeIcon: Icon(Icons.event_note_rounded, size: 34),
-            label: "Jadwal",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined, size: 34),
-            activeIcon: Icon(Icons.settings, size: 34),
-            label: "Pengaturan",
-          ),
-        ],
+        items: List.generate(5, (index) {
+          final items = const [
+            (
+              icon: Icons.space_dashboard_outlined,
+              activeIcon: Icons.space_dashboard_rounded,
+              label: "Beranda",
+            ),
+            (
+              icon: Icons.analytics_outlined,
+              activeIcon: Icons.analytics_rounded,
+              label: "Laporan",
+            ),
+            (
+              icon: Icons.inventory_2_outlined,
+              activeIcon: Icons.inventory_2_rounded,
+              label: "Inventaris",
+            ),
+            (
+              icon: Icons.event_note_outlined,
+              activeIcon: Icons.event_note_rounded,
+              label: "Jadwal",
+            ),
+            (
+              icon: Icons.settings_outlined,
+              activeIcon: Icons.settings,
+              label: "Pengaturan",
+            ),
+          ];
+
+          return BottomNavigationBarItem(
+            icon: Container(
+              decoration: BoxDecoration(
+                border: _selectedIndex == index
+                    ? Border(top: BorderSide(color: AppColors.secondary))
+                    : Border(top: BorderSide(color: Colors.transparent)),
+              ),
+              padding: const EdgeInsets.only(top: 8),
+              child: Icon(items[index].icon, size: 34),
+            ),
+            activeIcon: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.secondary, width: 2),
+                ),
+              ),
+              padding: const EdgeInsets.only(top: 8),
+              child: Icon(items[index].activeIcon, size: 34),
+            ),
+            label: items[index].label,
+          );
+        }),
         selectedItemColor: AppColors.secondary,
         unselectedItemColor: AppColors.secondary.withAlpha(250),
         currentIndex: _selectedIndex,

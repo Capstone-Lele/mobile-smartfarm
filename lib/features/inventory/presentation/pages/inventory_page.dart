@@ -778,6 +778,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               quantity: '${item.quantity} ${item.unit}',
               date: AppFormat.date(item.reportDate),
               imageUrl: item.image,
+              user: "Bug",
               onTap: () {
                 AppRoutes.pushNamed(
                   context,

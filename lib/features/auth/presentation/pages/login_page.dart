@@ -122,9 +122,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    isLoading
-                        ? const CircularProgressIndicator()
-                        : AppButton(label: 'Login', onPressed: _onSubmit),
+                    AppButton(
+                      label: 'Login',
+                      onPressed: _onSubmit,
+                      isLoading: isLoading,
+                    ),
                   ],
                 ),
               ),

@@ -184,7 +184,8 @@ class _MortalityReportDetailPageState
                 ),
               ],
               const SizedBox(height: 24),
-              if (user?.role != 'pic') ...[
+              if (user?.role != 'pic' &&
+                  report.cycleCondition == "active_cultivation") ...[
                 AppButton(
                   label: 'Ubah',
                   onPressed: () {

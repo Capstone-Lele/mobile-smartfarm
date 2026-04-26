@@ -262,16 +262,19 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(onPressed: () => _initialData(), label: 'Coba Lagi'),
+          ],
+        ),
       ),
     );
   }
@@ -353,9 +356,11 @@ class _UpdateSchedulePageState extends ConsumerState<UpdateSchedulePage> {
               },
             ),
             const SizedBox(height: 24),
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : AppButton(label: 'Submit', onPressed: _onSubmit),
+            AppButton(
+              label: 'Submit',
+              onPressed: _onSubmit,
+              isLoading: isLoading,
+            ),
           ],
         ),
       ),
