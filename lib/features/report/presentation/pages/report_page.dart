@@ -9,6 +9,7 @@ import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_p
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/report/domain/entities/activity_log.dart';
+import 'package:budidaya_lele_mobile/features/report/domain/entities/total_report.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/providers/report_provider.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_activity_item.dart';
 import 'package:budidaya_lele_mobile/features/report/presentation/widgets/report_menu_card.dart';
@@ -34,6 +35,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     Future.microtask(() {
       ref.read(poolListNotifierProvider.notifier).getPools();
       ref.read(activityLogListNotifierProvider.notifier).getActivityLogs();
+      ref.read(totalReportsNotifierProvider.notifier).getTotalReports(1);
     });
   }
 
@@ -52,6 +54,15 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             await ref
                 .read(activityLogListNotifierProvider.notifier)
                 .getActivityLogs();
+            if (_selectedPool != null) {
+              await ref
+                  .read(totalReportsByPoolNotifierProvider.notifier)
+                  .getTotalReportsByPool(_selectedPool!.id, 1);
+            } else {
+              await ref
+                  .read(totalReportsNotifierProvider.notifier)
+                  .getTotalReports(1);
+            }
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -169,6 +180,15 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               setState(() {
                 _selectedPool = pool;
               });
+              if (pool != null) {
+                ref
+                    .read(totalReportsByPoolNotifierProvider.notifier)
+                    .getTotalReportsByPool(pool.id, 1);
+              } else {
+                ref
+                    .read(totalReportsNotifierProvider.notifier)
+                    .getTotalReports(1);
+              }
             },
           ),
         ],
@@ -247,6 +267,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ref.read(selectedMenuIndexProvider.notifier).state = index;
           },
         ),
+        if (_selectedPool?.cycle != 'active_cultivation') ...[
+          const SizedBox(height: 8),
+          Text(
+            'Siklus tidak aktif, silahkan menambahkan laporan tebar benih untuk mengaktifkan siklus',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.red,
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         _buildReportMenuGrid(selectedMenuIndex),
       ],
@@ -430,6 +461,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
 
   Widget _buildStatisticsSection() {
     final selectedStatisticIndex = ref.watch(selectedStatisticIndexProvider);
+    final statsAsync = _selectedPool != null
+        ? ref.watch(totalReportsByPoolNotifierProvider)
+        : ref.watch(totalReportsNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,7 +472,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           _selectedPool != null
               ? 'Statistik Laporan ${_selectedPool!.name} Bulan Ini'
               : 'Statistik Laporan Keseluruhan Kolam Bulan Ini',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.darkGray,
@@ -453,12 +487,56 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           },
         ),
         const SizedBox(height: 16),
-        _buildStatisticsGrid(selectedStatisticIndex),
+        statsAsync.when(
+          loading: () => Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                  const SizedBox(width: 8),
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                  const SizedBox(width: 8),
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                  const SizedBox(width: 8),
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                  const SizedBox(width: 8),
+                  Expanded(child: AppLoading(height: 100, borderRadius: 12)),
+                ],
+              ),
+            ],
+          ),
+          error: (error, stack) => const Center(
+            child: Text(
+              'Gagal memuat statistik laporan',
+              style: TextStyle(color: AppColors.red),
+            ),
+          ),
+          data: (totalReport) {
+            if (totalReport == null) {
+              return const Center(
+                child: Text(
+                  'Data tidak tersedia',
+                  style: TextStyle(color: AppColors.darkGray),
+                ),
+              );
+            }
+            return _buildStatisticsGrid(selectedStatisticIndex, totalReport);
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildStatisticsGrid(int selectedStatisticIndex) {
+  Widget _buildStatisticsGrid(
+    int selectedStatisticIndex,
+    TotalReport totalReport,
+  ) {
     if (selectedStatisticIndex == 0) {
       return GridView.count(
         crossAxisCount: 3,
@@ -467,35 +545,35 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
         childAspectRatio: 0.95,
-        children: const [
+        children: [
           ReportStatisticsCard(
             label: 'Laporan Pakan',
-            count: 12,
+            count: totalReport.totalFeedNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Vitamin',
-            count: 20,
+            count: totalReport.totalVitaminNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Kematian',
-            count: 30,
+            count: totalReport.totalMortalityNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Sakit',
-            count: 12,
+            count: totalReport.totalSickNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Pembersihan Kolam',
-            count: 12,
+            count: totalReport.totalCleaningNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Sampling',
-            count: 12,
+            count: totalReport.totalSamplingNotes,
             icon: Icons.article,
           ),
         ],
@@ -508,20 +586,20 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
         childAspectRatio: 0.95,
-        children: const [
+        children: [
           ReportStatisticsCard(
             label: 'Laporan Tebar Benih',
-            count: 12,
+            count: totalReport.totalSeedNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Panen',
-            count: 20,
+            count: totalReport.totalHarvestNotes,
             icon: Icons.article,
           ),
           ReportStatisticsCard(
             label: 'Laporan Pindah Kolam',
-            count: 30,
+            count: totalReport.totalMovePoolNotes,
             icon: Icons.article,
           ),
         ],
