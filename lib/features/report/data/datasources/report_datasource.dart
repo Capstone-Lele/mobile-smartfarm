@@ -30,8 +30,8 @@ class ReportDatasource {
   }
 
   // Get Total Reports
-  Future<Either<Failure, Map<String, dynamic>>> getTotalReports() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-reports');
+  Future<Either<Failure, Map<String, dynamic>>> getTotalReports(int month) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-notes?month=$month');
     final token = AppSession.getBearerToken();
 
     try {
@@ -42,8 +42,8 @@ class ReportDatasource {
       );
 
       final data = AppResponse.data(response);
-      final mortalityReport = data['data'][0];
-      return Right(mortalityReport);
+      final totalReports = data['data'][0];
+      return Right(totalReports);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));
@@ -53,8 +53,9 @@ class ReportDatasource {
   // Get Total Reports
   Future<Either<Failure, Map<String, dynamic>>> getTotalReportsByPool(
     String poolId,
+    int month
   ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-reports/$poolId');
+    Uri url = Uri.parse('${AppConstants.baseURL}/app/total-note/$poolId?month=$month');
     final token = AppSession.getBearerToken();
 
     try {
@@ -65,8 +66,8 @@ class ReportDatasource {
       );
 
       final data = AppResponse.data(response);
-      final mortalityReport = data['data'][0];
-      return Right(mortalityReport);
+      final totalReports = data['data'][0];
+      return Right(totalReports);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

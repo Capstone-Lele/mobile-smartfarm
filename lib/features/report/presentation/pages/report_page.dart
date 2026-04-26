@@ -48,9 +48,6 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            setState(() {
-              _selectedPool = null;
-            });
             await ref.read(poolListNotifierProvider.notifier).getPools();
             await ref
                 .read(activityLogListNotifierProvider.notifier)

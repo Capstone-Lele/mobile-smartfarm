@@ -159,7 +159,7 @@ class _CreateInventoryReportPageState
                   AppInputDate(
                     label: 'Tanggal Pemakaian Inventaris',
                     hint: 'Tanggal Pemakaian Inventaris',
-                    type: DateFieldType.date,
+                    type: DateFieldType.dateTime,
                     controller: _reportDateCtrl,
                     requiredField: true,
                     validator: (value) {
@@ -211,9 +211,11 @@ class _CreateInventoryReportPageState
                     requiredField: false,
                   ),
                   const SizedBox(height: 24),
-                  isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : AppButton(label: 'Submit', onPressed: _onSubmit),
+                  AppButton(
+                    label: 'Submit',
+                    onPressed: _onSubmit,
+                    isLoading: isLoading,
+                  ),
                   SizedBox(height: 16),
                   const Text(
                     'Perhatian: Laporan yang telah dikirim tidak dapat diubah atau dihapus kembali. Pastikan seluruh data panen sudah sesuai.',

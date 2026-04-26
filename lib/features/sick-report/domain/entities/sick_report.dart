@@ -4,7 +4,6 @@ class SickReport {
   final String destinationPoolName;
   final String destinationCategory;
   final String user;
-  final String startDate;
   final String id;
   final String originCycleId;
   final String destinationCycleId;
@@ -23,7 +22,6 @@ class SickReport {
     required this.destinationPoolName,
     required this.destinationCategory,
     required this.user,
-    required this.startDate,
     required this.id,
     required this.originCycleId,
     required this.destinationCycleId,

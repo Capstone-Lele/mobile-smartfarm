@@ -70,10 +70,7 @@ class _CreateMortalityReportPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildHeader(context),
-      body: _buildFormState(),
-    );
+    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -155,9 +152,11 @@ class _CreateMortalityReportPageState
                 },
               ),
               const SizedBox(height: 24),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : AppButton(label: 'Submit', onPressed: _onSubmit),
+              AppButton(
+                label: 'Submit',
+                onPressed: _onSubmit,
+                isLoading: isLoading,
+              ),
             ],
           ),
         ),

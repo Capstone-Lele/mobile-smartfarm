@@ -5,6 +5,6 @@ import 'package:dartz/dartz.dart';
 
 abstract class ReportRepository {
   Future<Either<Failure, List<ActivityLog>>> getActivityLogs();
-  Future<Either<Failure, TotalReport>> getTotalReports();
-  Future<Either<Failure, TotalReport>> getTotalReportsByPool(String poolId);
+  Future<Either<Failure, TotalReport>> getTotalReports(int month);
+  Future<Either<Failure, TotalReport>> getTotalReportsByPool(String poolId, int month);
 }

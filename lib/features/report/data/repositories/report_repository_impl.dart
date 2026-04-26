@@ -30,8 +30,8 @@ class ReportRepositoryImpl implements ReportRepository {
   }
 
   @override
-  Future<Either<Failure, TotalReport>> getTotalReports() async {
-    final result = await datasource.getTotalReports();
+  Future<Either<Failure, TotalReport>> getTotalReports(int month) async {
+    final result = await datasource.getTotalReports(month);
 
     return result.fold((failure) => Left(failure), (data) {
       try {
@@ -46,8 +46,8 @@ class ReportRepositoryImpl implements ReportRepository {
   }
 
   @override
-  Future<Either<Failure, TotalReport>> getTotalReportsByPool(String poolId) async {
-    final result = await datasource.getTotalReportsByPool(poolId);
+  Future<Either<Failure, TotalReport>> getTotalReportsByPool(String poolId, int month) async {
+    final result = await datasource.getTotalReportsByPool(poolId, month);
 
      return result.fold((failure) => Left(failure), (data) {
       try {

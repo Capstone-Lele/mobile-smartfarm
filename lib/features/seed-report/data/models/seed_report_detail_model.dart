@@ -14,6 +14,7 @@ class SeedReportDetailModel extends SeedReportDetail {
     required super.createdAt,
     required super.updatedAt,
     required super.deletedAt,
+    required super.user,
   });
 
   factory SeedReportDetailModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +31,7 @@ class SeedReportDetailModel extends SeedReportDetail {
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       deletedAt: json['deletedAt'],
+      user: json['user'],
     );
   }
 }

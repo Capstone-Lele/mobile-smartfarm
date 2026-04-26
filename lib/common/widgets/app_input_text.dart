@@ -111,12 +111,17 @@ class _AppInputState extends State<AppInputText> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.gray, width: 1),
+              borderSide: BorderSide(
+                color: widget.readOnly ? Colors.transparent : AppColors.gray,
+                width: 1,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: widget.readOnly ? AppColors.gray : AppColors.darkGray,
+                color: widget.readOnly
+                    ? Colors.transparent
+                    : AppColors.darkGray,
                 width: widget.readOnly ? 1 : 2,
               ),
             ),

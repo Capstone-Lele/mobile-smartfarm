@@ -6,7 +6,6 @@ class MovePoolReport {
   final String destinationPoolName;
   final String destinationCategory;
   final String user;
-  final String startDate;
   final String id;
   final String originCycleId;
   final String destinationCycleId;
@@ -14,7 +13,7 @@ class MovePoolReport {
   final String reportDate;
   final int quantity;
   final String image;
-  final String type;
+  final String? type;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
@@ -27,7 +26,6 @@ class MovePoolReport {
     required this.destinationPoolName,
     required this.destinationCategory,
     required this.user,
-    required this.startDate,
     required this.id,
     required this.originCycleId,
     required this.destinationCycleId,

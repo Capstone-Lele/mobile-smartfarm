@@ -175,9 +175,11 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
                 },
               ),
               const SizedBox(height: 24),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : AppButton(label: 'Ubah', onPressed: _onSubmit),
+              AppButton(
+                label: 'Ubah',
+                onPressed: _onSubmit,
+                isLoading: isLoading,
+              ),
             ],
           ),
         ),

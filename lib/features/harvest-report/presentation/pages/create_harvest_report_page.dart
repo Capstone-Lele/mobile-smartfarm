@@ -43,7 +43,7 @@ class _CreateHarvestReportPageState
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     await ref
         .read(harvestReportMutationNotifierProvider.notifier)
         .createHarvestReport(
@@ -66,10 +66,7 @@ class _CreateHarvestReportPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildHeader(context),
-      body: _buildFormState(),
-    );
+    return Scaffold(appBar: _buildHeader(context), body: _buildFormState());
   }
 
   AppBar _buildHeader(BuildContext context) {
@@ -151,9 +148,11 @@ class _CreateHarvestReportPageState
                 },
               ),
               const SizedBox(height: 24),
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : AppButton(label: 'Submit', onPressed: _onSubmit),
+              AppButton(
+                label: 'Submit',
+                onPressed: _onSubmit,
+                isLoading: isLoading,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Perhatian: Laporan yang telah dikirim tidak dapat diubah atau dihapus kembali. Pastikan seluruh data panen sudah sesuai.',

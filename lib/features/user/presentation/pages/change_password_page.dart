@@ -134,9 +134,11 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
                 },
               ),
               const SizedBox(height: 24),
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : AppButton(label: 'Ubah', onPressed: _onSubmit),
+              AppButton(
+                label: 'Ubah',
+                onPressed: _onSubmit,
+                isLoading: isLoading,
+              ),
             ],
           ),
         ),

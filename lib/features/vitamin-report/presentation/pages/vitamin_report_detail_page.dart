@@ -2,6 +2,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
@@ -150,11 +151,12 @@ class _VitaminReportDetailPageState
                 ),
                 const SizedBox(height: 16),
               ],
-              AppInputText(
+              AppInputDropdown<String>(
                 label: 'Nama Produk',
-                hint: 'Produk',
-                controller: _productCtrl,
-                type: FieldType.text,
+                hint: 'Pilh Produk',
+                items: [report.vitaminName],
+                value: report.vitaminName,
+                itemLabel: (item) => item,
                 requiredField: true,
                 readOnly: true,
               ),

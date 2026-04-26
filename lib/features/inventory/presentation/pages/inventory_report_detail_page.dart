@@ -26,6 +26,7 @@ class _InventoryReportDetailPageState
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _InventoryReportDetailPageState
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
     _notesCtrl.dispose();
+    _userCtrl.dispose();
     super.dispose();
   }
 
@@ -111,6 +113,7 @@ class _InventoryReportDetailPageState
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
     _notesCtrl.text = report.notes ?? '';
+    _userCtrl.text = "Bug";
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -164,6 +167,15 @@ class _InventoryReportDetailPageState
                 maxLines: 5,
                 minLines: 3,
                 requiredField: false,
+                readOnly: true,
+              ),
+              const SizedBox(height: 16),
+              AppInputText(
+                label: 'Pelapor',
+                hint: 'Pelapor',
+                controller: _userCtrl,
+                type: FieldType.text,
+                requiredField: true,
                 readOnly: true,
               ),
               const SizedBox(height: 24),

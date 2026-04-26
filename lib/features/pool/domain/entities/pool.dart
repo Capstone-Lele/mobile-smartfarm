@@ -1,7 +1,10 @@
-class Pool {
+import 'package:equatable/equatable.dart';
+
+class Pool extends Equatable {
   final String? cycleId;
   final String? cycle;
   final String? cycleStartDate;
+  final String? cycleEndDate;
   final int? currentQuantity;
   final String? image;
   final int mortality;
@@ -21,10 +24,11 @@ class Pool {
   final String updatedAt;
   final String? deletedAt;
 
-  Pool({
+  const Pool({
     required this.cycleId,
     required this.cycle,
     required this.cycleStartDate,
+    required this.cycleEndDate,
     required this.currentQuantity,
     required this.image,
     required this.mortality,
@@ -57,4 +61,7 @@ class Pool {
         return 'Category Tidak Diketahui';
     }
   }
+
+  @override
+  List<Object?> get props => [id];
 }

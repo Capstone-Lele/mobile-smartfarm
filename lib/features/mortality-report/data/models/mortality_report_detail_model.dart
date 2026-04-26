@@ -4,6 +4,7 @@ class MortalityReportDetailModel extends MortalityReportDetail {
   MortalityReportDetailModel({
     required super.userId,
     required super.user,
+    required super.cycleCondition,
     required super.id,
     required super.cycleId,
     required super.reportDate,
@@ -18,6 +19,7 @@ class MortalityReportDetailModel extends MortalityReportDetail {
     return MortalityReportDetailModel(
       userId: json['userId'],
       user: json['user'],
+      cycleCondition: json['cycleCondition'],
       id: json['id'],
       cycleId: json['cycleId'],
       reportDate: json['reportDate'],

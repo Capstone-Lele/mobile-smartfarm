@@ -2,28 +2,28 @@ import 'package:budidaya_lele_mobile/features/report/domain/entities/total_repor
 
 class TotalReportModel extends TotalReport {
   TotalReportModel({
-    required super.totalFeedReports,
-    required super.totalVitaminReports,
-    required super.totalMortalityReports,
-    required super.totalSickReports,
-    required super.totalCleaningReports,
-    required super.totalSamplingReports,
-    required super.totalSeedReports,
-    required super.totalHarvestReports,
-    required super.totalMovePoolReports,
+    required super.totalFeedNotes,
+    required super.totalVitaminNotes,
+    required super.totalMovePoolNotes,
+    required super.totalSickNotes,
+    required super.totalSamplingNotes,
+    required super.totalCleaningNotes,
+    required super.totalHarvestNotes,
+    required super.totalMortalityNotes,
+    required super.totalSeedNotes,
   });
 
   factory TotalReportModel.fromJson(Map<String, dynamic> json) {
     return TotalReportModel(
-      totalFeedReports: json['totalFeedReports'],
-      totalVitaminReports: json['totalVitaminReports'],
-      totalMortalityReports: json['totalMortalityReports'],
-      totalSickReports: json['totalSickReports'],
-      totalCleaningReports: json['totalCleaningReports'],
-      totalSamplingReports: json['totalSamplingReports'],
-      totalSeedReports: json['totalSeedReports'],
-      totalHarvestReports: json['totalHarvestReports'],
-      totalMovePoolReports: json['totalMovePoolReports'],
+      totalFeedNotes: json['totalFeedNotes'],
+      totalVitaminNotes: json['totalVitaminNotes'],
+      totalMovePoolNotes: json['totalMovePoolNotes'],
+      totalSickNotes: json['totalSickNotes'],
+      totalSamplingNotes: json['totalSamplingNotes'],
+      totalCleaningNotes: json['totalCleaningNotes'],
+      totalHarvestNotes: json['totalHarvestNotes'],
+      totalMortalityNotes: json['totalMortalityNotes'],
+      totalSeedNotes: json['totalSeedNotes'],
     );
   }
 }

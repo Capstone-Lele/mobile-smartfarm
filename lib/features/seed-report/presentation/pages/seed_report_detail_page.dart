@@ -106,16 +106,19 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'Coba Lagi', onPressed: () => _getReportDetail()),
+          ],
+        ),
       ),
     );
   }
@@ -129,8 +132,7 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
     _initialQuantityCtrl.text = report.initialQuantity.toString();
     _currentQuantityCtrl.text = report.currentQuantity.toString();
     _initialAverageWeightCtrl.text = report.initialAverageWeight;
-    //  _userCtrl.text = report.user.toString();
-    _userCtrl.text = 'Bug';
+    _userCtrl.text = report.user;
 
     return SafeArea(
       child: SingleChildScrollView(

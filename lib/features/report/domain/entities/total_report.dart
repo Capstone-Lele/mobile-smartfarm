@@ -1,23 +1,23 @@
 class TotalReport {
-  final int totalFeedReports;
-  final int totalVitaminReports;
-  final int totalMortalityReports;
-  final int totalSickReports;
-  final int totalCleaningReports;
-  final int totalSamplingReports;
-  final int totalSeedReports;
-  final int totalHarvestReports;
-  final int totalMovePoolReports;
+  final int totalFeedNotes;
+  final int totalVitaminNotes;
+  final int totalMovePoolNotes;
+  final int totalSickNotes;
+  final int totalSamplingNotes;
+  final int totalCleaningNotes;
+  final int totalHarvestNotes;
+  final int totalMortalityNotes;
+  final int totalSeedNotes;
 
   TotalReport({
-    required this.totalFeedReports,
-    required this.totalVitaminReports,
-    required this.totalMortalityReports,
-    required this.totalSickReports,
-    required this.totalCleaningReports,
-    required this.totalSamplingReports,
-    required this.totalSeedReports,
-    required this.totalHarvestReports,
-    required this.totalMovePoolReports,
+    required this.totalFeedNotes,
+    required this.totalVitaminNotes,
+    required this.totalMovePoolNotes,
+    required this.totalSickNotes,
+    required this.totalSamplingNotes,
+    required this.totalCleaningNotes,
+    required this.totalHarvestNotes,
+    required this.totalMortalityNotes,
+    required this.totalSeedNotes,
   });
 }

@@ -8,7 +8,7 @@ class GetTotalReportsUsecase {
 
   GetTotalReportsUsecase(this.repository);
 
-  Future<Either<Failure, TotalReport>> execute() {
-    return repository.getTotalReports();
+  Future<Either<Failure, TotalReport>> execute(int month) {
+    return repository.getTotalReports(month);
   }
 }

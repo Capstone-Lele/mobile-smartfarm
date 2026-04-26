@@ -149,21 +149,24 @@ class _CreateMovePoolReportPageState
   }
 
   Widget _buildErrorState(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          AppButton(
-            label: 'Coba Lagi',
-            onPressed: () => ref
-                .read(poolDetailNotifierProvider.notifier)
-                .getPool(widget.poolId),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(
+              label: 'Coba Lagi',
+              onPressed: () => ref
+                  .read(poolDetailNotifierProvider.notifier)
+                  .getPool(widget.poolId),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -358,9 +361,11 @@ class _CreateMovePoolReportPageState
             },
           ),
           const SizedBox(height: 24),
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : AppButton(label: 'Pindah', onPressed: _onSubmit),
+          AppButton(
+            label: 'Pindah',
+            onPressed: _onSubmit,
+            isLoading: isLoading,
+          ),
           const SizedBox(height: 16),
           const Text(
             'Sebelum melanjutkan, pastikan kolam tujuan sudah sesuai. Setelah laporan dipindahkan, data tidak dapat diubah/dihapus untuk menjaga keakuratan riwayat budidaya.',

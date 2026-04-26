@@ -113,10 +113,14 @@ class _AppInputImageState extends State<AppInputImage> {
                     decoration: BoxDecoration(
                       color: AppColors.lightGray,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: field.hasError ? AppColors.red : AppColors.gray,
-                        width: field.hasError ? 1.5 : 1,
-                      ),
+                      border: widget.readOnly
+                          ? null
+                          : Border.all(
+                              color: field.hasError
+                                  ? AppColors.red
+                                  : AppColors.gray,
+                              width: field.hasError ? 1.5 : 1,
+                            ),
                     ),
                     clipBehavior: Clip.hardEdge,
                     child: _hasImage
@@ -295,25 +299,6 @@ class _AppInputImageState extends State<AppInputImage> {
                   await _pickImage(ImageSource.camera, field);
                 },
               ),
-              if (_hasImage)
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: AppColors.red,
-                    ),
-                  ),
-                  title: const Text('Hapus Gambar'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _removeImage(field);
-                  },
-                ),
             ],
           ),
         ),
@@ -351,15 +336,6 @@ class _AppInputImageState extends State<AppInputImage> {
         );
       }
     }
-  }
-
-  void _removeImage(FormFieldState<XFile?> field) {
-    setState(() {
-      _selectedImage = null;
-      _hasUserChangedImage = true;
-    });
-    field.didChange(null);
-    widget.onChanged?.call(null);
   }
 
   bool get hasImage => _hasImage;
