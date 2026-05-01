@@ -9,23 +9,46 @@ class ParameterRepositoryImpl implements ParameterRepository {
   ParameterRepositoryImpl(this.datasource);
 
   @override
+  Future<Either<Failure, Map<String, dynamic>>> updateParameters(
+    List<double> temperatureMax,
+    List<double> temperatureNormal,
+    List<double> temperatureMin,
+    List<double> acidityMax,
+    List<double> acidityNormal,
+    List<double> acidityMin,
+  ) async {
+    final result = await datasource.updateParameters(
+      temperatureMax,
+      temperatureNormal,
+      temperatureMin,
+      acidityMax,
+      acidityNormal,
+      acidityMin,
+    );
+
+    return result.fold((failure) => Left(failure), (data) => Right(data));
+  }
+
+  @override
   Future<Either<Failure, Map<String, dynamic>>> updateParameter(
     String poolId,
-    String temperatureMax,
-    String temperatureMin,
-    String acidityMax,
-    String acidityMin,
+    List<double> temperatureMax,
+    List<double> temperatureNormal,
+    List<double> temperatureMin,
+    List<double> acidityMax,
+    List<double> acidityNormal,
+    List<double> acidityMin,
   ) async {
     final result = await datasource.updateParameter(
       poolId,
       temperatureMax,
+      temperatureNormal,
       temperatureMin,
       acidityMax,
+      acidityNormal,
       acidityMin,
     );
 
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
+    return result.fold((failure) => Left(failure), (data) => Right(data));
   }
 }

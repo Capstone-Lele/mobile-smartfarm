@@ -1,48 +1,55 @@
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/features/parameter/presentation/widgets/parameter_card.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ParameterPage extends StatefulWidget {
+class ParameterPage extends ConsumerStatefulWidget {
   const ParameterPage({super.key});
 
   @override
-  State<ParameterPage> createState() => _ParameterPageState();
+  ConsumerState<ParameterPage> createState() => _ParameterPageState();
 }
 
-class _ParameterPageState extends State<ParameterPage> {
-  final List<Map<String, dynamic>> _dummyPools = [
-    {
-      'id': '1',
-      'name': 'Kolam 1',
-      'currentPh': 7.2,
-      'currentTemp': 28,
-      'thresholdType': 'Ambang Rekomendasi',
-      'phRange': '6.5 - 8.5',
-      'tempRange': '25°C - 32°C',
-    },
-    {
-      'id': '2',
-      'name': 'Kolam 2',
-      'currentPh': 7.2,
-      'currentTemp': 28,
-      'thresholdType': 'Ambang Ideal',
-      'phRange': '7 - 8',
-      'tempRange': '26°C - 30°C',
-    },
-  ];
+class _ParameterPageState extends ConsumerState<ParameterPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(poolListNotifierProvider.notifier).getPools();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final poolsAsync = ref.watch(poolListNotifierProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildHeader(context),
       body: SafeArea(
-        child: ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: _dummyPools.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            return ParameterCard(pool: _dummyPools[index]);
+        child: poolsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(child: Text(error.toString())),
+          data: (pools) {
+            // Kolam index 0 akan null, yang merepresentasikan "Semua Kolam"
+            final itemCount = pools.length + 1;
+            return RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(poolListNotifierProvider.notifier).getPools();
+              },
+              child: ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: itemCount,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return const ParameterCard(pool: null);
+                  }
+                  return ParameterCard(pool: pools[index - 1]);
+                },
+              ),
+            );
           },
         ),
       ),

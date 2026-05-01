@@ -9,16 +9,20 @@ class UpdateParameterUsecase {
 
   Future<Either<Failure, Map<String, dynamic>>> execute(
     String poolId,
-    String temperatureMax,
-    String temperatureMin,
-    String acidityMax,
-    String acidityMin,
+    List<double> temperatureMax,
+    List<double> temperatureNormal,
+    List<double> temperatureMin,
+    List<double> acidityMax,
+    List<double> acidityNormal,
+    List<double> acidityMin,
   ) {
     return repository.updateParameter(
       poolId,
       temperatureMax,
+      temperatureNormal,
       temperatureMin,
       acidityMax,
+      acidityNormal,
       acidityMin,
     );
   }
