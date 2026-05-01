@@ -1,12 +1,25 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/chart_iots.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/presentation/providers/iot_provider.dart';
+import 'package:intl/intl.dart';
 
-class PoolConditionChart extends StatelessWidget {
-  const PoolConditionChart({super.key});
+class PoolConditionChart extends ConsumerWidget {
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const PoolConditionChart({
+    super.key,
+    this.startDate,
+    this.endDate,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chartAsync = ref.watch(chartIotsNotifierProvider);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -24,7 +37,7 @@ class PoolConditionChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Data Sensor',
+            'Grafik Sensor Kolam',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -40,73 +53,172 @@ class PoolConditionChart extends StatelessWidget {
               _buildLegend('Suhu (°C)', AppColors.secondary),
             ],
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 240,
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: AppColors.gray.withValues(alpha: 0.5),
-                    strokeWidth: 1,
-                  ),
+          const SizedBox(height: 16),
+          chartAsync.when(
+            loading: () => const SizedBox(
+              height: 240,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                  strokeWidth: 3,
                 ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
-                      interval: 1,
-                      getTitlesWidget: bottomTitleWidgets,
+              ),
+            ),
+            error: (error, stack) => const SizedBox(
+              height: 240,
+              child: Center(
+                child: Text(
+                  'Gagal memuat data grafik',
+                  style: TextStyle(color: AppColors.darkGray, fontSize: 14),
+                ),
+              ),
+            ),
+            data: (chartData) {
+              if (startDate == null || endDate == null) {
+                return const SizedBox(
+                  height: 240,
+                  child: Center(
+                    child: Text(
+                      'Pilih rentang tanggal untuk\nmelihat grafik sensor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.darkGray,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 5,
-                      getTitlesWidget: leftTitleWidgets,
-                      reservedSize: 30,
+                );
+              }
+              if (chartData.isEmpty) {
+                return const SizedBox(
+                  height: 240,
+                  child: Center(
+                    child: Text(
+                      'Tidak ada data pada rentang\ntanggal yang dipilih',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.darkGray,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return _buildChart(chartData, startDate!, endDate!);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChart(
+    List<ChartIots> chartData,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    // Buat list tanggal sesuai rentang
+    // final totalDays = endDate.difference(startDate).inDays + 1;
+
+    // Hitung interval x-axis (tampilkan maks 7 label)
+    final int xCount = chartData.length;
+    final int labelInterval = (xCount / 7).ceil().clamp(1, xCount);
+
+    // Map data ke FlSpot berdasarkan index
+    final phSpots = <FlSpot>[];
+    final tempSpots = <FlSpot>[];
+
+    for (int i = 0; i < chartData.length; i++) {
+      final ph = double.tryParse(chartData[i].ph) ?? 0.0;
+      final temp = double.tryParse(chartData[i].temp) ?? 0.0;
+      phSpots.add(FlSpot(i.toDouble(), ph));
+      tempSpots.add(FlSpot(i.toDouble(), temp));
+    }
+
+    // Tanggal untuk label x-axis
+    final dates = chartData
+        .map((e) {
+          try {
+            return DateTime.parse(e.createdAt);
+          } catch (_) {
+            return startDate;
+          }
+        })
+        .toList();
+
+    final dateFormatter = DateFormat('dd/MM');
+
+    return SizedBox(
+      height: 240,
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: AppColors.gray.withValues(alpha: 0.5),
+              strokeWidth: 1,
+            ),
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: labelInterval.toDouble(),
+                getTitlesWidget: (value, meta) {
+                  final index = value.toInt();
+                  if (index < 0 || index >= dates.length) {
+                    return const SizedBox.shrink();
+                  }
+                  return SideTitleWidget(
+                    meta: meta,
+                    child: Text(
+                      dateFormatter.format(dates[index]),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: AppColors.darkGray,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 5,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) => SideTitleWidget(
+                  meta: meta,
+                  child: Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.darkGray,
                     ),
                   ),
                 ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: 6,
-                minY: 0,
-                maxY: 45,
-                lineBarsData: [
-                  _buildLineBarData([
-                    const FlSpot(0, 7.2),
-                    const FlSpot(1, 6.8),
-                    const FlSpot(2, 7.5),
-                    const FlSpot(3, 7.0),
-                    const FlSpot(4, 7.6),
-                    const FlSpot(5, 6.9),
-                    const FlSpot(6, 7.4),
-                  ], AppColors.primary),
-                  _buildLineBarData([
-                    const FlSpot(0, 35),
-                    const FlSpot(1, 37),
-                    const FlSpot(2, 34),
-                    const FlSpot(3, 38),
-                    const FlSpot(4, 36),
-                    const FlSpot(5, 39),
-                    const FlSpot(6, 35),
-                  ], AppColors.secondary),
-                ],
               ),
             ),
           ),
-        ],
+          borderData: FlBorderData(show: false),
+          minX: 0,
+          maxX: (xCount - 1).toDouble(),
+          minY: 0,
+          maxY: 45,
+          lineBarsData: [
+            _buildLineBarData(phSpots, AppColors.primary),
+            _buildLineBarData(tempSpots, AppColors.secondary),
+          ],
+        ),
       ),
     );
   }
@@ -146,49 +258,6 @@ class PoolConditionChart extends StatelessWidget {
         ),
       ),
       belowBarData: BarAreaData(show: false),
-    );
-  }
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(fontSize: 10, color: AppColors.darkGray);
-    String text;
-    switch (value.toInt()) {
-      case 0:
-        text = 'Senin';
-        break;
-      case 1:
-        text = 'Selasa';
-        break;
-      case 2:
-        text = 'Rabu';
-        break;
-      case 3:
-        text = 'Kamis';
-        break;
-      case 4:
-        text = 'Jumat';
-        break;
-      case 5:
-        text = 'Sabtu';
-        break;
-      case 6:
-        text = 'Minggu';
-        break;
-      default:
-        text = '';
-        break;
-    }
-    return SideTitleWidget(
-      meta: meta,
-      child: Text(text, style: style),
-    );
-  }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(fontSize: 10, color: AppColors.darkGray);
-    return SideTitleWidget(
-      meta: meta,
-      child: Text(value.toInt().toString(), style: style),
     );
   }
 }

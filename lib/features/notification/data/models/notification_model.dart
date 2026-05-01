@@ -3,6 +3,7 @@ import 'package:budidaya_lele_mobile/features/notification/domain/entities/notif
 class NotificationModel extends Notification {
   NotificationModel({
     required super.id,
+    required super.poolId,
     required super.userId,
     required super.title,
     required super.message,
@@ -16,6 +17,7 @@ class NotificationModel extends Notification {
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'],
+      poolId: json['pool_id'],
       userId: json['userId'],
       title: json['title'],
       message: json['message'],

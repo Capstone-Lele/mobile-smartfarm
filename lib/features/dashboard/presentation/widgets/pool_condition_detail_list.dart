@@ -1,12 +1,89 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/iot.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/presentation/providers/iot_provider.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/presentation/utils/dashboard_utils.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PoolConditionDetailList extends StatelessWidget {
-  const PoolConditionDetailList({super.key});
+class PoolConditionDetailList extends ConsumerWidget {
+  final Pool? selectedPool;
+
+  const PoolConditionDetailList({super.key, this.selectedPool});
+
+  ParamStatus _getStatusForIot(Iot iot, List<Pool> allPools) {
+    final nodeId = iot.nodeId.toString();
+
+    Pool? matchingPool;
+    try {
+      matchingPool = allPools.firstWhere(
+        (p) => p.name.replaceAll(RegExp(r'[^0-9]'), '') == nodeId,
+      );
+    } catch (e) {
+      return ParamStatus.warning;
+    }
+
+    final temp = double.tryParse(iot.temp.toString()) ?? 0.0;
+    final ph = double.tryParse(iot.ph.toString()) ?? 0.0;
+
+    final tempStatus = DashboardUtils.getParamStatus(
+      temp,
+      matchingPool.temperatureMin,
+      matchingPool.temperatureNormal,
+      matchingPool.temperatureMax,
+    );
+
+    final phStatus = DashboardUtils.getParamStatus(
+      ph,
+      matchingPool.acidityMin,
+      matchingPool.acidityNormal,
+      matchingPool.acidityMax,
+    );
+
+    return DashboardUtils.getOverallStatus(tempStatus, phStatus);
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (selectedPool != null) {
+      final iotAsync = ref.watch(iotDetailNotifierProvider);
+      return iotAsync.when(
+        loading: () => const AppLoading(height: 200, borderRadius: 12),
+        error: (error, stack) =>
+            _buildEmptyCard('Gagal memuat data kondisi kolam'),
+        data: (iot) {
+          if (iot == null) {
+            return _buildEmptyCard('Tidak ada data kondisi kolam');
+          }
+          return _buildContainer([iot], selectedPool, null);
+        },
+      );
+    }
+
+    final iotsAsync = ref.watch(iotListNotifierProvider);
+    final poolsAsync = ref.watch(poolListNotifierProvider);
+
+    return iotsAsync.when(
+      loading: () => const AppLoading(height: 200, borderRadius: 12),
+      error: (error, stack) =>
+          _buildEmptyCard('Gagal memuat data kondisi kolam'),
+      data: (iots) {
+        if (iots.isEmpty) {
+          return _buildEmptyCard('Tidak ada data kondisi kolam');
+        }
+        return poolsAsync.when(
+          loading: () => _buildContainer(iots, null, []),
+          error: (e, s) => _buildContainer(iots, null, []),
+          data: (pools) => _buildContainer(iots, null, pools),
+        );
+      },
+    );
+  }
+
+  Widget _buildContainer(List<Iot> iots, Pool? pool, List<Pool>? allPools) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -30,30 +107,69 @@ class PoolConditionDetailList extends StatelessWidget {
               ),
             ),
           ),
-          _buildItem('Kolam 1', '25.6°C', '7.2', 'Normal', BadgeType.success),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildItem(
-            'Kolam 2',
-            '25.6°C',
-            '7.5',
-            'Peringatan',
-            BadgeType.warning,
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildItem(
-            'Kolam 3',
-            '25.6°C',
-            '8.1',
-            'Perlu Dicek',
-            BadgeType.danger,
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildItem('Kolam 4', '25.6°C', '7.2', 'Normal', BadgeType.success),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildItem('Kolam 5', '25.6°C', '7.2', 'Normal', BadgeType.success),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildItem('Kolam 6', '25.6°C', '7.2', 'Normal', BadgeType.success),
+          ...List.generate(iots.length, (index) {
+            final iot = iots[index];
+            final temp = double.tryParse(iot.temp.toString()) ?? 0.0;
+            final ph = double.tryParse(iot.ph.toString()) ?? 0.0;
+
+            ParamStatus overallStatus;
+
+            if (pool != null) {
+              final tempStatus = DashboardUtils.getParamStatus(
+                temp,
+                pool.temperatureMin,
+                pool.temperatureNormal,
+                pool.temperatureMax,
+              );
+              final phStatus = DashboardUtils.getParamStatus(
+                ph,
+                pool.acidityMin,
+                pool.acidityNormal,
+                pool.acidityMax,
+              );
+              overallStatus = DashboardUtils.getOverallStatus(
+                tempStatus,
+                phStatus,
+              );
+            } else {
+              if (allPools != null && allPools.isNotEmpty) {
+                overallStatus = _getStatusForIot(iot, allPools);
+              } else {
+                overallStatus = ParamStatus.warning;
+              }
+            }
+
+            return Column(
+              children: [
+                if (index > 0) const Divider(height: 1, color: AppColors.gray),
+                _buildItem(
+                  'Node ${iot.nodeId}',
+                  '${temp.toStringAsFixed(1)}°C',
+                  ph.toStringAsFixed(1),
+                  DashboardUtils.getStatusLabel(overallStatus),
+                  DashboardUtils.getBadgeType(overallStatus),
+                ),
+              ],
+            );
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyCard(String message) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gray),
+      ),
+      child: Center(
+        child: Text(
+          message,
+          style: const TextStyle(color: AppColors.darkGray, fontSize: 14),
+        ),
       ),
     );
   }

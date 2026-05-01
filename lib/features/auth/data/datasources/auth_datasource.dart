@@ -29,4 +29,56 @@ class AuthDatasource {
       return Left(FetchFailure(e.toString()));
     }
   }
+
+  // Register Token
+  Future<Either<Failure, Map<String, dynamic>>> registerToken(
+    String fcmToken,
+    String deviceName,
+    String deviceType,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/device/register');
+    try {
+      final response = await http
+          .post(
+            url,
+            headers: AppRequest.header(),
+            body: {
+              'fcm_token': fcmToken,
+              'device_name': deviceName,
+              'device_type': deviceType,
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final data = AppResponse.data(response);
+      final result = data['data'];
+      return Right(result);
+    } catch (e) {
+      if (e is Failure) return Left(e);
+      return Left(FetchFailure(e.toString()));
+    }
+  }
+
+  // Unregister Token
+  Future<Either<Failure, Map<String, dynamic>>> unregisterToken(
+    String fcmToken,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/device/unregister');
+    try {
+      final response = await http
+          .post(
+            url,
+            headers: AppRequest.header(),
+            body: {'fcm_token': fcmToken},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final data = AppResponse.data(response);
+      final result = data['data'];
+      return Right(result);
+    } catch (e) {
+      if (e is Failure) return Left(e);
+      return Left(FetchFailure(e.toString()));
+    }
+  }
 }

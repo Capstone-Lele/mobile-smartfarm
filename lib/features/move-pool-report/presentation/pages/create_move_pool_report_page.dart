@@ -248,7 +248,7 @@ class _CreateMovePoolReportPageState
           children: [
             const Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
             Text(
-              '${pool.acidityMin} - ${pool.acidityMax} pH',
+              '${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.first : 0} - ${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.last : 0} pH',
               style: const TextStyle(fontSize: 15),
             ),
           ],
@@ -259,7 +259,7 @@ class _CreateMovePoolReportPageState
           children: [
             const Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
             Text(
-              '${pool.temperatureMin}°C - ${pool.temperatureMax}°C',
+              '${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.first : 0}°C - ${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.last : 0}°C',
               style: const TextStyle(fontSize: 15),
             ),
           ],

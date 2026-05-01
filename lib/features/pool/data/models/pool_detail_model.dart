@@ -14,8 +14,10 @@ class PoolDetailModel extends PoolDetail {
     required super.width,
     required super.height,
     required super.temperatureMax,
+    required super.temperatureNormal,
     required super.temperatureMin,
     required super.acidityMax,
+    required super.acidityNormal,
     required super.acidityMin,
     required super.createdAt,
     required super.updatedAt,
@@ -35,10 +37,36 @@ class PoolDetailModel extends PoolDetail {
       length: json['length'],
       width: json['width'],
       height: json['height'],
-      temperatureMax: json['temperatureMax'],
-      temperatureMin: json['temperatureMin'],
-      acidityMax: json['acidityMax'],
-      acidityMin: json['acidityMin'],
+      temperatureMax:
+          (json['temperatureMax'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      temperatureNormal:
+          (json['temperatureNormal'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      temperatureMin:
+          (json['temperatureMin'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      acidityMax:
+          (json['acidityMax'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      acidityNormal:
+          (json['acidityNormal'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      acidityMin:
+          (json['acidityMin'] as List?)
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       deletedAt: json['deletedAt'],
