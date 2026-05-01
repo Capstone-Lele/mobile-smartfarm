@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 class NotificationDatasource {
   // Get Notifications
   Future<Either<Failure, List<Map<String, dynamic>>>> getNotifications() async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/notifications');
+    Uri url = Uri.parse('${AppConstants.baseURL}/notification');
     final token = AppSession.getBearerToken();
 
     try {
@@ -52,7 +52,34 @@ class NotificationDatasource {
     }
   }
 
-  // Update Notification
+  // Update Notification All
+  Future<Either<Failure, Map<String, dynamic>>> updateNotifications(
+    String readedAt,
+  ) async {
+    Uri url = Uri.parse('${AppConstants.baseURL}/notification');
+    final token = AppSession.getBearerToken();
+
+    try {
+      final response = await safeRequest(
+        () => http
+            .put(
+              url,
+              headers: AppRequest.header(token),
+              body: {'readedAt': readedAt},
+            )
+            .timeout(const Duration(seconds: 10)),
+      );
+
+      final data = AppResponse.data(response);
+      final notification = data['data'][0];
+      return Right(notification);
+    } catch (e) {
+      if (e is Failure) return Left(e);
+      return Left(FetchFailure(e.toString()));
+    }
+  }
+
+  // Update Notification By id
   Future<Either<Failure, Map<String, dynamic>>> updateNotification(
     String id,
     String readedAt,

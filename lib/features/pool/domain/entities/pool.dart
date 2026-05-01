@@ -16,10 +16,12 @@ class Pool extends Equatable {
   final String? length;
   final String? width;
   final String? height;
-  final String temperatureMax;
-  final String temperatureMin;
-  final String acidityMax;
-  final String acidityMin;
+  final List<double> temperatureMax;
+  final List<double> temperatureNormal;
+  final List<double> temperatureMin;
+  final List<double> acidityMax;
+  final List<double> acidityNormal;
+  final List<double> acidityMin;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
@@ -41,8 +43,10 @@ class Pool extends Equatable {
     required this.width,
     required this.height,
     required this.temperatureMax,
+    required this.temperatureNormal,
     required this.temperatureMin,
     required this.acidityMax,
+    required this.acidityNormal,
     required this.acidityMin,
     required this.createdAt,
     required this.updatedAt,

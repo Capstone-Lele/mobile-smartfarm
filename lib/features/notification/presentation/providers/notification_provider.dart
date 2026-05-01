@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/features/notification/domain/repositories/n
 import 'package:budidaya_lele_mobile/features/notification/domain/usecases/get_notification_usecase.dart';
 import 'package:budidaya_lele_mobile/features/notification/domain/usecases/get_notifications_usecase.dart';
 import 'package:budidaya_lele_mobile/features/notification/domain/usecases/update_notification_usecase.dart';
+import 'package:budidaya_lele_mobile/features/notification/domain/usecases/update_notifications_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -34,6 +35,13 @@ final getNotificationUseCaseProvider = Provider<GetNotificationUsecase>((ref) {
   final repository = ref.read(notificationRepositoryProvider);
   return GetNotificationUsecase(repository);
 });
+
+final updateNotificationsUseCaseProvider = Provider<UpdateNotificationsUsecase>(
+  (ref) {
+    final repository = ref.read(notificationRepositoryProvider);
+    return UpdateNotificationsUsecase(repository);
+  },
+);
 
 final updateNotificationUseCaseProvider = Provider<UpdateNotificationUsecase>((
   ref,
@@ -93,17 +101,38 @@ class NotificationDetailNotifier
 }
 
 class NotificationMutationNotifier extends StateNotifier<AsyncValue<void>> {
+  final UpdateNotificationsUsecase _updateNotificationsUsecase;
   final UpdateNotificationUsecase _updateNotificationUsecase;
   final NotificationListNotifier _listNotifier;
   final NotificationDetailNotifier _detailNotifier;
 
   NotificationMutationNotifier(
+    this._updateNotificationsUsecase,
     this._updateNotificationUsecase,
     this._listNotifier,
     this._detailNotifier,
   ) : super(const AsyncValue.data(null));
 
-  // Update notification
+  // Update notifications all
+  Future<void> updateNotifications(String readedAt) async {
+    state = const AsyncValue.loading();
+    final result = await _updateNotificationsUsecase.execute(readedAt);
+
+    result.fold(
+      (failure) {
+        state = AsyncValue.error(
+          failure.message ?? 'Gagal mengubah notifikasi',
+          StackTrace.current,
+        );
+      },
+      (notification) {
+        state = AsyncValue.data(null);
+        _listNotifier.getNotifications();
+      },
+    );
+  }
+
+  // Update notification by id
   Future<void> updateNotification(String id, String readedAt) async {
     state = const AsyncValue.loading();
     final result = await _updateNotificationUsecase.execute(id, readedAt);
@@ -151,6 +180,10 @@ final notificationMutationNotifierProvider =
     StateNotifierProvider<NotificationMutationNotifier, AsyncValue<void>>((
       ref,
     ) {
+      final updateNotificationsUsecase = ref.read(
+        updateNotificationsUseCaseProvider,
+      );
+
       final updateNotificationUsecase = ref.read(
         updateNotificationUseCaseProvider,
       );
@@ -161,6 +194,7 @@ final notificationMutationNotifierProvider =
       );
 
       return NotificationMutationNotifier(
+        updateNotificationsUsecase,
         updateNotificationUsecase,
         listNotifier,
         detailNotifier,

@@ -1,13 +1,17 @@
+import 'dart:async';
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/presentation/providers/iot_provider.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/presentation/widgets/pool_condition_chart.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/presentation/widgets/pool_condition_detail_list.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
 import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class PoolConditionPage extends ConsumerStatefulWidget {
   const PoolConditionPage({super.key});
@@ -20,13 +24,84 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
   Pool? _selectedPool;
   DateTime? _startDate;
   DateTime? _endDate;
+  Timer? _iotTimer;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(poolListNotifierProvider.notifier).getPools();
+      ref.read(iotListNotifierProvider.notifier).getIots();
+      _startIotTimer();
     });
+  }
+
+  @override
+  void dispose() {
+    _iotTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startIotTimer() {
+    _iotTimer?.cancel();
+    _iotTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
+      if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+        if (_selectedPool != null) {
+          final nodeId = _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '');
+          ref
+              .read(iotDetailNotifierProvider.notifier)
+              .getIot(nodeId, showLoading: false);
+        } else {
+          ref.read(iotListNotifierProvider.notifier).getIots(showLoading: false);
+        }
+      }
+    });
+  }
+
+  void _onPoolChanged(Pool? pool) {
+    setState(() {
+      _selectedPool = pool;
+      _startDate = null;
+      _endDate = null;
+    });
+    ref.invalidate(chartIotsNotifierProvider);
+    if (pool != null) {
+      final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
+      ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+    } else {
+      ref.read(iotListNotifierProvider.notifier).getIots();
+    }
+  }
+
+  void _onDateRangeChanged(DateTime? start, DateTime? end) {
+    setState(() {
+      _startDate = start;
+      _endDate = end;
+    });
+    if (start != null && end != null) {
+      final nodeId = _selectedPool != null
+          ? _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '')
+          : '0';
+
+      final startStr = DateFormat('dd-MM-yyyy').format(start);
+      final endStr = DateFormat('dd-MM-yyyy').format(end);
+
+      ref
+          .read(chartIotsNotifierProvider.notifier)
+          .getChartIots(
+            nodeId,
+            AppFormat.toApiDate(startStr),
+            AppFormat.toApiDate(endStr),
+          );
+    }
+  }
+
+  void _onDateRangeReset() {
+    setState(() {
+      _startDate = null;
+      _endDate = null;
+    });
+    ref.invalidate(chartIotsNotifierProvider);
   }
 
   @override
@@ -39,10 +114,32 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            setState(() {
-              _selectedPool = null;
-            });
             await ref.read(poolListNotifierProvider.notifier).getPools();
+            await ref.read(iotListNotifierProvider.notifier).getIots();
+
+            if (_selectedPool != null) {
+              final nodeId = _selectedPool!.name.replaceAll(
+                RegExp(r'[^0-9]'),
+                '',
+              );
+              await ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+            }
+
+            if (_startDate != null && _endDate != null) {
+              final nodeId = _selectedPool != null
+                  ? _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '')
+                  : '0';
+
+              final startStr = DateFormat('dd-MM-yyyy').format(_startDate!);
+              final endStr = DateFormat('dd-MM-yyyy').format(_endDate!);
+              await ref
+                  .read(chartIotsNotifierProvider.notifier)
+                  .getChartIots(
+                    nodeId,
+                    AppFormat.toApiDate(startStr),
+                    AppFormat.toApiDate(endStr),
+                  );
+            }
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -52,7 +149,7 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Grafik Sensor Kolam',
+                    'Filter Sensor Kolam',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -61,25 +158,15 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
                   ),
                   const SizedBox(height: 16),
                   _buildPoolSelector(poolsAsync),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   AppDateRangeFilter(
                     startDate: _startDate,
                     endDate: _endDate,
-                    onFilter: (start, end) {
-                      setState(() {
-                        _startDate = start;
-                        _endDate = end;
-                      });
-                    },
-                    onReset: () {
-                      setState(() {
-                        _startDate = null;
-                        _endDate = null;
-                      });
-                    },
+                    onFilter: _onDateRangeChanged,
+                    onReset: _onDateRangeReset,
                   ),
                   const SizedBox(height: 16),
-                  const PoolConditionChart(),
+                  PoolConditionChart(startDate: _startDate, endDate: _endDate),
                   const SizedBox(height: 16),
                   const Text(
                     'Kondisi Kolam Secara Individu',
@@ -90,7 +177,7 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const PoolConditionDetailList(),
+                  PoolConditionDetailList(selectedPool: _selectedPool),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -108,17 +195,17 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Column(
+      title: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Keseluruhan Kondisi Kolam',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             'Status Kolam',
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ],
       ),
@@ -136,15 +223,11 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
         readOnly: true,
       ),
       data: (pools) => AppInputDropdown<Pool>(
-        hint: 'Semua kolam',
+        hint: 'Semua Kolam',
         items: pools,
         itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
         value: _selectedPool,
-        onChanged: (pool) {
-          setState(() {
-            _selectedPool = pool;
-          });
-        },
+        onChanged: _onPoolChanged,
       ),
     );
   }

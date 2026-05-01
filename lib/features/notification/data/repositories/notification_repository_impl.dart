@@ -47,7 +47,16 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> updateMortalityReport(
+  Future<Either<Failure, Map<String, dynamic>>> updateNotifications(
+    String readedAt,
+  ) async {
+    final result = await datasource.updateNotifications(readedAt);
+
+    return result.fold((failure) => Left(failure), (data) => Right(data));
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> updateNotification(
     String id,
     String readedAt,
   ) async {

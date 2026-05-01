@@ -11,6 +11,6 @@ class UpdateNotificationUsecase {
     String id,
     String readedAt,
   ) {
-    return repository.updateMortalityReport(id, readedAt);
+    return repository.updateNotification(id, readedAt);
   }
 }

@@ -23,4 +23,28 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     });
   }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> registerToken(
+    String fcmToken,
+    String deviceName,
+    String deviceType,
+  ) async {
+    final result = await datasource.registerToken(
+      fcmToken,
+      deviceName,
+      deviceType,
+    );
+
+    return result.fold((failure) => Left(failure), (data) => Right(data));
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> unregisterToken(
+    String fcmToken,
+  ) async {
+    final result = await datasource.unregisterToken(fcmToken);
+
+    return result.fold((failure) => Left(failure), (data) => Right(data));
+  }
 }

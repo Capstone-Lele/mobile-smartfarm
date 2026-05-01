@@ -1,4 +1,3 @@
-// Provider Datasource
 import 'package:budidaya_lele_mobile/features/dashboard/data/datasources/iot_datasource.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/data/repositories/iot_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/chart_iots.dart';
@@ -10,6 +9,7 @@ import 'package:budidaya_lele_mobile/features/dashboard/domain/usecases/get_iots
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+// Provider Datasource
 final iotDatasourceProvider = Provider((ref) => IotDatasource());
 
 // Provider Repository
@@ -39,8 +39,10 @@ class IotListNotifier extends StateNotifier<AsyncValue<List<Iot>>> {
 
   IotListNotifier(this._getIotsUsecase) : super(const AsyncValue.data([]));
 
-  Future<void> getIots() async {
-    state = const AsyncValue.loading();
+  Future<void> getIots({bool showLoading = true}) async {
+    if (showLoading) {
+      state = const AsyncValue.loading();
+    }
     final result = await _getIotsUsecase.execute();
 
     result.fold(
@@ -62,8 +64,10 @@ class IotDetailNotifier extends StateNotifier<AsyncValue<Iot?>> {
 
   IotDetailNotifier(this._getIotUsecase) : super(const AsyncValue.data(null));
 
-  Future<void> getIot(String nodeId) async {
-    state = const AsyncValue.loading();
+  Future<void> getIot(String nodeId, {bool showLoading = true}) async {
+    if (showLoading) {
+      state = const AsyncValue.loading();
+    }
     final result = await _getIotUsecase.execute(nodeId);
 
     result.fold(
@@ -92,6 +96,7 @@ class ChartIotsNotifier extends StateNotifier<AsyncValue<List<ChartIots>>> {
     String endDate,
   ) async {
     state = const AsyncValue.loading();
+
     final result = await _getChartIotsUsecase.execute(
       nodeId,
       startDate,
