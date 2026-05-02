@@ -1,6 +1,7 @@
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
-import 'package:budidaya_lele_mobile/features/notification/domain/entities/notification.dart' as entity;
+import 'package:budidaya_lele_mobile/features/notification/domain/entities/notification.dart'
+    as entity;
 import 'package:flutter/material.dart';
 
 class NotificationDetailModal extends StatelessWidget {
@@ -10,8 +11,6 @@ class NotificationDetailModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDanger = notification.type.toLowerCase() == 'danger';
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
@@ -24,12 +23,6 @@ class NotificationDetailModal extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                isDanger ? Icons.report : Icons.warning,
-                color: isDanger ? AppColors.red : AppColors.yellow,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   notification.title,
@@ -49,18 +42,15 @@ class NotificationDetailModal extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             AppFormat.dateTime(notification.createdAt),
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.darkGray,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
           ),
           const SizedBox(height: 16),
           Text(
             notification.message,
             style: const TextStyle(
               fontSize: 14,
-              height: 1.5,
-              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 24),

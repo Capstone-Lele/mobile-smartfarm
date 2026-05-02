@@ -69,17 +69,12 @@ class SettingPage extends ConsumerWidget {
                     _buildMenuItem(
                       Icons.local_parking,
                       "Manajemen Parameter",
+                      isLast: true,
                       onTap: () {
                         AppRoutes.pushNamed(context, AppRoutes.parameter);
                       },
                     ),
                   ],
-                  _buildMenuItem(
-                    Icons.notifications_none,
-                    "Riwayat Notifikasi",
-                    isLast: true,
-                    onTap: () {},
-                  ),
                 ]),
                 const SizedBox(height: 20),
                 _buildSectionTitle("Keluar"),

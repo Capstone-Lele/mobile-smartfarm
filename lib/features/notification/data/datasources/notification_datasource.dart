@@ -60,19 +60,19 @@ class NotificationDatasource {
     final token = AppSession.getBearerToken();
 
     try {
+      var request = http.MultipartRequest('PUT', url);
+      request.headers.addAll(AppRequest.header(token));
+      request.fields['readedAt'] = readedAt;
+
+      final streamedResponse = await request.send();
       final response = await safeRequest(
-        () => http
-            .put(
-              url,
-              headers: AppRequest.header(token),
-              body: {'readedAt': readedAt},
-            )
-            .timeout(const Duration(seconds: 10)),
+        () => http.Response.fromStream(
+          streamedResponse,
+        ).timeout(const Duration(seconds: 10)),
       );
 
       final data = AppResponse.data(response);
-      final notification = data['data'][0];
-      return Right(notification);
+      return Right(data);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));
@@ -88,19 +88,19 @@ class NotificationDatasource {
     final token = AppSession.getBearerToken();
 
     try {
+      var request = http.MultipartRequest('PUT', url);
+      request.headers.addAll(AppRequest.header(token));
+      request.fields['readedAt'] = readedAt;
+
+      final streamedResponse = await request.send();
       final response = await safeRequest(
-        () => http
-            .put(
-              url,
-              headers: AppRequest.header(token),
-              body: {'readedAt': readedAt},
-            )
-            .timeout(const Duration(seconds: 10)),
+        () => http.Response.fromStream(
+          streamedResponse,
+        ).timeout(const Duration(seconds: 10)),
       );
 
       final data = AppResponse.data(response);
-      final notification = data['data'][0];
-      return Right(notification);
+      return Right(data);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

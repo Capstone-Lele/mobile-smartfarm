@@ -5,7 +5,6 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
-import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
@@ -217,28 +216,6 @@ class _CreateMovePoolReportPageState
             Text(
               '${pool.currentQuantity} Ekor',
               style: TextStyle(fontSize: 15),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('pH Sekarang', style: TextStyle(fontSize: 15)),
-            Text(
-              '7.0 pH Bug',
-              style: TextStyle(fontSize: 15, color: AppColors.red),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Suhu Sekarang', style: TextStyle(fontSize: 15)),
-            Text(
-              '28 °C Bug',
-              style: TextStyle(fontSize: 15, color: AppColors.red),
             ),
           ],
         ),

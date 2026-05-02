@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 enum NotificationType { danger, warning }
 
 class NotificationItem extends StatelessWidget {
-  final NotificationType type;
   final String title;
   final String message;
   final String timestamp;
@@ -14,7 +13,6 @@ class NotificationItem extends StatelessWidget {
 
   const NotificationItem({
     super.key,
-    required this.type,
     required this.title,
     required this.message,
     required this.timestamp,
@@ -62,16 +60,6 @@ class NotificationItem extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        type == NotificationType.danger
-                            ? Icons.report
-                            : Icons.warning,
-                        size: 14,
-                        color: type == NotificationType.danger
-                            ? AppColors.red
-                            : AppColors.yellow,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
                         title,
                         style: const TextStyle(
