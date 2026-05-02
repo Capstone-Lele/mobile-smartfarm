@@ -30,9 +30,13 @@ class _ParameterPageState extends ConsumerState<ParameterPage> {
       body: SafeArea(
         child: poolsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(child: Text(error.toString())),
+          error: (error, stack) => Center(
+            child: Text(
+              error.toString(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
           data: (pools) {
-            // Kolam index 0 akan null, yang merepresentasikan "Semua Kolam"
             final itemCount = pools.length + 1;
             return RefreshIndicator(
               onRefresh: () async {
@@ -41,7 +45,8 @@ class _ParameterPageState extends ConsumerState<ParameterPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: itemCount,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return const ParameterCard(pool: null);
