@@ -14,6 +14,17 @@ class PoolConditionDetailList extends ConsumerWidget {
 
   const PoolConditionDetailList({super.key, this.selectedPool});
 
+  Pool? _getMatchingPool(Iot iot, List<Pool> allPools) {
+    final nodeId = iot.nodeId.toString();
+    try {
+      return allPools.firstWhere(
+        (p) => p.name.replaceAll(RegExp(r'[^0-9]'), '') == nodeId,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
   ParamStatus _getStatusForIot(Iot iot, List<Pool> allPools) {
     final nodeId = iot.nodeId.toString();
 
@@ -139,11 +150,19 @@ class PoolConditionDetailList extends ConsumerWidget {
               }
             }
 
+            String poolName = '';
+            if (pool != null) {
+              poolName = pool.name;
+            } else {
+              final matchingPool = _getMatchingPool(iot, allPools ?? []);
+              poolName = matchingPool?.name ?? 'Node ${iot.nodeId}';
+            }
+
             return Column(
               children: [
                 if (index > 0) const Divider(height: 1, color: AppColors.gray),
                 _buildItem(
-                  'Node ${iot.nodeId}',
+                  poolName,
                   '${temp.toStringAsFixed(1)}°C',
                   ph.toStringAsFixed(1),
                   DashboardUtils.getStatusLabel(overallStatus),

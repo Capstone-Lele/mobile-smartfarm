@@ -116,36 +116,38 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
       tempMin = _parseRange(_tempMinController.text);
     }
 
-    final notifier = ref.read(parameterMutationNotifierProvider.notifier);
+    try {
+      if (widget.pool == null) {
+        await ref
+            .read(parameterMutationNotifierProvider.notifier)
+            .updateParameters(tempMax, tempNorm, tempMin, phMax, phNorm, phMin);
+      } else {
+        await ref
+            .read(parameterMutationNotifierProvider.notifier)
+            .updateParameter(
+              widget.pool!.id,
+              tempMax,
+              tempNorm,
+              tempMin,
+              phMax,
+              phNorm,
+              phMin,
+            );
+      }
 
-    if (widget.pool == null) {
-      // Global
-      await notifier.updateParameters(
-        tempMax,
-        tempNorm,
-        tempMin,
-        phMax,
-        phNorm,
-        phMin,
-      );
-    } else {
-      // Spesifik kolam
-      await notifier.updateParameter(
-        widget.pool!.id,
-        tempMax,
-        tempNorm,
-        tempMin,
-        phMax,
-        phNorm,
-        phMin,
-      );
-    }
+      if (mounted) {
+        // Refresh pool list
+        await ref.read(poolListNotifierProvider.notifier).getPools();
 
-    // Refresh data kolam setelah update berhasil
-    if (mounted) {
-      ref.read(poolListNotifierProvider.notifier).getPools();
-      setState(() => _state = ParameterCardState.view);
-      AppSnackbar.success('Pengaturan berhasil disimpan');
+        // Kembali ke view mode
+        setState(() => _state = ParameterCardState.view);
+
+        AppSnackbar.success('Parameter berhasil diperbarui');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.error('Gagal menyimpan: ${e.toString()}');
+      }
     }
   }
 
@@ -156,10 +158,10 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.gray.withOpacity(0.5)),
+        border: Border.all(color: AppColors.gray.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -233,8 +235,8 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
         if (!isGlobal) ...[
           _buildInfoBox(
             title: 'Ambang batas Max (Atas):',
-            backgroundColor: AppColors.lightGray.withOpacity(0.5),
-            borderColor: AppColors.gray.withOpacity(0.5),
+            backgroundColor: AppColors.lightGray.withValues(alpha: 0.5),
+            borderColor: AppColors.gray.withValues(alpha: 0.5),
             content: [
               _buildParameterItem(
                 Icons.water_drop,
@@ -253,8 +255,8 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
           const SizedBox(height: 8),
           _buildInfoBox(
             title: 'Ambang batas Normal:',
-            backgroundColor: AppColors.lightGray.withOpacity(0.5),
-            borderColor: AppColors.gray.withOpacity(0.5),
+            backgroundColor: AppColors.lightGray.withValues(alpha: 0.5),
+            borderColor: AppColors.gray.withValues(alpha: 0.5),
             content: [
               _buildParameterItem(
                 Icons.water_drop,
@@ -273,8 +275,8 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
           const SizedBox(height: 8),
           _buildInfoBox(
             title: 'Ambang batas Min (Bawah):',
-            backgroundColor: AppColors.lightGray.withOpacity(0.5),
-            borderColor: AppColors.gray.withOpacity(0.5),
+            backgroundColor: AppColors.lightGray.withValues(alpha: 0.5),
+            borderColor: AppColors.gray.withValues(alpha: 0.5),
             content: [
               _buildParameterItem(
                 Icons.water_drop,
@@ -354,7 +356,7 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
             Expanded(
               child: AppButton(
                 label: 'Simpan',
-                onPressed: isLoading ? null : _onSave,
+                onPressed: _onSave,
                 isLoading: isLoading,
               ),
             ),
@@ -561,8 +563,9 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
           children: [
             Expanded(
               child: AppButton(
-                label: isLoading ? 'Menyimpan...' : 'Simpan',
-                onPressed: isLoading ? null : _onSave,
+                label: 'Simpan',
+                onPressed: _onSave,
+                isLoading: isLoading,
               ),
             ),
             const SizedBox(width: 12),
@@ -632,15 +635,12 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
             Text(
               label,
               style: TextStyle(
-                fontSize: small ? 10 : 12,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            Text(
-              value,
-              style: TextStyle(fontSize: small ? 10 : 12, color: Colors.black),
-            ),
+            Text(value, style: TextStyle(fontSize: 12, color: Colors.black)),
           ],
         ),
       ],

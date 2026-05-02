@@ -1,6 +1,9 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
+import 'package:budidaya_lele_mobile/features/notification/domain/entities/notification.dart' as entity;
 import 'package:budidaya_lele_mobile/features/notification/presentation/providers/notification_provider.dart';
+import 'package:budidaya_lele_mobile/features/notification/presentation/widgets/notification_detail_modal.dart';
 import 'package:budidaya_lele_mobile/features/notification/presentation/widgets/notification_item.dart';
 import 'package:budidaya_lele_mobile/features/notification/presentation/widgets/notification_settings_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -15,84 +18,179 @@ class NotificationPage extends ConsumerStatefulWidget {
 
 class _NotificationPageState extends ConsumerState<NotificationPage> {
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(notificationListNotifierProvider.notifier).getNotifications();
+    });
+  }
+
+  String _getGroupLabel(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr).toLocal();
+      final now = DateTime.now();
+      final difference = DateTime(now.year, now.month, now.day)
+          .difference(DateTime(date.year, date.month, date.day))
+          .inDays;
+
+      if (difference == 0) {
+        return 'Hari ini';
+      } else if (difference == 1) {
+        return 'Kemarin';
+      } else {
+        return 'Sebelumnya';
+      }
+    } catch (e) {
+      return 'Sebelumnya';
+    }
+  }
+
+  void _onNotificationTap(entity.Notification notification) {
+    if (notification.readedAt == null) {
+      ref.read(notificationMutationNotifierProvider.notifier).updateNotification(
+            notification.id,
+            DateTime.now().toUtc().toIso8601String(),
+          );
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: NotificationDetailModal(notification: notification),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final selectedCategoryIndex = ref.watch(selectedCategoryIndexProvider);
+    final notificationsAsync = ref.watch(notificationListNotifierProvider);
+
+    String categoryFilter;
+    if (selectedCategoryIndex == 0) {
+      categoryFilter = 'sensor';
+    } else if (selectedCategoryIndex == 1) {
+      categoryFilter = 'report';
+    } else {
+      categoryFilter = 'maintenance';
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {},
-          child: SingleChildScrollView(
+          onRefresh: () async {
+            await ref.read(notificationListNotifierProvider.notifier).getNotifications();
+          },
+          child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  _buildHeader(context),
-                  const SizedBox(height: 16),
-                  AppSegmentedControl(
-                    children: const ['Sensor', 'Laporan', 'Pemeliharaan'],
-                    selectedIndex: selectedCategoryIndex,
-                    onValueChanged: (index) {
-                      ref.read(selectedCategoryIndexProvider.notifier).state =
-                          index;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSectionHeader('Hari ini'),
-                  const NotificationItem(
-                    type: NotificationType.danger,
-                    title: 'Bahaya pH',
-                    message:
-                        'Kritis! pH di Kolam 1 berada di angka 8.5. Ikan berisiko stres berat, segera netralisir air!',
-                    timestamp: 'Senin, 29 September 2025 16:30',
-                    isUnread: true,
-                  ),
-                  const NotificationItem(
-                    type: NotificationType.warning,
-                    title: 'Peringatan pH',
-                    message:
-                        'Waspada, pH Kolam 1 saat ini 7.5. Angka mulai menjauh dari batas ideal, mohon pantau secara berkala.',
-                    timestamp: 'Senin, 29 September 2025 16:30',
-                    isUnread: true,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSectionHeader('Kemarin'),
-                  const NotificationItem(
-                    type: NotificationType.danger,
-                    title: 'Bahaya Suhu',
-                    message:
-                        'Kritis! Suhu di Kolam 2 berada di angka 35°C. Ikan berisiko stres berat, segera netralisir air!',
-                    timestamp: 'Senin, 25 September 2025 16:30',
-                  ),
-                  const NotificationItem(
-                    type: NotificationType.warning,
-                    title: 'Peringatan Suhu',
-                    message:
-                        'Waspada, Suhu Kolam 2 saat ini 34°C. Angka mulai menjauh dari batas ideal, mohon pantau secara berkala.',
-                    timestamp: 'Senin, 25 September 2025 16:30',
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSectionHeader('Sebelumnya'),
-                  const NotificationItem(
-                    type: NotificationType.warning,
-                    title: 'Peringatan Suhu',
-                    message:
-                        'Waspada, Suhu Kolam 2 saat ini 33°C. Angka mulai menjauh dari batas ideal, mohon pantau secara berkala.',
-                    timestamp: 'Senin, 20 September 2025 16:30',
-                  ),
-                ],
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 16),
+                    notificationsAsync.maybeWhen(
+                      data: (notifications) {
+                        final unreadToday = notifications.where((n) =>
+                            _getGroupLabel(n.createdAt) == 'Hari ini' &&
+                            n.readedAt == null).length;
+                        return _buildHeader(context, unreadToday);
+                      },
+                      orElse: () => _buildHeader(context, 0),
+                    ),
+                    const SizedBox(height: 16),
+                    AppSegmentedControl(
+                      children: const ['Sensor', 'Laporan', 'Pemeliharaan'],
+                      selectedIndex: selectedCategoryIndex,
+                      onValueChanged: (index) {
+                        ref.read(selectedCategoryIndexProvider.notifier).state =
+                            index;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    notificationsAsync.when(
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (error, stack) => Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(child: Text(error.toString())),
+                      ),
+                      data: (notifications) {
+                        final filtered = notifications
+                            .where((n) => n.category.toLowerCase() == categoryFilter)
+                            .toList();
+
+                        if (filtered.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Text(
+                                'Tidak ada notifikasi',
+                                style: TextStyle(color: AppColors.darkGray),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final Map<String, List<entity.Notification>> grouped = {
+                          'Hari ini': [],
+                          'Kemarin': [],
+                          'Sebelumnya': [],
+                        };
+
+                        for (var n in filtered) {
+                          final group = _getGroupLabel(n.createdAt);
+                          grouped[group]?.add(n);
+                        }
+
+                        final List<Widget> listWidgets = [];
+
+                        for (var group in ['Hari ini', 'Kemarin', 'Sebelumnya']) {
+                          final groupItems = grouped[group]!;
+                          if (groupItems.isNotEmpty) {
+                            listWidgets.add(_buildSectionHeader(group));
+                            for (var item in groupItems) {
+                              listWidgets.add(
+                                NotificationItem(
+                                  type: item.type.toLowerCase() == 'danger'
+                                      ? NotificationType.danger
+                                      : NotificationType.warning,
+                                  title: item.title,
+                                  message: item.message,
+                                  timestamp: AppFormat.dateTime(item.createdAt),
+                                  isUnread: item.readedAt == null,
+                                  onTap: () => _onNotificationTap(item),
+                                ),
+                              );
+                            }
+                            listWidgets.add(const SizedBox(height: 16));
+                          }
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: listWidgets,
+                        );
+                      },
+                    ),
+                  ]),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, int unreadTodayCount) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Row(
@@ -126,7 +224,7 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       style: TextStyle(color: AppColors.black, fontSize: 12),
                     ),
                     TextSpan(
-                      text: ' 2 notifikasi',
+                      text: ' $unreadTodayCount notifikasi',
                       style: const TextStyle(
                         color: AppColors.green,
                         fontSize: 12,
@@ -134,7 +232,7 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       ),
                     ),
                     const TextSpan(
-                      text: ' hari ini',
+                      text: ' baru hari ini',
                       style: TextStyle(color: AppColors.black, fontSize: 12),
                     ),
                   ],
