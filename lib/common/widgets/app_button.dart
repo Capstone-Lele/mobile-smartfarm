@@ -25,7 +25,7 @@ class AppButton extends StatelessWidget {
       width: double.infinity,
       child: isOutlined
           ? OutlinedButton(
-              onPressed: enabled ? onPressed : null,
+              onPressed: enabled && !isLoading ? onPressed : null,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: color),
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -53,7 +53,7 @@ class AppButton extends StatelessWidget {
                     ),
             )
           : ElevatedButton(
-              onPressed: enabled ? onPressed : null,
+              onPressed: enabled && !isLoading ? onPressed : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
                 padding: const EdgeInsets.symmetric(vertical: 14),
