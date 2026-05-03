@@ -1,6 +1,9 @@
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_session.dart';
+import 'package:budidaya_lele_mobile/common/services/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,6 +13,8 @@ import 'package:overlay_support/overlay_support.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FCMService.init();
   await dotenv.load(fileName: ".env");
   await AppSession.init();
   await initializeDateFormatting('id_ID', null);

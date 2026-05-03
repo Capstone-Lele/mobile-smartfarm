@@ -1,0 +1,23 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "smartfarm-lele",
+                    "appId": "1:125313095078:android:d3de7072f52b0efbf6eb67",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "smartfarm-lele",
+                    "configurations": {
+                        "android": "1:125313095078:android:d3de7072f52b0efbf6eb67",
+                        "ios": "1:125313095078:ios:db7ee3544fc2bbe2f6eb67",
+                        "web": "1:125313095078:web:84a890a99843c433f6eb67"
+                    }
+                }
+            }
+        }
+    }
+}
