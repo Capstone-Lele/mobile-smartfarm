@@ -208,34 +208,12 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ],
         ),
         const SizedBox(height: 12),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('pH Sekarang', style: TextStyle(fontSize: 15)),
-            Text(
-              '7.0 pH Bug',
-              style: TextStyle(fontSize: 15, color: AppColors.red),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Suhu Sekarang', style: TextStyle(fontSize: 15)),
-            Text(
-              '28 °C Bug',
-              style: TextStyle(fontSize: 15, color: AppColors.red),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
             Text(
-              '${pool.acidityMin} - ${pool.acidityMax} pH',
+              '${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.first : 0} - ${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.last : 0} pH',
               style: const TextStyle(fontSize: 15),
             ),
           ],
@@ -246,7 +224,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           children: [
             const Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
             Text(
-              '${pool.temperatureMin}°C - ${pool.temperatureMax}°C',
+              '${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.first : 0}°C - ${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.last : 0}°C',
               style: const TextStyle(fontSize: 15),
             ),
           ],

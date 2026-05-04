@@ -1,10 +1,20 @@
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:flutter/material.dart';
 
 class ReportQuickActionBottomSheet extends StatelessWidget {
   final String type;
+  final String poolId;
+  final String poolName;
+  final String cycleId;
 
-  const ReportQuickActionBottomSheet({super.key, required this.type});
+  const ReportQuickActionBottomSheet({
+    super.key,
+    required this.type,
+    required this.poolId,
+    required this.poolName,
+    required this.cycleId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +38,7 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildContent(),
+              child: _buildContent(context),
             ),
           ],
         ),
@@ -56,7 +66,7 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     if (type == 'daily') {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -65,36 +75,107 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
             icon: Icons.restaurant,
             title: 'Tambah Laporan Pakan',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createFeedingReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.medical_services,
             title: 'Tambah Laporan Vitamin',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createVitaminReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.dangerous,
             title: 'Tambah Laporan Kematian',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createMortalityReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.error_outline,
             title: 'Tambah Laporan Sakit',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createSickReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.water_drop,
             title: 'Tambah Laporan Pembersihan Kolam',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createPoolCleaningReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.trending_up,
             title: 'Tambah Laporan Sampling',
             iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createSamplingReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
         ],
       );
@@ -106,18 +187,53 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
             icon: Icons.add_circle_outline,
             title: 'Tambah Laporan Tebar Benih',
             iconColor: AppColors.secondary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createSeedReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.agriculture,
             title: 'Tambah Laporan Panen',
             iconColor: AppColors.secondary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createHarvestReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
           const Divider(height: 1, color: AppColors.gray),
           _buildQuickActionItem(
             icon: Icons.swap_horiz,
             title: 'Tambah Laporan Pindah Kolam',
             iconColor: AppColors.secondary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createMovePoolReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
           ),
         ],
       );
@@ -128,9 +244,10 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
     required IconData icon,
     required String title,
     required Color iconColor,
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(

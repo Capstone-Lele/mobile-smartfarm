@@ -11,6 +11,7 @@ class ActivityLogModel extends ActivityLog {
     required super.createdAt,
     required super.updatedAt,
     required super.deletedAt,
+    required super.notes,
   });
 
   factory ActivityLogModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +25,7 @@ class ActivityLogModel extends ActivityLog {
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       deletedAt: json['deletedAt'],
+      notes: json['notes'],
     );
   }
 }

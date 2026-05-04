@@ -40,6 +40,7 @@ class _MortalityReportDetailPageState
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _userCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _MortalityReportDetailPageState
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
     _userCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -171,6 +173,17 @@ class _MortalityReportDetailPageState
                 requiredField: true,
                 readOnly: true,
                 imageUrl: report.image,
+              ),
+              const SizedBox(height: 16),
+              AppInputText(
+                label: 'Catatan',
+                hint: 'Catatan',
+                controller: _notesCtrl,
+                type: FieldType.text,
+                maxLines: 5,
+                minLines: 3,
+                requiredField: false,
+                readOnly: true,
               ),
               if (user?.role == 'pic') ...[
                 const SizedBox(height: 16),

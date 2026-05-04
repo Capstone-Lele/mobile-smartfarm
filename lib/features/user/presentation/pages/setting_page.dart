@@ -61,6 +61,7 @@ class SettingPage extends ConsumerWidget {
                   _buildMenuItem(
                     Icons.sensors,
                     "Status Alat",
+                    isLast: user?.role == 'pic' ? false : true,
                     onTap: () {
                       AppRoutes.pushNamed(context, AppRoutes.statusDevice);
                     },

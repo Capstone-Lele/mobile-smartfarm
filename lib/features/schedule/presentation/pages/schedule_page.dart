@@ -1,3 +1,4 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
@@ -24,6 +25,9 @@ class SchedulePage extends ConsumerStatefulWidget {
 }
 
 class _SchedulePageState extends ConsumerState<SchedulePage> {
+  DateTime? _startDate;
+  DateTime? _endDate;
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +91,23 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
                   const SizedBox(height: 20),
                   _buildSegmentedControl(selectedTab),
                   const SizedBox(height: 16),
+                  AppDateRangeFilter(
+                    startDate: _startDate,
+                    endDate: _endDate,
+                    onFilter: (start, end) {
+                      setState(() {
+                        _startDate = start;
+                        _endDate = end;
+                      });
+                    },
+                    onReset: () {
+                      setState(() {
+                        _startDate = null;
+                        _endDate = null;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   _buildScheduleContent(scheduleAsync),
                 ],
               ),
@@ -94,7 +115,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _buildFloatingActionButton(user),
     );
   }
 
@@ -168,12 +189,54 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
           loading: () => _buildLoadingState(),
           error: (err, stack) => _buildErrorState(err),
           data: (grouped) {
-            if (grouped.isEmpty) {
+            final filteredGrouped = _filterGroupedSchedules(grouped);
+            if (filteredGrouped.isEmpty) {
               return _buildEmptyState();
             }
-            return _buildSchedulesList(grouped);
+            final user = ref.watch(userProvider);
+            return _buildSchedulesList(filteredGrouped, user);
           },
         );
+  }
+
+  GroupedSchedules _filterGroupedSchedules(GroupedSchedules grouped) {
+    if (_startDate == null || _endDate == null) return grouped;
+
+    List<Schedule> filterList(List<Schedule> list) {
+      return list.where((s) {
+        try {
+          final parsed = DateTime.parse(s.scheduleDate);
+          final dateOnly = DateTime(
+            parsed.year,
+            parsed.month,
+            parsed.day,
+          );
+          final start = DateTime(
+            _startDate!.year,
+            _startDate!.month,
+            _startDate!.day,
+          );
+          final end = DateTime(
+            _endDate!.year,
+            _endDate!.month,
+            _endDate!.day,
+          );
+
+          if (dateOnly.isBefore(start) || dateOnly.isAfter(end)) {
+            return false;
+          }
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }).toList();
+    }
+
+    return GroupedSchedules(
+      today: filterList(grouped.today),
+      upcoming: filterList(grouped.upcoming),
+      past: filterList(grouped.past),
+    );
   }
 
   Widget _buildLoadingState() {
@@ -204,7 +267,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
     );
   }
 
-  Widget _buildSchedulesList(GroupedSchedules grouped) {
+  Widget _buildSchedulesList(GroupedSchedules grouped, user) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,18 +276,21 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
           schedules: grouped.today,
           statusLabel: "Hari Ini",
           statusType: BadgeType.success,
+          user: user,
         ),
         _buildScheduleSection(
           title: "Jadwal Mendatang",
           schedules: grouped.upcoming,
           statusLabel: "Mendatang",
           statusType: BadgeType.warning,
+          user: user,
         ),
         _buildScheduleSection(
           title: "Jadwal Kemarin",
           schedules: grouped.past,
           statusLabel: "Kemarin",
           statusType: BadgeType.danger,
+          user: user,
         ),
       ],
     );
@@ -235,6 +301,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
     required List<Schedule> schedules,
     required String statusLabel,
     required BadgeType statusType,
+    required dynamic user,
   }) {
     if (schedules.isEmpty) return SizedBox.shrink();
 
@@ -253,28 +320,34 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
           ),
         ),
         ...schedules.map((schedule) {
+          final isPic = user?.role == 'pic';
+          final card = ScheduleCard(
+            title: schedule.poolName,
+            description: "Jadwal ${schedule.typeLabel}",
+            time: AppFormat.dateTime(schedule.scheduleDate),
+            officer: schedule.userName,
+            statusLabel: statusLabel,
+            statusType: statusType,
+            isPic: isPic,
+          );
+
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: GestureDetector(
-              onTap: () {
-                AppRoutes.pushNamed(
-                  context,
-                  AppRoutes.scheduleDetail,
-                  arguments: {
-                    'scheduleType': schedule.type,
-                    'scheduleId': schedule.id,
-                  },
-                );
-              },
-              child: ScheduleCard(
-                title: schedule.poolName,
-                description: "Jadwal ${schedule.typeLabel}",
-                time: AppFormat.dateTime(schedule.scheduleDate),
-                officer: schedule.userName,
-                statusLabel: statusLabel,
-                statusType: statusType,
-              ),
-            ),
+            child: isPic
+                ? GestureDetector(
+                    onTap: () {
+                      AppRoutes.pushNamed(
+                        context,
+                        AppRoutes.scheduleDetail,
+                        arguments: {
+                          'scheduleType': schedule.type,
+                          'scheduleId': schedule.id,
+                        },
+                      );
+                    },
+                    child: card,
+                  )
+                : card,
           );
         }),
         SizedBox(height: 16),
@@ -282,7 +355,9 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildFloatingActionButton(user) {
+    if (user?.role != 'pic') return const SizedBox.shrink();
+
     final selectedTab = ref.watch(scheduleTabProvider);
     final scheduleTypeMap = {0: 'cleaning', 1: 'feeding', 2: 'sampling'};
 

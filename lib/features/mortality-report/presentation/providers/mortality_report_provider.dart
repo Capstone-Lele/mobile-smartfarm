@@ -131,6 +131,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String reportDate,
     int quantity,
     XFile image,
+    String notes,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createMortalityReportUsecase.execute(
@@ -139,6 +140,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       reportDate,
       quantity,
       image,
+      notes,
     );
 
     result.fold(
@@ -162,6 +164,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String reportDate,
     int quantity,
     XFile? image,
+    String notes,
   ) async {
     state = const AsyncValue.loading();
     final result = await _updateMortalityReportUsecase.execute(
@@ -169,6 +172,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       reportDate,
       quantity,
       image,
+      notes,
     );
 
     result.fold(

@@ -15,12 +15,14 @@ abstract class MortalityReportRepository {
     String reportDate,
     int quantity,
     XFile image,
+    String notes,
   );
   Future<Either<Failure, Map<String, dynamic>>> updateMortalityReport(
     String id,
     String reportDate,
     int quantity,
     XFile? image,
+    String notes,
   );
   Future<Either<Failure, Map<String, dynamic>>> deleteMortalityReport(
     String id,

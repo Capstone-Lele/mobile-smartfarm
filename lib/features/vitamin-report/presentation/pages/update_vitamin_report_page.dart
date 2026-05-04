@@ -177,7 +177,7 @@ class _UpdateVitaminReportPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInputDropdown<Inventory>(
-                  label: 'Nama Produk Bug',
+                  label: 'Nama Produk',
                   hint: 'Pilih Produk Vitamin',
                   items: vitaminInventories,
                   value: _selectedInventory,

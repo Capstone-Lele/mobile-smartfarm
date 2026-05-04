@@ -2,8 +2,8 @@ import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
+import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
@@ -237,11 +237,18 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   }
 
   void _showBottomSheet(BuildContext context, String type) {
+    if (_selectedPool == null) return;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => ReportQuickActionBottomSheet(type: type),
+      builder: (_) => ReportQuickActionBottomSheet(
+        type: type,
+        poolId: _selectedPool!.id,
+        poolName: _selectedPool!.name,
+        cycleId: _selectedPool!.cycleId ?? '',
+      ),
     );
   }
 
@@ -607,187 +614,6 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     }
   }
 
-  Widget _buildPoolListSection(AsyncValue<List<Pool>> poolsAsync) {
-    return poolsAsync.when(
-      loading: () => Column(
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Daftar Kolam',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkGray,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) =>
-                AppLoading(height: 100, borderRadius: 8),
-          ),
-        ],
-      ),
-      error: (err, stack) => Column(
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Daftar Kolam',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkGray,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Gagal memuat daftar kolam',
-            style: TextStyle(color: AppColors.red),
-          ),
-        ],
-      ),
-      data: (pools) => Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Daftar Kolam',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkGray,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  AppRoutes.pushNamed(context, AppRoutes.pool);
-                },
-                child: const Text(
-                  'Lihat Kolam',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkGray,
-                    decoration: TextDecoration.underline,
-                    decorationThickness: 1,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: (pools.length > 3 ? 3 : pools.length),
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final pool = pools[index];
-              return _buildPoolItem(pool);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPoolItem(Pool pool) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.lightGray,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.darkGray),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    pool.image ?? '',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 60,
-                      height: 60,
-                      color: AppColors.gray,
-                      child: const Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.darkGray,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            pool.name,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                          ),
-                          AppStatusBadge(
-                            label: pool.categoryLabel,
-                            type: pool.categoryLabel == 'Pembenihan'
-                                ? BadgeType.warning
-                                : pool.categoryLabel == 'Pembesaran'
-                                ? BadgeType.success
-                                : BadgeType.danger,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Jumlah Ikan Saat ini ${pool.currentQuantity ?? 0} Ekor',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.darkGray,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildActivitiesSection(
     AsyncValue<List<ActivityLog>> activityLogsAsync,
   ) {
@@ -833,9 +659,12 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                         .map(
                           (entry) => ReportActivityItem(
                             tag: '#${entry.value.poolName}',
-                            title:
-                                '${entry.value.userName} telah melaporkan ${entry.value.activity}',
-                            subtitle: entry.value.createdAt,
+                            title: AppFormat.activityLog(
+                              entry.value.userName,
+                              entry.value.activity,
+                              entry.value.notes,
+                            ),
+                            subtitle: AppFormat.dateTime(entry.value.createdAt),
                             isLast: entry.key == activityLogs.length - 1,
                           ),
                         )

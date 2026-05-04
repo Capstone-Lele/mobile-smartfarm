@@ -14,6 +14,7 @@ class CreateMortalityReportUsecase {
     String reportDate,
     int quantity,
     XFile image,
+    String notes,
   ) {
     return repository.createMortalityReport(
       cycleId,
@@ -21,6 +22,7 @@ class CreateMortalityReportUsecase {
       reportDate,
       quantity,
       image,
+      notes,
     );
   }
 }

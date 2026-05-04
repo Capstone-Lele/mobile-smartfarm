@@ -1,6 +1,8 @@
 class InventoryReportDetail {
   final String id;
   final String userId;
+  final String user;
+  final String product;
   final String inventoryId;
   final String reportDate;
   final String quantity;
@@ -15,6 +17,8 @@ class InventoryReportDetail {
   InventoryReportDetail({
     required this.id,
     required this.userId,
+    required this.user,
+    required this.product,
     required this.inventoryId,
     required this.reportDate,
     required this.quantity,

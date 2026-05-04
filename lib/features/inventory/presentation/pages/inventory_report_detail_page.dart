@@ -113,7 +113,7 @@ class _InventoryReportDetailPageState
     _reportDateCtrl.text = AppFormat.toUiDateTime(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
     _notesCtrl.text = report.notes ?? '';
-    _userCtrl.text = "Bug";
+    _userCtrl.text = report.user;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -126,9 +126,9 @@ class _InventoryReportDetailPageState
               AppInputDropdown<String>(
                 label: 'Nama Produk',
                 hint: 'Pilh Produk',
-                items: [report.type],
-                value: report.type,
-                itemLabel: (item) => "item Bug",
+                items: [report.product],
+                value: report.product,
+                itemLabel: (item) => item,
                 requiredField: true,
                 readOnly: true,
               ),
