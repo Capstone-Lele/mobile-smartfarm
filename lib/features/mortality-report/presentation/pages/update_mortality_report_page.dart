@@ -35,6 +35,7 @@ class _UpdateMortalityReportPageState
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
   XFile? _selectedImage;
 
   @override
@@ -47,6 +48,7 @@ class _UpdateMortalityReportPageState
   void dispose() {
     _reportDateCtrl.dispose();
     _quantityCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -67,6 +69,7 @@ class _UpdateMortalityReportPageState
           AppFormat.toApiDate(_reportDateCtrl.text),
           int.parse(_quantityCtrl.text),
           _selectedImage,
+          _notesCtrl.text,
         );
 
     final mutationState = ref.read(mortalityReportMutationNotifierProvider);
@@ -200,6 +203,16 @@ class _UpdateMortalityReportPageState
                   _selectedImage = image;
                 });
               },
+            ),
+            SizedBox(height: 16),
+            AppInputText(
+              label: 'Catatan',
+              hint: 'Catatan',
+              controller: _notesCtrl,
+              type: FieldType.text,
+              maxLines: 5,
+              minLines: 3,
+              requiredField: false,
             ),
             const SizedBox(height: 24),
             AppButton(

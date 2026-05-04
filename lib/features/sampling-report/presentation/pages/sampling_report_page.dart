@@ -1,5 +1,4 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
@@ -8,6 +7,7 @@ import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/presentation/providers/sampling_report_provider.dart';
+import 'package:budidaya_lele_mobile/features/sampling-report/presentation/widgets/sampling_prediction_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -62,12 +62,15 @@ class _SamplingReportPageState extends ConsumerState<SamplingReportPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                AppHintBoard(
-                  title: 'Estimasi Panen 14 Hari Lagi',
-                  desc:
-                      'Berdasarkan sampling terakhir 120gram/ekor, ikan diprediksi mencapai target bobot panen pada Senin, 10 Oktober 2025.',
+                reportState.maybeWhen(
+                  data: (data) => Column(
+                    children: [
+                      SamplingPredictionChart(reports: data),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                  orElse: () => const SizedBox.shrink(),
                 ),
-                const SizedBox(height: 16),
                 reportState.when(
                   loading: () => _buildSummaryCardsLoading(user),
                   error: (error, stack) => Center(

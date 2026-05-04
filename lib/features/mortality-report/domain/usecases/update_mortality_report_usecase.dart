@@ -13,7 +13,14 @@ class UpdateMortalityReportUsecase {
     String reportDate,
     int quantity,
     XFile? image,
+    String notes,
   ) {
-    return repository.updateMortalityReport(id, reportDate, quantity, image);
+    return repository.updateMortalityReport(
+      id,
+      reportDate,
+      quantity,
+      image,
+      notes,
+    );
   }
 }

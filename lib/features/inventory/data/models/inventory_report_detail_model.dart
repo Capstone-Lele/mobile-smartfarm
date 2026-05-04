@@ -4,6 +4,8 @@ class InventoryReportDetailModel extends InventoryReportDetail {
   InventoryReportDetailModel({
     required super.id,
     required super.userId,
+    required super.user,
+    required super.product,
     required super.inventoryId,
     required super.reportDate,
     required super.quantity,
@@ -20,6 +22,8 @@ class InventoryReportDetailModel extends InventoryReportDetail {
     return InventoryReportDetailModel(
       id: json['id'],
       userId: json['userId'],
+      user: json['user'],
+      product: json['product'],
       inventoryId: json['inventoryId'],
       reportDate: json['reportDate'],
       quantity: json['quantity'],

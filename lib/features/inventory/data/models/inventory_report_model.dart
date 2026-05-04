@@ -3,6 +3,7 @@ import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventor
 class InventoryReportModel extends InventoryReport {
   InventoryReportModel({
     required super.id,
+    required super.user,
     required super.inventoryId,
     required super.product,
     required super.reportDate,
@@ -18,6 +19,7 @@ class InventoryReportModel extends InventoryReport {
   factory InventoryReportModel.fromJson(Map<String, dynamic> json) {
     return InventoryReportModel(
       id: json['id'],
+      user: json['user'],
       inventoryId: json['inventoryId'],
       product: json['product'],
       reportDate: json['reportDate'],

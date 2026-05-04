@@ -11,9 +11,12 @@ import 'package:image_picker/image_picker.dart';
 
 class MortalityReportDatasource {
   // Get Mortality Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>>
-  getMortalityReports(String poolId) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/mortality?poolId=$poolId');
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMortalityReports(
+    String poolId,
+  ) async {
+    Uri url = Uri.parse(
+      '${AppConstants.baseURL}/note/mortality?poolId=$poolId',
+    );
     final token = AppSession.getBearerToken();
 
     try {
@@ -62,6 +65,7 @@ class MortalityReportDatasource {
     String reportDate,
     int quantity,
     XFile image,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/mortality');
     final token = AppSession.getBearerToken();
@@ -73,6 +77,7 @@ class MortalityReportDatasource {
       request.fields['userId'] = userId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
+      request.fields['notes'] = notes;
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',
@@ -103,6 +108,7 @@ class MortalityReportDatasource {
     String reportDate,
     int quantity,
     XFile? image,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/mortality/$id');
     final token = AppSession.getBearerToken();
@@ -112,6 +118,7 @@ class MortalityReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
+      request.fields['notes'] = notes;
       if (image != null) {
         request.files.add(
           await http.MultipartFile.fromPath(

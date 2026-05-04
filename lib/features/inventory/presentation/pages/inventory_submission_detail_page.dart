@@ -29,6 +29,7 @@ class _InventorySubmissionDetailPageState
   final _formKey = GlobalKey<FormState>();
   final _quantityCtrl = TextEditingController();
   final _statusCtrl = TextEditingController();
+  final _feedbackCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final _userCtrl = TextEditingController();
 
@@ -42,6 +43,7 @@ class _InventorySubmissionDetailPageState
   void dispose() {
     _quantityCtrl.dispose();
     _statusCtrl.dispose();
+    _feedbackCtrl.dispose();
     _notesCtrl.dispose();
     _userCtrl.dispose();
     super.dispose();
@@ -117,6 +119,7 @@ class _InventorySubmissionDetailPageState
 
     _quantityCtrl.text = inventorySubmission.quantity.toString();
     _statusCtrl.text = inventorySubmission.status;
+    _feedbackCtrl.text = inventorySubmission.feedback ?? '';
     _notesCtrl.text = inventorySubmission.notes ?? '';
     _userCtrl.text = inventorySubmission.user;
 
@@ -166,6 +169,19 @@ class _InventorySubmissionDetailPageState
                 requiredField: false,
                 readOnly: true,
               ),
+              if (inventorySubmission.status == 'rejected') ...[
+                SizedBox(height: 16),
+                AppInputText(
+                  label: 'Feedback',
+                  hint: 'Feedback',
+                  controller: _feedbackCtrl,
+                  type: FieldType.text,
+                  maxLines: 5,
+                  minLines: 3,
+                  requiredField: false,
+                  readOnly: true,
+                ),
+              ],
               SizedBox(height: 16),
               AppInputText(
                 label: 'Pengaju',

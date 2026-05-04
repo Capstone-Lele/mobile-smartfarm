@@ -11,7 +11,9 @@ import 'package:image_picker/image_picker.dart';
 
 class FeedReportDatasource {
   // Get Feed Reports
-  Future<Either<Failure, List<Map<String, dynamic>>>> getFeedReports(String poolId) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getFeedReports(
+    String poolId,
+  ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/feed?poolId=$poolId');
     final token = AppSession.getBearerToken();
 

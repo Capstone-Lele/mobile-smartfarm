@@ -58,6 +58,7 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
     String reportDate,
     int quantity,
     XFile image,
+    String notes,
   ) async {
     final result = await datasource.createMortalityReport(
       cycleId,
@@ -65,6 +66,7 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
       reportDate,
       quantity,
       image,
+      notes,
     );
 
     return result.fold((failure) => Left(failure), (data) {
@@ -78,12 +80,14 @@ class MortalityReportRepositoryImpl implements MortalityReportRepository {
     String reportDate,
     int quantity,
     XFile? image,
+    String notes,
   ) async {
     final result = await datasource.updateMortalityReport(
       id,
       reportDate,
       quantity,
       image,
+      notes,
     );
 
     return result.fold((failure) => Left(failure), (data) {

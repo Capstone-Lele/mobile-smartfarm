@@ -8,6 +8,7 @@ class InventorySubmissionDetail {
   final int quantity;
   final String unit;
   final String status;
+  final String? feedback;
   final String? notes;
   final String createdAt;
   final String updatedAt;
@@ -23,6 +24,7 @@ class InventorySubmissionDetail {
     required this.quantity,
     required this.unit,
     required this.status,
+    required this.feedback,
     required this.notes,
     required this.createdAt,
     required this.updatedAt,

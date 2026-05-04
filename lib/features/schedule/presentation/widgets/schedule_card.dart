@@ -9,6 +9,7 @@ class ScheduleCard extends StatelessWidget {
   final String officer;
   final String statusLabel;
   final BadgeType statusType;
+  final bool isPic;
 
   const ScheduleCard({
     super.key,
@@ -18,6 +19,7 @@ class ScheduleCard extends StatelessWidget {
     required this.officer,
     required this.statusLabel,
     required this.statusType,
+    required this.isPic,
   });
 
   @override
@@ -25,7 +27,7 @@ class ScheduleCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.lightGray,
+        color: isPic ? AppColors.lightGray : Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.darkGray),
       ),

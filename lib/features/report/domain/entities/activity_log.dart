@@ -8,6 +8,7 @@ class ActivityLog {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
+  final String notes;
 
   ActivityLog({
     required this.id,
@@ -19,5 +20,6 @@ class ActivityLog {
     required this.createdAt,
     required this.updatedAt,
     required this.deletedAt,
+    required this.notes,
   });
 }

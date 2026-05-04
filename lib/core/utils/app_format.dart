@@ -73,4 +73,48 @@ class AppFormat {
       return uiDateTime;
     }
   }
+
+  static String activityLog(String userName, String activity, String notes) {
+    String activityLabel = activity.toLowerCase() == 'create'
+        ? 'menambahkan'
+        : 'memperbarui';
+
+    String notesLabel = '';
+    switch (notes.toLowerCase()) {
+      case 'seed':
+        notesLabel = 'tebar benih';
+        break;
+      case 'feed':
+        notesLabel = 'pemberian pakan';
+        break;
+      case 'vitamin':
+        notesLabel = 'pemberian vitamin';
+        break;
+      case 'sick':
+        notesLabel = 'ikan sakit';
+        break;
+      case 'move pool':
+        notesLabel = 'pindah kolam';
+        break;
+      case 'mortality':
+        notesLabel = 'kematian ikan';
+        break;
+      case 'harvest':
+        notesLabel = 'panen';
+        break;
+      case 'cleaning':
+        notesLabel = 'pembersihan kolam';
+        break;
+      case 'sampling':
+        notesLabel = 'sampling';
+        break;
+      case 'inventory':
+        notesLabel = 'inventaris';
+        break;
+      default:
+        notesLabel = notes;
+    }
+
+    return '$userName telah $activityLabel laporan $notesLabel';
+  }
 }

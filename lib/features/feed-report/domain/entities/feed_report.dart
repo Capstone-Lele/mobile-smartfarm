@@ -14,6 +14,7 @@ class FeedReport {
   final String reportDate;
   final String quantity;
   final String image;
+  final String cycleCondition;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
@@ -34,6 +35,7 @@ class FeedReport {
     required this.reportDate,
     required this.quantity,
     required this.image,
+    required this.cycleCondition,
     required this.createdAt,
     required this.updatedAt,
     required this.deletedAt,
