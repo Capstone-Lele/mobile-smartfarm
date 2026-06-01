@@ -71,7 +71,7 @@ class SickReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['poolId'] = poolId;
       request.fields['originCycleId'] = originCycleId;
-      request.fields['destinationCycleId'] = destinationCycleId;
+      // request.fields['destinationCycleId'] = destinationCycleId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
       request.files.add(
@@ -92,28 +92,6 @@ class SickReportDatasource {
       final data = AppResponse.data(response);
       final sickReport = data['data'][0];
       return Right(sickReport);
-    } catch (e) {
-      if (e is Failure) return Left(e);
-      return Left(FetchFailure(e.toString()));
-    }
-  }
-
-  // Delete Sick Report
-  Future<Either<Failure, Map<String, dynamic>>> deleteSickReport(
-    String id,
-  ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/sick/$id');
-    final token = AppSession.getBearerToken();
-
-    try {
-      final response = await safeRequest(
-        () => http
-            .delete(url, headers: AppRequest.header(token))
-            .timeout(const Duration(seconds: 10)),
-      );
-
-      final data = AppResponse.data(response);
-      return Right(data);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

@@ -16,7 +16,6 @@ class ProfilePhotoInput extends StatefulWidget {
 class _ProfilePhotoInputState extends State<ProfilePhotoInput> {
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
-  bool _hasUserChangedImage = false;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +158,6 @@ class _ProfilePhotoInputState extends State<ProfilePhotoInput> {
       if (image != null && mounted) {
         setState(() {
           _selectedImage = image;
-          _hasUserChangedImage = true;
         });
         widget.onChanged?.call(image);
       }

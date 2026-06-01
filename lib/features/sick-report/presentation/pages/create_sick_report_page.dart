@@ -63,7 +63,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
         .read(sickReportMutationNotifierProvider.notifier)
         .createSickReport(
           widget.poolId,
-          _selectedQuarantinePool!.id!,
+          _selectedQuarantinePool!.id,
           widget.cycleId,
           _selectedQuarantinePool!.cycleId ?? '',
           AppFormat.toApiDateTime(_reportDateCtrl.text),

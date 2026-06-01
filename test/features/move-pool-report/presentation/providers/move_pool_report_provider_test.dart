@@ -1,7 +1,6 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/entities/move_pool_report.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/repositories/move_pool_report_repository.dart';
-import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/create_move_pool_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/get_move_pool_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/get_move_pool_reports_usecase.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/providers/move_pool_report_provider.dart';
@@ -93,9 +92,8 @@ class FakePoolRepository implements PoolRepository {
   Future<Either<Failure, List<Pool>>> Function()? _getPoolsCallback;
   Future<Either<Failure, PoolDetail>> Function(String)? _getPoolCallback;
 
-  void setupGetPools(
-    Future<Either<Failure, List<Pool>>> Function() callback,
-  ) => _getPoolsCallback = callback;
+  void setupGetPools(Future<Either<Failure, List<Pool>>> Function() callback) =>
+      _getPoolsCallback = callback;
 
   void setupGetPool(
     Future<Either<Failure, PoolDetail>> Function(String) callback,
@@ -260,9 +258,8 @@ void main() {
       () async {
         // Arrange
         fakeRepository.setupGet(
-          (id) async => Left<Failure, MovePoolReport>(
-            FetchFailure('Network error'),
-          ),
+          (id) async =>
+              Left<Failure, MovePoolReport>(FetchFailure('Network error')),
         );
 
         // Act
@@ -287,8 +284,15 @@ void main() {
       );
 
       fakeRepository.setupCreate(
-        (poolId, originCycleId, destinationCycleId, reportDate, quantity, image, endedAt) async =>
-            Right<Failure, Map<String, dynamic>>({'id': 'move-new'}),
+        (
+          poolId,
+          originCycleId,
+          destinationCycleId,
+          reportDate,
+          quantity,
+          image,
+          endedAt,
+        ) async => Right<Failure, Map<String, dynamic>>({'id': 'move-new'}),
       );
       fakeRepository.setupGetList(
         (poolId) async => Right<Failure, List<MovePoolReport>>([]),
@@ -336,8 +340,15 @@ void main() {
         );
 
         fakeRepository.setupCreate(
-          (poolId, originCycleId, destinationCycleId, reportDate, quantity, image, endedAt) async =>
-              Right<Failure, Map<String, dynamic>>({'id': 'move-new'}),
+          (
+            poolId,
+            originCycleId,
+            destinationCycleId,
+            reportDate,
+            quantity,
+            image,
+            endedAt,
+          ) async => Right<Failure, Map<String, dynamic>>({'id': 'move-new'}),
         );
         fakeRepository.setupGetList((poolId) async {
           listRefreshed = true;
@@ -387,10 +398,17 @@ void main() {
         );
 
         fakeRepository.setupCreate(
-          (poolId, originCycleId, destinationCycleId, reportDate, quantity, image, endedAt) async =>
-              Left<Failure, Map<String, dynamic>>(
-                FetchFailure('Network error'),
-              ),
+          (
+            poolId,
+            originCycleId,
+            destinationCycleId,
+            reportDate,
+            quantity,
+            image,
+            endedAt,
+          ) async => Left<Failure, Map<String, dynamic>>(
+            FetchFailure('Network error'),
+          ),
         );
 
         final mutationNotifier = container.read(

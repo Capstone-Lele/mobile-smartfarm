@@ -3,7 +3,6 @@ import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_r
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/repositories/sick_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/create_sick_report_usecase.dart';
-import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/delete_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_reports_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
@@ -24,8 +23,6 @@ class FakeSickReportRepository implements SickReportRepository {
     XFile,
   )?
   _createCallback;
-  Future<Either<Failure, Map<String, dynamic>>> Function(String)?
-  _deleteCallback;
 
   void setupGetList(
     Future<Either<Failure, List<SickReport>>> Function(String) callback,
@@ -46,10 +43,6 @@ class FakeSickReportRepository implements SickReportRepository {
     )
     callback,
   ) => _createCallback = callback;
-
-  void setupDelete(
-    Future<Either<Failure, Map<String, dynamic>>> Function(String) callback,
-  ) => _deleteCallback = callback;
 
   @override
   Future<Either<Failure, List<SickReport>>> getSickReports(String poolId) {
@@ -82,12 +75,6 @@ class FakeSickReportRepository implements SickReportRepository {
         image,
       );
     }
-    return Future.value(Left(FetchFailure('Not setup')));
-  }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteSickReport(String id) {
-    if (_deleteCallback != null) return _deleteCallback!(id);
     return Future.value(Left(FetchFailure('Not setup')));
   }
 }
@@ -142,9 +129,7 @@ void main() {
     late SickReportListNotifier notifier;
 
     setUp(() {
-      notifier = SickReportListNotifier(
-        GetSickReportsUsecase(fakeRepository),
-      );
+      notifier = SickReportListNotifier(GetSickReportsUsecase(fakeRepository));
     });
 
     test('getSickReports should return data on success', () async {
@@ -183,34 +168,28 @@ void main() {
       },
     );
 
-    test(
-      'getSickReports should emit error state on network failure',
-      () async {
-        // Arrange
-        fakeRepository.setupGetList(
-          (poolId) async => Left<Failure, List<SickReport>>(
-            FetchFailure('Network error'),
-          ),
-        );
+    test('getSickReports should emit error state on network failure', () async {
+      // Arrange
+      fakeRepository.setupGetList(
+        (poolId) async =>
+            Left<Failure, List<SickReport>>(FetchFailure('Network error')),
+      );
 
-        // Act
-        await notifier.getSickReports('pool-1');
+      // Act
+      await notifier.getSickReports('pool-1');
 
-        // Assert
-        expect(notifier.state, isA<AsyncError>());
-        final error = (notifier.state as AsyncError).error;
-        expect(error.toString(), contains('Network error'));
-      },
-    );
+      // Assert
+      expect(notifier.state, isA<AsyncError>());
+      final error = (notifier.state as AsyncError).error;
+      expect(error.toString(), contains('Network error'));
+    });
   });
 
   group('SickReportDetailNotifier', () {
     late SickReportDetailNotifier notifier;
 
     setUp(() {
-      notifier = SickReportDetailNotifier(
-        GetSickReportUsecase(fakeRepository),
-      );
+      notifier = SickReportDetailNotifier(GetSickReportUsecase(fakeRepository));
     });
 
     test('getSickReport should return detail on success', () async {
@@ -250,25 +229,21 @@ void main() {
       },
     );
 
-    test(
-      'getSickReport should emit error state on network failure',
-      () async {
-        // Arrange
-        fakeRepository.setupGet(
-          (id) async => Left<Failure, SickReportDetail>(
-            FetchFailure('Network error'),
-          ),
-        );
+    test('getSickReport should emit error state on network failure', () async {
+      // Arrange
+      fakeRepository.setupGet(
+        (id) async =>
+            Left<Failure, SickReportDetail>(FetchFailure('Network error')),
+      );
 
-        // Act
-        await notifier.getSickReport('sick-1');
+      // Act
+      await notifier.getSickReport('sick-1');
 
-        // Assert
-        expect(notifier.state, isA<AsyncError>());
-        final error = (notifier.state as AsyncError).error;
-        expect(error.toString(), contains('Network error'));
-      },
-    );
+      // Assert
+      expect(notifier.state, isA<AsyncError>());
+      final error = (notifier.state as AsyncError).error;
+      expect(error.toString(), contains('Network error'));
+    });
   });
 
   group('SickReportMutationNotifier', () {
@@ -281,7 +256,6 @@ void main() {
       );
       mutationNotifier = SickReportMutationNotifier(
         CreateSickReportUsecase(fakeRepository),
-        DeleteSickReportUsecase(fakeRepository),
         listNotifier,
       );
     });
@@ -289,8 +263,14 @@ void main() {
     test('createSickReport should return data on success', () async {
       // Arrange
       fakeRepository.setupCreate(
-        (poolId, originCycleId, destinationCycleId, reportDate, quantity, image) async =>
-            Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
+        (
+          poolId,
+          originCycleId,
+          destinationCycleId,
+          reportDate,
+          quantity,
+          image,
+        ) async => Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
       );
       fakeRepository.setupGetList(
         (poolId) async => Right<Failure, List<SickReport>>([]),
@@ -315,8 +295,14 @@ void main() {
       // Arrange
       var listRefreshed = false;
       fakeRepository.setupCreate(
-        (poolId, originCycleId, destinationCycleId, reportDate, quantity, image) async =>
-            Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
+        (
+          poolId,
+          originCycleId,
+          destinationCycleId,
+          reportDate,
+          quantity,
+          image,
+        ) async => Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
       );
       fakeRepository.setupGetList((poolId) async {
         listRefreshed = true;
@@ -343,10 +329,16 @@ void main() {
       () async {
         // Arrange
         fakeRepository.setupCreate(
-          (poolId, originCycleId, destinationCycleId, reportDate, quantity, image) async =>
-              Left<Failure, Map<String, dynamic>>(
-                FetchFailure('Network error'),
-              ),
+          (
+            poolId,
+            originCycleId,
+            destinationCycleId,
+            reportDate,
+            quantity,
+            image,
+          ) async => Left<Failure, Map<String, dynamic>>(
+            FetchFailure('Network error'),
+          ),
         );
 
         // Act

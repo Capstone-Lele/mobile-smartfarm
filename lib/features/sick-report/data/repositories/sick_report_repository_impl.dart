@@ -71,15 +71,4 @@ class SickReportRepositoryImpl implements SickReportRepository {
       return Right(data);
     });
   }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteSickReport(
-    String id,
-  ) async {
-    final result = await datasource.deleteSickReport(id);
-
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
-  }
 }
