@@ -15,7 +15,7 @@ class FCMService {
       FlutterLocalNotificationsPlugin();
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'high_importance_channel',
+    'high_importance_channel_v3',
     'High Importance Notifications',
     description: 'This channel is used for important notifications.',
     importance: Importance.max,
@@ -25,7 +25,9 @@ class FCMService {
 
   static Future<void> init() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission(
+
+    // Request permission
+    NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -34,6 +36,11 @@ class FCMService {
       provisional: false,
       sound: true,
     );
+
+    print(
+      'FCM DEBUG: User granted permission: ${settings.authorizationStatus}',
+    );
+
     // Background messaging handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 

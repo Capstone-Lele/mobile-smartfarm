@@ -52,7 +52,7 @@ class PoolDetail {
       case 'quarantine':
         return 'Karantina';
       default:
-        return 'Category Tidak Diketahui';
+        return 'Category Kosong';
     }
   }
 
@@ -64,8 +64,10 @@ class PoolDetail {
         return 'Panen';
       case 'active_cultivation':
         return 'Aktif Budidaya';
+      case 'treatment':
+        return 'Pengobatan';
       default:
-        return 'Cycle Tidak Diketahui';
+        return 'Cycle Belum Aktif';
     }
   }
 }

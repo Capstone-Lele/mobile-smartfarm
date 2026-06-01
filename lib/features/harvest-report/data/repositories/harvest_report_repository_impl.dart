@@ -26,13 +26,17 @@ class HarvestReportRepositoryImpl implements HarvestReportRepository {
             .toList();
         return Right(harvestReports);
       } catch (e) {
-        return Left(InvalidInputFailure("Gagal mengkonversi data laporan panen: $e"));
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan panen: $e"),
+        );
       }
     });
   }
 
   @override
-  Future<Either<Failure, HarvestReportDetail>> getHarvestReport(String id) async {
+  Future<Either<Failure, HarvestReportDetail>> getHarvestReport(
+    String id,
+  ) async {
     final result = await datasource.getHarvestReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
@@ -40,7 +44,9 @@ class HarvestReportRepositoryImpl implements HarvestReportRepository {
         final harvestReport = HarvestReportDetailModel.fromJson(data);
         return Right(harvestReport);
       } catch (e) {
-        return Left(InvalidInputFailure("Gagal mengkonversi data laporan panen: $e"));
+        return Left(
+          InvalidInputFailure("Gagal mengkonversi data laporan panen: $e"),
+        );
       }
     });
   }
@@ -49,14 +55,18 @@ class HarvestReportRepositoryImpl implements HarvestReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> createHarvestReport(
     String cycleId,
     String reportDate,
+    int totalKg,
     int amount,
     XFile image,
+    String? endedAt,
   ) async {
     final result = await datasource.createHarvestReport(
       cycleId,
       reportDate,
+      totalKg,
       amount,
       image,
+      endedAt,
     );
 
     return result.fold((failure) => Left(failure), (data) => Right(data));

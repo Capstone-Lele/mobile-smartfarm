@@ -24,7 +24,11 @@ class MovePoolReportRepositoryImpl implements MovePoolReportRepository {
             .toList();
         return Right(movePoolReports);
       } catch (e) {
-        return Left(InvalidInputFailure("Gagal mengkonversi data laporan pindah kolam: $e"));
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan pindah kolam: $e",
+          ),
+        );
       }
     });
   }
@@ -38,37 +42,34 @@ class MovePoolReportRepositoryImpl implements MovePoolReportRepository {
         final movePoolReport = MovePoolReportModel.fromJson(data);
         return Right(movePoolReport);
       } catch (e) {
-        return Left(InvalidInputFailure("Gagal mengkonversi data laporan pindah kolam: $e"));
+        return Left(
+          InvalidInputFailure(
+            "Gagal mengkonversi data laporan pindah kolam: $e",
+          ),
+        );
       }
     });
   }
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> createMovePoolReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     final result = await datasource.createMovePoolReport(
+      poolId,
       originCycleId,
       destinationCycleId,
       reportDate,
       quantity,
       image,
+      endedAt,
     );
-
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
-  }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteMovePoolReport(
-    String id,
-  ) async {
-    final result = await datasource.deleteMovePoolReport(id);
 
     return result.fold((failure) => Left(failure), (data) {
       return Right(data);

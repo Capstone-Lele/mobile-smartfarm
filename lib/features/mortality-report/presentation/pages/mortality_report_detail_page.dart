@@ -132,6 +132,7 @@ class _MortalityReportDetailPageState
     _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
     _quantityCtrl.text = report.quantity.toString();
     _userCtrl.text = report.user.toString();
+    _notesCtrl.text = report.notes ?? '';
 
     return SafeArea(
       child: SingleChildScrollView(

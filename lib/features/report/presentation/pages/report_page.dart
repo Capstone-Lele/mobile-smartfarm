@@ -127,7 +127,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           Text(
-            'Pilih Kolam Terlebih Dahulu',
+            'Pilih Kolam untuk masuk ke menu laporan',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -142,7 +142,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Pilih Kolam Terlebih Dahulu',
+            'Pilih Kolam untuk masuk ke menu laporan',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Pilih Kolam Terlebih Dahulu',
+            'Pilih Kolam untuk masuk ke menu laporan',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -239,6 +239,10 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   void _showBottomSheet(BuildContext context, String type) {
     if (_selectedPool == null) return;
 
+    final bool isCycle = _selectedPool!.category == 'quarantine'
+        ? _selectedPool!.cycle == 'treatment'
+        : _selectedPool!.cycle == 'active_cultivation';
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -248,6 +252,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         poolId: _selectedPool!.id,
         poolName: _selectedPool!.name,
         cycleId: _selectedPool!.cycleId ?? '',
+        poolCategory: _selectedPool!.category,
+        isCycle: isCycle,
       ),
     );
   }
@@ -274,10 +280,33 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ref.read(selectedMenuIndexProvider.notifier).state = index;
           },
         ),
-        if (_selectedPool?.cycle != 'active_cultivation') ...[
+        if (_selectedPool?.category == 'breeding' &&
+            _selectedPool?.cycle != 'active_cultivation') ...[
           const SizedBox(height: 8),
           Text(
-            'Siklus tidak aktif, silahkan menambahkan laporan tebar benih untuk mengaktifkan siklus',
+            'Siklus tidak aktif, silahkan menambahkan laporan tebar benih untuk mengaktifkan siklus di kolam pembenihan',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.red,
+            ),
+          ),
+        ] else if (_selectedPool?.category == 'growing' &&
+            _selectedPool?.cycle != 'active_cultivation') ...[
+          const SizedBox(height: 8),
+          Text(
+            'Siklus tidak aktif, silahkan menambahkan laporan pindah ke ${_selectedPool?.name} untuk mengaktifkan siklus',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.red,
+            ),
+          ),
+        ] else if (_selectedPool?.category == 'quarantine' &&
+            _selectedPool?.cycle != 'treatment') ...[
+          const SizedBox(height: 8),
+          Text(
+            'Siklus tidak aktif, silahkan tambahkan laporan pindah kolam ke kolam ini untuk mengaktifkan pengobatan',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -295,6 +324,10 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final String category = _selectedPool?.category ?? '';
     final isGrowing = category.contains('growing');
     final isBreeding = category.contains('breeding');
+
+    final bool isCycle = category == 'quarantine'
+        ? _selectedPool!.cycle == 'treatment'
+        : _selectedPool!.cycle == 'active_cultivation';
 
     if (selectedMenuIndex == 0) {
       return GridView.count(
@@ -314,7 +347,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 AppRoutes.feedingReport,
                 arguments: {
                   'cycleId': _selectedPool!.cycleId,
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                  'isCycle': isCycle,
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
@@ -330,7 +363,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 AppRoutes.vitaminReport,
                 arguments: {
                   'cycleId': _selectedPool!.cycleId,
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                  'isCycle': isCycle,
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
@@ -346,7 +379,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 AppRoutes.mortalityReport,
                 arguments: {
                   'cycleId': _selectedPool!.cycleId,
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                  'isCycle': isCycle,
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
@@ -363,7 +396,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   AppRoutes.sickReport,
                   arguments: {
                     'cycleId': _selectedPool!.cycleId,
-                    'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                    'isCycle': isCycle,
                     'poolId': _selectedPool!.id,
                     'poolName': _selectedPool!.name,
                   },
@@ -378,29 +411,30 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 context,
                 AppRoutes.poolCleaningReport,
                 arguments: {
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                  'isCycle': isCycle,
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
               );
             },
           ),
-          ReportMenuCard(
-            icon: Icons.trending_up,
-            label: 'Laporan Sampling',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.samplingReport,
-                arguments: {
-                  'cycleId': _selectedPool!.cycleId,
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
+          if (isGrowing || isBreeding)
+            ReportMenuCard(
+              icon: Icons.trending_up,
+              label: 'Laporan Sampling',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.samplingReport,
+                  arguments: {
+                    'cycleId': _selectedPool!.cycleId,
+                    'isCycle': isCycle,
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
         ],
       );
     } else {
@@ -416,49 +450,55 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ReportMenuCard(
               icon: Icons.add_circle_outline,
               label: 'Laporan Tebar Benih',
-              onTap: () {
-                AppRoutes.pushNamed(
+              onTap: () async {
+                await AppRoutes.pushNamed(
                   context,
                   AppRoutes.seedReport,
                   arguments: {
-                    'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                    'isCycle': isCycle,
                     'poolId': _selectedPool!.id,
                     'poolName': _selectedPool!.name,
                   },
                 );
+                // Refresh pool list when back
+                ref.read(poolListNotifierProvider.notifier).getPools();
               },
             ),
           if (isGrowing)
             ReportMenuCard(
               icon: Icons.agriculture,
               label: 'Laporan Panen',
-              onTap: () {
-                AppRoutes.pushNamed(
+              onTap: () async {
+                await AppRoutes.pushNamed(
                   context,
                   AppRoutes.harvestReport,
                   arguments: {
                     'cycleId': _selectedPool!.cycleId,
-                    'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                    'isCycle': isCycle,
                     'poolId': _selectedPool!.id,
                     'poolName': _selectedPool!.name,
                   },
                 );
+                // Refresh pool list when back
+                ref.read(poolListNotifierProvider.notifier).getPools();
               },
             ),
           ReportMenuCard(
             icon: Icons.swap_horiz,
             label: 'Laporan Pindah Kolam',
-            onTap: () {
-              AppRoutes.pushNamed(
+            onTap: () async {
+              await AppRoutes.pushNamed(
                 context,
                 AppRoutes.movePoolReport,
                 arguments: {
                   'cycleId': _selectedPool!.cycleId,
-                  'isCycle': _selectedPool!.cycle == 'active_cultivation',
+                  'isCycle': isCycle,
                   'poolId': _selectedPool!.id,
                   'poolName': _selectedPool!.name,
                 },
               );
+              // Refresh pool list when back
+              ref.read(poolListNotifierProvider.notifier).getPools();
             },
           ),
         ],

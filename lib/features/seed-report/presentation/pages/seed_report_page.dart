@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
       ref
           .read(seedReportListNotifierProvider.notifier)
           .getSeedReports(widget.poolId);
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
     });
   }
 
@@ -45,6 +47,17 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     final reportState = ref.watch(seedReportListNotifierProvider);
+    final poolDetailAsync = ref.watch(poolDetailNotifierProvider);
+
+    final isCycle = poolDetailAsync.maybeWhen(
+      data: (pool) {
+        if (pool?.category == 'quarantine') {
+          return pool?.cycle == 'treatment';
+        }
+        return pool?.cycle == 'active_cultivation';
+      },
+      orElse: () => widget.isCycle,
+    );
 
     return Scaffold(
       appBar: _buildHeader(context),
@@ -54,6 +67,9 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
             await ref
                 .read(seedReportListNotifierProvider.notifier)
                 .getSeedReports(widget.poolId);
+            await ref
+                .read(poolDetailNotifierProvider.notifier)
+                .getPool(widget.poolId);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -75,7 +91,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                       style: const TextStyle(color: AppColors.red),
                     ),
                   ),
-                  data: (data) => _buildSummaryCards(data, user),
+                  data: (data) => _buildSummaryCards(data, user, isCycle),
                 ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
@@ -241,7 +257,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    report.image,
+                    report.image ?? '',
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -327,7 +343,11 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
     }
   }
 
-  Widget _buildSummaryCards(List<SeedReport> reports, User? user) {
+  Widget _buildSummaryCards(
+    List<SeedReport> reports,
+    User? user,
+    bool isCycle,
+  ) {
     final total = reports.length;
     final lastQty = reports.isNotEmpty ? reports.first.initialQuantity : 0;
 
@@ -339,12 +359,12 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
             const SizedBox(width: 8),
             Expanded(child: _buildLastQtyCard(lastQty)),
             const SizedBox(width: 8),
-            Expanded(child: _buildSiklusCard()),
+            Expanded(child: _buildSiklusCard(isCycle)),
           ],
         ),
       );
     } else {
-      return _buildSiklusFullCard();
+      return _buildSiklusFullCard(isCycle);
     }
   }
 
@@ -423,7 +443,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
     );
   }
 
-  Widget _buildSiklusCard() {
+  Widget _buildSiklusCard(bool isCycle) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
@@ -445,8 +465,8 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
           ),
           const SizedBox(height: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 28,
           ),
         ],
@@ -454,7 +474,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
     );
   }
 
-  Widget _buildSiklusFullCard() {
+  Widget _buildSiklusFullCard(bool isCycle) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -476,8 +496,8 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
           ),
           const SizedBox(width: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 24,
           ),
         ],

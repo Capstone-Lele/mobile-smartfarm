@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 class AppHeader extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? userImageUrl;
   final VoidCallback? onNotificationPressed;
 
   const AppHeader({
     super.key,
     required this.title,
     required this.subtitle,
+    required this.userImageUrl,
     this.onNotificationPressed,
   });
 
@@ -21,8 +23,13 @@ class AppHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
+            backgroundImage: userImageUrl != null && userImageUrl!.isNotEmpty
+                ? NetworkImage(userImageUrl!)
+                : null,
             backgroundColor: AppColors.primary,
-            child: const Icon(Icons.person, color: Colors.white, size: 28),
+            child: userImageUrl == null || userImageUrl!.isEmpty
+                ? const Icon(Icons.person, color: Colors.white, size: 28)
+                : null,
           ),
           const SizedBox(width: 14),
           Expanded(

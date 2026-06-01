@@ -9,7 +9,7 @@ class SeedReport {
   final int initialQuantity;
   final int currentQuantity;
   final String initialAverageWeight;
-  final String image;
+  final String? image;
   final String? condition;
   final String createdAt;
   final String updatedAt;

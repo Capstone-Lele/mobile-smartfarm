@@ -26,6 +26,7 @@ class SettingPage extends ConsumerWidget {
                 AppHeader(
                   title: 'Selamat Datang, ${user?.name}',
                   subtitle: '${user?.roleLabel}',
+                  userImageUrl: user?.image,
                   onNotificationPressed: () {
                     AppRoutes.pushNamed(context, AppRoutes.notification);
                   },
@@ -55,9 +56,17 @@ class SettingPage extends ConsumerWidget {
                   _buildMenuItem(
                     Icons.verified_user_outlined,
                     "Kebijakan Privasi",
-                    onTap: () {},
+                    onTap: () {
+                      AppRoutes.pushNamed(context, AppRoutes.privacy);
+                    },
                   ),
-                  _buildMenuItem(Icons.help_outline, "Bantuan", onTap: () {}),
+                  _buildMenuItem(
+                    Icons.help_outline,
+                    "Bantuan",
+                    onTap: () {
+                      AppRoutes.pushNamed(context, AppRoutes.help);
+                    },
+                  ),
                   _buildMenuItem(
                     Icons.sensors,
                     "Status Alat",

@@ -5,16 +5,14 @@ class IotModel extends Iot {
     required super.nodeId,
     required super.ph,
     required super.temp,
-    required super.timestamp,
     required super.receivedAt,
   });
 
   factory IotModel.fromJson(Map<String, dynamic> json) {
     return IotModel(
-      nodeId: json['nodeId'],
+      nodeId: json['node_id'],
       ph: json['ph'],
       temp: json['temp'],
-      timestamp: json['timestamp'],
       receivedAt: json['receivedAt'],
     );
   }

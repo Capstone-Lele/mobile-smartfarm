@@ -41,6 +41,8 @@ import 'package:budidaya_lele_mobile/features/sick-report/presentation/pages/sic
 import 'package:budidaya_lele_mobile/features/parameter/presentation/pages/status_device_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_password_page.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/pages/change_profile_page.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/pages/help_page.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/pages/privacy_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/create_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/update_vitamin_report_page.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/pages/vitamin_report_detail_page.dart';
@@ -66,6 +68,8 @@ class AppRoutes {
   // User
   static const String changePassword = '/change-password';
   static const String changeProfile = '/change-profile';
+  static const String privacy = '/privacy';
+  static const String help = '/help';
   // Mortality Report
   static const String mortalityReport = '/mortality-report';
   static const String createMortalityReport = '/mortality-report/create';
@@ -160,6 +164,8 @@ class AppRoutes {
       // User
       changePassword: (context) => const ChangePasswordPage(),
       changeProfile: (context) => const ChangeProfilePage(),
+      privacy: (context) => const PrivacyPage(),
+      help: (context) => const HelpPage(),
       // Mortality Report
       mortalityReport: (context) {
         final args =

@@ -151,7 +151,7 @@ class _CreateInventorySubmissionPageState
                   ),
                   const SizedBox(height: 16),
                   AppInputText(
-                    label: 'Jumlah (${_selectedInventory?.unit ?? ""}) ',
+                    label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                     hint: 'Jumlah',
                     controller: _quantityCtrl,
                     type: FieldType.number,
@@ -164,6 +164,10 @@ class _CreateInventorySubmissionPageState
                       final number = int.tryParse(value);
                       if (number == null || number <= 0) {
                         return 'Jumlah harus berupa angka positif';
+                      }
+
+                      if (number > 999) {
+                        return 'Jumlah maksimal 999';
                       }
 
                       return null;

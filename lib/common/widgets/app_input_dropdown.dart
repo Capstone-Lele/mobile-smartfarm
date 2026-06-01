@@ -197,6 +197,11 @@ class _AppInputDropdownState<T> extends State<AppInputDropdown<T>> {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             height: 40,
           ),
+          onMenuStateChange: (isOpen) {
+            if (isOpen) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            }
+          },
         ),
       ],
     );

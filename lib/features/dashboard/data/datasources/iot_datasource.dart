@@ -42,7 +42,7 @@ class IotDatasource {
       );
 
       final data = AppResponse.data(response);
-      final iot = data['data'][0];
+      final iot = data['data'];
       return Right(iot);
     } catch (e) {
       if (e is Failure) return Left(e);
@@ -51,8 +51,14 @@ class IotDatasource {
   }
 
   // Chart Iots
-  Future<Either<Failure, List<Map<String, dynamic>>>> getChartIots(String nodeId, String startDate, String endDate) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/iot/chart/$nodeId?start_date=$startDate&end_date=$endDate');
+  Future<Either<Failure, List<Map<String, dynamic>>>> getChartIots(
+    String nodeId,
+    String startDate,
+    String endDate,
+  ) async {
+    Uri url = Uri.parse(
+      '${AppConstants.baseURL}/iot/chart/$nodeId?start_date=$startDate&end_date=$endDate',
+    );
     final token = AppSession.getBearerToken();
 
     try {

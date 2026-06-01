@@ -56,6 +56,7 @@ class SickReportDatasource {
 
   // Create Sick Report
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -68,6 +69,7 @@ class SickReportDatasource {
     try {
       var request = http.MultipartRequest('POST', url);
       request.headers.addAll(AppRequest.header(token));
+      request.fields['poolId'] = poolId;
       request.fields['originCycleId'] = originCycleId;
       request.fields['destinationCycleId'] = destinationCycleId;
       request.fields['reportDate'] = reportDate;

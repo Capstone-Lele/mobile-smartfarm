@@ -1,10 +1,10 @@
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/data/datasources/seed_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/data/repositories/seed_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/repositories/seed_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/create_seed_report_usecase.dart';
-import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/delete_seed_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/get_seed_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/usecases/get_seed_reports_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,13 +36,6 @@ final createSeedReportUseCaseProvider = Provider<CreateSeedReportUsecase>((
 ) {
   final repository = ref.read(seedReportRepositoryProvider);
   return CreateSeedReportUsecase(repository);
-});
-
-final deleteSeedReportUseCaseProvider = Provider<DeleteSeedReportUsecase>((
-  ref,
-) {
-  final repository = ref.read(seedReportRepositoryProvider);
-  return DeleteSeedReportUsecase(repository);
 });
 
 class SeedReportListNotifier
@@ -97,13 +90,13 @@ class SeedReportDetailNotifier
 
 class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final CreateSeedReportUsecase _createSeedReportUsecase;
-  final DeleteSeedReportUsecase _deleteSeedReportUsecase;
   final SeedReportListNotifier _listNotifier;
+  final Ref _ref;
 
   SeedReportMutationNotifier(
     this._createSeedReportUsecase,
-    this._deleteSeedReportUsecase,
     this._listNotifier,
+    this._ref,
   ) : super(const AsyncValue.data(null));
 
   // Create Seed Report
@@ -137,25 +130,9 @@ class SeedReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (seedReport) {
         state = AsyncValue.data(null);
         _listNotifier.getSeedReports(poolId);
-      },
-    );
-  }
-
-  // Delete seed report
-  Future<void> deleteSeedReport(String id, String poolId) async {
-    state = const AsyncValue.loading();
-    final result = await _deleteSeedReportUsecase.execute(id);
-
-    result.fold(
-      (failure) {
-        state = AsyncValue.error(
-          failure.message ?? 'Gagal menghapus laporan benih',
-          StackTrace.current,
-        );
-      },
-      (data) {
-        state = AsyncValue.data(null);
-        _listNotifier.getSeedReports(poolId);
+        // Refresh pool detail and list
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -186,12 +163,11 @@ final seedReportDetailNotifierProvider =
 final seedReportMutationNotifierProvider =
     StateNotifierProvider<SeedReportMutationNotifier, AsyncValue<void>>((ref) {
       final createSeedReportUsecase = ref.read(createSeedReportUseCaseProvider);
-      final deleteSeedReportUsecase = ref.read(deleteSeedReportUseCaseProvider);
       final listNotifier = ref.read(seedReportListNotifierProvider.notifier);
 
       return SeedReportMutationNotifier(
         createSeedReportUsecase,
-        deleteSeedReportUsecase,
         listNotifier,
+        ref,
       );
     });

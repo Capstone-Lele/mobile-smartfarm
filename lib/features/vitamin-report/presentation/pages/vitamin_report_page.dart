@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/domain/entities/vitamin_report.dart';
 import 'package:budidaya_lele_mobile/features/vitamin-report/presentation/providers/vitamin_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _VitaminReportPageState extends ConsumerState<VitaminReportPage> {
       ref
           .read(vitaminReportListNotifierProvider.notifier)
           .getVitaminReports(widget.poolId);
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
     });
   }
 

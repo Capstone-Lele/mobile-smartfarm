@@ -8,6 +8,7 @@ abstract class SickReportRepository {
   Future<Either<Failure, List<SickReport>>> getSickReports(String poolId);
   Future<Either<Failure, SickReportDetail>> getSickReport(String id);
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,

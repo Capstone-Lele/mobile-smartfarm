@@ -77,15 +77,4 @@ class SeedReportRepositoryImpl implements SeedReportRepository {
       return Right(data);
     });
   }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> deleteSeedReport(
-    String id,
-  ) async {
-    final result = await datasource.deleteSeedReport(id);
-
-    return result.fold((failure) => Left(failure), (data) {
-      return Right(data);
-    });
-  }
 }

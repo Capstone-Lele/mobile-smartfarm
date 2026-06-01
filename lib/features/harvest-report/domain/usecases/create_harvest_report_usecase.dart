@@ -11,9 +11,18 @@ class CreateHarvestReportUsecase {
   Future<Either<Failure, Map<String, dynamic>>> execute(
     String cycleId,
     String reportDate,
+    int totalKg,
     int amount,
     XFile image,
+    String? endedAt,
   ) {
-    return repository.createHarvestReport(cycleId, reportDate, amount, image);
+    return repository.createHarvestReport(
+      cycleId,
+      reportDate,
+      totalKg,
+      amount,
+      image,
+      endedAt,
+    );
   }
 }

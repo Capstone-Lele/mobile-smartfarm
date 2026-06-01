@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/entities/move_pool_report.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/presentation/providers/move_pool_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
       ref
           .read(movePoolReportListNotifierProvider.notifier)
           .getMovePoolReports(widget.poolId);
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
     });
   }
 
@@ -47,6 +49,17 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     final reportState = ref.watch(movePoolReportListNotifierProvider);
+    final poolDetailAsync = ref.watch(poolDetailNotifierProvider);
+
+    final isCycle = poolDetailAsync.maybeWhen(
+      data: (pool) {
+        if (pool?.category == 'quarantine') {
+          return pool?.cycle == 'treatment';
+        }
+        return pool?.cycle == 'active_cultivation';
+      },
+      orElse: () => widget.isCycle,
+    );
 
     return Scaffold(
       appBar: _buildHeader(context),
@@ -56,6 +69,9 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
             await ref
                 .read(movePoolReportListNotifierProvider.notifier)
                 .getMovePoolReports(widget.poolId);
+            await ref
+                .read(poolDetailNotifierProvider.notifier)
+                .getPool(widget.poolId);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -77,7 +93,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
                       style: const TextStyle(color: AppColors.red),
                     ),
                   ),
-                  data: (data) => _buildSummaryCards(data, user),
+                  data: (data) => _buildSummaryCards(data, user, isCycle),
                 ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
@@ -166,7 +182,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(user),
+      floatingActionButton: _buildFloatingActionButton(user, isCycle),
     );
   }
 
@@ -352,7 +368,11 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
     }
   }
 
-  Widget _buildSummaryCards(List<MovePoolReport> reports, User? user) {
+  Widget _buildSummaryCards(
+    List<MovePoolReport> reports,
+    User? user,
+    bool isCycle,
+  ) {
     final total = reports.length;
     final lastQuantity = reports.isNotEmpty ? reports.first.quantity : 0;
 
@@ -364,12 +384,12 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
             const SizedBox(width: 8),
             Expanded(child: _buildLastQuantityCard(lastQuantity)),
             const SizedBox(width: 8),
-            Expanded(child: _buildSiklusCard()),
+            Expanded(child: _buildSiklusCard(isCycle)),
           ],
         ),
       );
     } else {
-      return _buildSiklusFullCard();
+      return _buildSiklusFullCard(isCycle);
     }
   }
 
@@ -448,7 +468,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
     );
   }
 
-  Widget _buildSiklusCard() {
+  Widget _buildSiklusCard(bool isCycle) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
@@ -470,8 +490,8 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
           ),
           const SizedBox(height: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 28,
           ),
         ],
@@ -479,7 +499,7 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
     );
   }
 
-  Widget _buildSiklusFullCard() {
+  Widget _buildSiklusFullCard(bool isCycle) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -501,8 +521,8 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
           ),
           const SizedBox(width: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 24,
           ),
         ],
@@ -510,8 +530,8 @@ class _MovePoolReportPageState extends ConsumerState<MovePoolReportPage> {
     );
   }
 
-  Widget _buildFloatingActionButton(User? user) {
-    if (user?.role != 'pic' && widget.isCycle) {
+  Widget _buildFloatingActionButton(User? user, bool isCycle) {
+    if (user?.role != 'pic' && isCycle) {
       return FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: AppColors.secondary,

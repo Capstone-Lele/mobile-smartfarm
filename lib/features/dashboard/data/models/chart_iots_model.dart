@@ -10,9 +10,9 @@ class ChartIotsModel extends ChartIots {
 
   factory ChartIotsModel.fromJson(Map<String, dynamic> json) {
     return ChartIotsModel(
-      nodeId: json['nodeId'],
-      ph: json['ph'],
-      temp: json['temp'],
+      nodeId: json['node_id'],
+      ph: (json['ph'] as num).toDouble(),
+      temp: (json['temp'] as num).toDouble(),
       createdAt: json['createdAt'],
     );
   }

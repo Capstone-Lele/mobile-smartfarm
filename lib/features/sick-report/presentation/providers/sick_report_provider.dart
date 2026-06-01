@@ -109,6 +109,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   // Create Sick Report
   Future<void> createSickReport(
     String poolId,
+    String destinationPoolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -117,6 +118,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   ) async {
     state = const AsyncValue.loading();
     final result = await _createSickReportUsecase.execute(
+      destinationPoolId,
       originCycleId,
       destinationCycleId,
       reportDate,

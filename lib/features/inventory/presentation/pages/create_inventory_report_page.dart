@@ -168,6 +168,7 @@ class _CreateInventoryReportPageState
                       }
                       return null;
                     },
+                    lastDate: DateTime.now(),
                   ),
                   const SizedBox(height: 16),
                   AppInputText(

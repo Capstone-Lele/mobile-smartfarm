@@ -17,6 +17,7 @@ import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/i
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_card.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_report_card.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_submission_card.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -516,6 +517,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         // Filter berdasarkan kategori
         final filtered = data
             .where((item) {
+              if (item.deletedAt != null) return false;
               if (selectedCategory == 0) return true;
 
               // Ambil dari categoryState parameter
@@ -818,17 +820,42 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   }
 
   Widget _buildFloatingActionButton(int selectedTab) {
-    return FloatingActionButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      backgroundColor: AppColors.secondary,
-      onPressed: () {
+    final userState = ref.watch(userInfoNotifierProvider);
+
+    return userState.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (user) {
+        // Tab 1: Pengajuan (PIC dan Staff)
         if (selectedTab == 1) {
-          AppRoutes.pushNamed(context, AppRoutes.createInventorySubmission);
-        } else if (selectedTab == 2) {
-          AppRoutes.pushNamed(context, AppRoutes.createInventoryReport);
+          return FloatingActionButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            backgroundColor: AppColors.secondary,
+            onPressed: () {
+              AppRoutes.pushNamed(context, AppRoutes.createInventorySubmission);
+            },
+            child: const Icon(Icons.add, color: Colors.white, size: 30),
+          );
         }
+
+        // Tab 2: Laporan Inventaris (Hanya Staff)
+        if (selectedTab == 2 && user?.role == 'staff') {
+          return FloatingActionButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            backgroundColor: AppColors.secondary,
+            onPressed: () {
+              AppRoutes.pushNamed(context, AppRoutes.createInventoryReport);
+            },
+            child: const Icon(Icons.add, color: Colors.white, size: 30),
+          );
+        }
+
+        return const SizedBox.shrink();
       },
-      child: const Icon(Icons.add, color: Colors.white, size: 30),
     );
   }
 }

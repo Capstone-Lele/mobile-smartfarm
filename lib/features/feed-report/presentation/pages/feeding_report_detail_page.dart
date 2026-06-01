@@ -171,7 +171,7 @@ class _FeedingReportDetailPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
-                label: 'Jumlah',
+                label: 'Jumlah ${report.unit}',
                 hint: 'Jumlah',
                 controller: _quantityCtrl,
                 type: FieldType.number,

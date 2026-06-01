@@ -142,7 +142,11 @@ class _CreateFeedingReportPageState
           error: (err, stack) => _buildErrorState(err),
           data: (allInventories) {
             final foodInventories = allInventories
-                .where((inv) => inv.category.toLowerCase() == 'pakan')
+                .where(
+                  (inv) =>
+                      inv.category.toLowerCase() == 'pakan' &&
+                      inv.deletedAt == null,
+                )
                 .toList();
 
             return Form(
@@ -181,10 +185,11 @@ class _CreateFeedingReportPageState
                       }
                       return null;
                     },
+                    lastDate: DateTime.now(),
                   ),
                   const SizedBox(height: 16),
                   AppInputText(
-                    label: 'Jumlah Bug (${_selectedInventory?.unit ?? ""})',
+                    label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                     hint: 'Jumlah',
                     controller: _quantityCtrl,
                     type: FieldType.number,

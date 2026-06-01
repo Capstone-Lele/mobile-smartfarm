@@ -169,8 +169,8 @@ class _MovePoolReportDetailPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
-                label: 'Jumlah (ekor)',
-                hint: 'Jumlah',
+                label: 'Jumlah Ikan Pindah (ekor)',
+                hint: 'Jumlah Ikan Pindah',
                 controller: _quantityCtrl,
                 type: FieldType.number,
                 requiredField: true,

@@ -9,6 +9,7 @@ class CreateSickReportUsecase {
   CreateSickReportUsecase(this.repository);
 
   Future<Either<Failure, Map<String, dynamic>>> execute(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -16,6 +17,7 @@ class CreateSickReportUsecase {
     XFile image,
   ) {
     return repository.createSickReport(
+      poolId,
       originCycleId,
       destinationCycleId,
       reportDate,

@@ -1,4 +1,5 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
@@ -15,6 +16,7 @@ import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_p
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 class CreateMovePoolReportPage extends ConsumerStatefulWidget {
   final String cycleId;
@@ -40,6 +42,7 @@ class _CreateMovePoolReportPageState
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Pool? _selectedDestinationPool;
+  bool _isEndedAtEnabled = false;
 
   @override
   void initState() {
@@ -57,18 +60,27 @@ class _CreateMovePoolReportPageState
     super.dispose();
   }
 
-  Future<void> _onSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _processSubmit() async {
+    final quantity = int.parse(_quantityCtrl.text);
+    final poolDetail = ref.read(poolDetailNotifierProvider).value;
+
+    final endedAt = quantity == poolDetail?.currentQuantity
+        ? AppFormat.toApiDateTime(
+            DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now()),
+          )
+        : null;
 
     await ref
         .read(movePoolReportMutationNotifierProvider.notifier)
         .createMovePoolReport(
           widget.poolId,
+          _selectedDestinationPool!.id,
           widget.cycleId,
-          _selectedDestinationPool!.cycleId!,
+          _selectedDestinationPool!.cycleId ?? '',
           AppFormat.toApiDateTime(_reportDateCtrl.text),
           int.parse(_quantityCtrl.text),
           _selectedImage!,
+          endedAt,
         );
 
     final mutationState = ref.read(movePoolReportMutationNotifierProvider);
@@ -78,6 +90,31 @@ class _CreateMovePoolReportPageState
     } else {
       AppSnackbar.success('Laporan berhasil ditambahkan');
       AppRoutes.pop(context);
+    }
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final quantity = int.parse(_quantityCtrl.text);
+    final poolDetail = ref.read(poolDetailNotifierProvider).value;
+
+    if (quantity == poolDetail?.currentQuantity) {
+      AppDialog.showConfirmationDialog(
+        context: context,
+        title: 'Akhiri Siklus?',
+        message:
+            'Siklus akan diakhiri karena semua ikan di kolam dipindahkan. Lanjutkan?',
+        confirmText: 'Ya, Lanjutkan',
+        cancelText: 'Batal',
+        color: Colors.orange,
+        onConfirm: () async {
+          Navigator.pop(context);
+          await _processSubmit();
+        },
+      );
+    } else {
+      await _processSubmit();
     }
   }
 
@@ -106,6 +143,7 @@ class _CreateMovePoolReportPageState
                     poolListState,
                     mutationState.isLoading,
                     pool?.category,
+                    pool,
                   ),
                 ],
               ],
@@ -176,11 +214,6 @@ class _CreateMovePoolReportPageState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Detail Kolam',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -214,7 +247,7 @@ class _CreateMovePoolReportPageState
           children: [
             Text('Jumlah Ikan', style: TextStyle(fontSize: 15)),
             Text(
-              '${pool.currentQuantity} Ekor',
+              '${pool.currentQuantity ?? 0} Ekor',
               style: TextStyle(fontSize: 15),
             ),
           ],
@@ -223,7 +256,10 @@ class _CreateMovePoolReportPageState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
+            const Text(
+              'Ambang Batas Normal pH',
+              style: TextStyle(fontSize: 15),
+            ),
             Text(
               '${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.first : 0} - ${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.last : 0} pH',
               style: const TextStyle(fontSize: 15),
@@ -234,7 +270,10 @@ class _CreateMovePoolReportPageState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
+            const Text(
+              'Ambang Batas Normal Suhu',
+              style: TextStyle(fontSize: 15),
+            ),
             Text(
               '${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.first : 0}°C - ${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.last : 0}°C',
               style: const TextStyle(fontSize: 15),
@@ -249,6 +288,7 @@ class _CreateMovePoolReportPageState
     AsyncValue<List<Pool>> poolListState,
     bool isLoading,
     String? sourcePoolCategory,
+    PoolDetail? pool,
   ) {
     List<Pool> filteredPoolList = poolListState.value ?? [];
 
@@ -265,6 +305,10 @@ class _CreateMovePoolReportPageState
           .where((p) => p.category == 'growing' || p.category == 'breeding')
           .toList();
     }
+
+    filteredPoolList = filteredPoolList
+        .where((p) => p.id != widget.poolId)
+        .toList();
 
     return Form(
       key: _formKey,
@@ -305,13 +349,15 @@ class _CreateMovePoolReportPageState
               if (value == null || value.isEmpty) {
                 return 'Tanggal Pindah Kolam harus dipilih';
               }
+
               return null;
             },
+            lastDate: DateTime.now(),
           ),
           const SizedBox(height: 16),
           AppInputText(
-            label: 'Jumlah',
-            hint: 'Jumlah',
+            label: 'Jumlah Ikan Pindah (Ekor)',
+            hint: 'Jumlah Ikan Pindah',
             controller: _quantityCtrl,
             type: FieldType.number,
             requiredField: true,
@@ -337,6 +383,7 @@ class _CreateMovePoolReportPageState
               });
             },
           ),
+          const SizedBox(height: 16),
           const SizedBox(height: 24),
           AppButton(
             label: 'Pindah',
