@@ -15,5 +15,4 @@ abstract class SickReportRepository {
     int quantity,
     XFile image,
   );
-  Future<Either<Failure, Map<String, dynamic>>> deleteSickReport(String id);
 }

@@ -4,7 +4,6 @@ import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_r
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/repositories/sick_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/create_sick_report_usecase.dart';
-import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/delete_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_reports_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,13 +35,6 @@ final createSickReportUseCaseProvider = Provider<CreateSickReportUsecase>((
 ) {
   final repository = ref.read(sickReportRepositoryProvider);
   return CreateSickReportUsecase(repository);
-});
-
-final deleteSickReportUseCaseProvider = Provider<DeleteSickReportUsecase>((
-  ref,
-) {
-  final repository = ref.read(sickReportRepositoryProvider);
-  return DeleteSickReportUsecase(repository);
 });
 
 class SickReportListNotifier
@@ -97,14 +89,10 @@ class SickReportDetailNotifier
 
 class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final CreateSickReportUsecase _createSickReportUsecase;
-  final DeleteSickReportUsecase _deleteSickReportUsecase;
   final SickReportListNotifier _listNotifier;
 
-  SickReportMutationNotifier(
-    this._createSickReportUsecase,
-    this._deleteSickReportUsecase,
-    this._listNotifier,
-  ) : super(const AsyncValue.data(null));
+  SickReportMutationNotifier(this._createSickReportUsecase, this._listNotifier)
+    : super(const AsyncValue.data(null));
 
   // Create Sick Report
   Future<void> createSickReport(
@@ -139,25 +127,6 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       },
     );
   }
-
-  // Delete sick report
-  Future<void> deleteSickReport(String id, String poolId) async {
-    state = const AsyncValue.loading();
-    final result = await _deleteSickReportUsecase.execute(id);
-
-    result.fold(
-      (failure) {
-        state = AsyncValue.error(
-          failure.message ?? 'Gagal menghapus laporan sakit',
-          StackTrace.current,
-        );
-      },
-      (data) {
-        state = AsyncValue.data(null);
-        _listNotifier.getSickReports(poolId);
-      },
-    );
-  }
 }
 
 // provider Utama
@@ -185,12 +154,7 @@ final sickReportDetailNotifierProvider =
 final sickReportMutationNotifierProvider =
     StateNotifierProvider<SickReportMutationNotifier, AsyncValue<void>>((ref) {
       final createSickReportUsecase = ref.read(createSickReportUseCaseProvider);
-      final deleteSickReportUsecase = ref.read(deleteSickReportUseCaseProvider);
       final listNotifier = ref.read(sickReportListNotifierProvider.notifier);
 
-      return SickReportMutationNotifier(
-        createSickReportUsecase,
-        deleteSickReportUsecase,
-        listNotifier,
-      );
+      return SickReportMutationNotifier(createSickReportUsecase, listNotifier);
     });

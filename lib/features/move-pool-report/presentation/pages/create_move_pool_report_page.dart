@@ -42,7 +42,6 @@ class _CreateMovePoolReportPageState
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Pool? _selectedDestinationPool;
-  bool _isEndedAtEnabled = false;
 
   @override
   void initState() {

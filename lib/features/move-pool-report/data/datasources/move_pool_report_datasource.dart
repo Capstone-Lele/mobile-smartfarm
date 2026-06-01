@@ -104,26 +104,4 @@ class MovePoolReportDatasource {
       return Left(FetchFailure(e.toString()));
     }
   }
-
-  // Delete Move Pool Report
-  Future<Either<Failure, Map<String, dynamic>>> deleteMovePoolReport(
-    String id,
-  ) async {
-    Uri url = Uri.parse('${AppConstants.baseURL}/note/move-pool/$id');
-    final token = AppSession.getBearerToken();
-
-    try {
-      final response = await safeRequest(
-        () => http
-            .delete(url, headers: AppRequest.header(token))
-            .timeout(const Duration(seconds: 10)),
-      );
-
-      final data = AppResponse.data(response);
-      return Right(data);
-    } catch (e) {
-      if (e is Failure) return Left(e);
-      return Left(FetchFailure(e.toString()));
-    }
-  }
 }
