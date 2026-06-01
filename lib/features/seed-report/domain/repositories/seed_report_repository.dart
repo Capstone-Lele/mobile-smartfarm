@@ -16,5 +16,4 @@ abstract class SeedReportRepository {
     double initialAverageWeight,
     XFile image,
   );
-  Future<Either<Failure, Map<String, dynamic>>> deleteSeedReport(String id);
 }

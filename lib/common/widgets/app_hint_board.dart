@@ -63,7 +63,13 @@ class _AppHintBoardState extends State<AppHintBoard> {
             ),
           ),
           const SizedBox(width: 2),
-          Image.asset(AppAssets.logo, height: 52, width: 52),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(99),
+              color: AppColors.white,
+            ),
+            child: Image.asset(AppAssets.logo, height: 52, width: 52),
+          ),
         ],
       ),
     );

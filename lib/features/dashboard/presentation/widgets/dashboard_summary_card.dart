@@ -34,9 +34,8 @@ class DashboardSummaryCard extends StatelessWidget {
                   value,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 54,
+                    fontSize: 38,
                     fontWeight: FontWeight.w900,
-                    height: 1.1,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),

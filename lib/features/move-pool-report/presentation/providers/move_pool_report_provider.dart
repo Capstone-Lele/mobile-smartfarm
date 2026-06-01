@@ -1,9 +1,9 @@
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/data/datasources/move_pool_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/data/repositories/move_pool_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/entities/move_pool_report.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/repositories/move_pool_report_repository.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/create_move_pool_report_usecase.dart';
-import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/delete_move_pool_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/get_move_pool_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/move-pool-report/domain/usecases/get_move_pool_reports_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,12 +42,6 @@ final createMovePoolReportUseCaseProvider =
     Provider<CreateMovePoolReportUsecase>((ref) {
       final repository = ref.read(movePoolReportRepositoryProvider);
       return CreateMovePoolReportUsecase(repository);
-    });
-
-final deleteMovePoolReportUseCaseProvider =
-    Provider<DeleteMovePoolReportUsecase>((ref) {
-      final repository = ref.read(movePoolReportRepositoryProvider);
-      return DeleteMovePoolReportUsecase(repository);
     });
 
 class MovePoolReportListNotifier
@@ -102,31 +96,35 @@ class MovePoolReportDetailNotifier
 
 class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final CreateMovePoolReportUsecase _createMovePoolReportUsecase;
-  final DeleteMovePoolReportUsecase _deleteMovePoolReportUsecase;
   final MovePoolReportListNotifier _listNotifier;
+  final Ref _ref;
 
   MovePoolReportMutationNotifier(
     this._createMovePoolReportUsecase,
-    this._deleteMovePoolReportUsecase,
     this._listNotifier,
+    this._ref,
   ) : super(const AsyncValue.data(null));
 
   // Create Move Pool Report
   Future<void> createMovePoolReport(
     String poolId,
+    String destinationPoolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createMovePoolReportUsecase.execute(
+      destinationPoolId,
       originCycleId,
       destinationCycleId,
       reportDate,
       quantity,
       image,
+      endedAt,
     );
 
     result.fold(
@@ -139,25 +137,9 @@ class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (movePoolReport) {
         state = AsyncValue.data(null);
         _listNotifier.getMovePoolReports(poolId);
-      },
-    );
-  }
-
-  // Delete move pool report
-  Future<void> deleteMovePoolReport(String id, String poolId) async {
-    state = const AsyncValue.loading();
-    final result = await _deleteMovePoolReportUsecase.execute(id);
-
-    result.fold(
-      (failure) {
-        state = AsyncValue.error(
-          failure.message ?? 'Gagal menghapus laporan pindah kolam',
-          StackTrace.current,
-        );
-      },
-      (data) {
-        state = AsyncValue.data(null);
-        _listNotifier.getMovePoolReports(poolId);
+        // Refresh pool detail and list
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -197,16 +179,14 @@ final movePoolReportMutationNotifierProvider =
       final createMovePoolReportUsecase = ref.read(
         createMovePoolReportUseCaseProvider,
       );
-      final deleteMovePoolReportUsecase = ref.read(
-        deleteMovePoolReportUseCaseProvider,
-      );
+
       final listNotifier = ref.read(
         movePoolReportListNotifierProvider.notifier,
       );
 
       return MovePoolReportMutationNotifier(
         createMovePoolReportUsecase,
-        deleteMovePoolReportUsecase,
         listNotifier,
+        ref,
       );
     });

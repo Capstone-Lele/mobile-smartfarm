@@ -163,6 +163,7 @@ class _UpdatePoolCleaningReportPageState
                 }
                 return null;
               },
+              lastDate: DateTime.now(),
             ),
             const SizedBox(height: 16),
             AppInputImage(

@@ -1,3 +1,4 @@
+import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
@@ -5,6 +6,7 @@ import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/presentation/providers/seed_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +35,15 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
   final _currentQuantityCtrl = TextEditingController();
   final _initialAverageWeightCtrl = TextEditingController();
   XFile? _selectedImage;
+  bool _isWarningShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
+    });
+  }
 
   @override
   void dispose() {
@@ -46,6 +57,39 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final poolDetail = ref.read(poolDetailNotifierProvider).value;
+    final initialQuantity = int.tryParse(_initialQuantityCtrl.text) ?? 0;
+
+    if (poolDetail != null && poolDetail.diameter != null) {
+      final diameter = double.tryParse(poolDetail.diameter!) ?? 0;
+      // Rumus: (3.14 * diameter^2 * 0.25) * 250
+      final limit = (3.14 * (diameter * diameter) * 0.25) * 250;
+      if (initialQuantity > limit && !_isWarningShown) {
+        AppDialog.showConfirmationDialog(
+          context: context,
+          title: 'Peringatan Overload',
+          message:
+              'Kepadatan melebihi batas!\n\n'
+              'Batas Maksimal: ${limit.toInt()} ekor\n'
+              'Jumlah Benih: $initialQuantity ekor\n\n'
+              'Apakah Anda yakin ingin melanjutkan?',
+          confirmText: 'Lanjutkan',
+          cancelText: 'Batal',
+          color: Colors.orange,
+          onConfirm: () async {
+            Navigator.pop(context); // Tutup dialog
+            setState(() => _isWarningShown = true);
+            await _processSubmit();
+          },
+        );
+        return;
+      }
+    }
+
+    await _processSubmit();
+  }
+
+  Future<void> _processSubmit() async {
     final user = ref.read(userProvider);
 
     await ref
@@ -123,6 +167,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
                   }
                   return null;
                 },
+                lastDate: DateTime.now(),
               ),
               const SizedBox(height: 16),
               AppInputText(
@@ -197,7 +242,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Perhatian: Laporan yang telah dikirim tidak dapat diubah kembali. Pastikan seluruh data tebar benih sudah sesuai.',
+                'Perhatian: Laporan yang telah dikirim tidak dapat diubah dan dihapus kembali. Pastikan seluruh data tebar benih sudah sesuai.',
                 style: TextStyle(fontSize: 14, color: Colors.red),
               ),
             ],

@@ -145,7 +145,11 @@ class _CreateVitaminReportPageState
           error: (err, stack) => _buildErrorState(err),
           data: (allInventories) {
             final vitaminInventories = allInventories
-                .where((inv) => inv.category.toLowerCase() == 'vitamin')
+                .where(
+                  (inv) =>
+                      inv.category.toLowerCase() == 'vitamin' &&
+                      inv.deletedAt == null,
+                )
                 .toList();
 
             return Form(
@@ -184,10 +188,11 @@ class _CreateVitaminReportPageState
                       }
                       return null;
                     },
+                    lastDate: DateTime.now(),
                   ),
                   const SizedBox(height: 16),
                   AppInputText(
-                    label: 'Jumlah Bug (${_selectedInventory?.unit ?? ""})',
+                    label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                     hint: 'Jumlah',
                     controller: _quantityCtrl,
                     type: FieldType.number,

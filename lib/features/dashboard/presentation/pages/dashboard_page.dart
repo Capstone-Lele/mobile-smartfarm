@@ -58,21 +58,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final poolsAsync = ref.watch(poolListNotifierProvider);
     final iotAsync = ref.watch(iotDetailNotifierProvider);
 
-    // Initial selected pool setup
-    poolsAsync.whenData((pools) {
-      if (pools.isNotEmpty && _selectedPool == null) {
-        Future.microtask(() {
-          if (mounted) {
-            setState(() {
-              _selectedPool = pools.first;
-            });
-            final nodeId = pools.first.name.replaceAll(RegExp(r'[^0-9]'), '');
-            ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
-            _startIotTimer(nodeId);
-          }
-        });
-      }
-    });
+    // Note: Selection logic is now handled inside _buildPoolSelector to ensure
+    // consistency between the list and the selected value.
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -145,7 +132,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           AppRoutes.pushNamed(context, AppRoutes.poolCondition);
                         },
                         child: const Text(
-                          'Lihat Semua',
+                          'Lihat Semua Data Iot',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -180,6 +167,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       );
                     },
                     data: (iot) {
+                      print(
+                        'Received IoT data: nodeId=${iot?.nodeId}, ph=${iot?.ph}, temp=${iot?.temp}, receivedAt=${iot?.receivedAt}',
+                      );
                       final tempValue = iot?.temp ?? 0.0;
                       final phValue = iot?.ph ?? 0.0;
 
@@ -231,6 +221,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return AppHeader(
       title: 'Selamat Datang, ${user?.name}',
       subtitle: '${user?.roleLabel}',
+      userImageUrl: user?.image,
       onNotificationPressed: () {
         AppRoutes.pushNamed(context, AppRoutes.notification);
       },
@@ -275,36 +266,67 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           ),
         ],
       ),
-      data: (pools) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Pilih Kolam',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkGray,
+      data: (pools) {
+        // Filter deleted pools AND deduplicate by ID to prevent Dropdown assertion errors
+        final seenIds = <String>{};
+        final filteredPools = pools
+            .where((pool) => pool.deletedAt == null && seenIds.add(pool.id))
+            .toList();
+
+        // Find the valid pool from the current list that matches our selected pool ID
+        final Pool? effectiveSelectedPool = _selectedPool == null
+            ? null
+            : filteredPools.where((p) => p.id == _selectedPool!.id).firstOrNull;
+
+        // If we have pools but no valid selection (e.g. first load or selected pool was deleted)
+        if (filteredPools.isNotEmpty && effectiveSelectedPool == null) {
+          Future.microtask(() {
+            if (mounted) {
+              setState(() {
+                _selectedPool = filteredPools.first;
+              });
+              final nodeId = filteredPools.first.name.replaceAll(
+                RegExp(r'[^0-9]'),
+                '',
+              );
+              ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+              _startIotTimer(nodeId);
+            }
+          });
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Pilih Kolam',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.darkGray,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          AppInputDropdown<Pool>(
-            hint: 'Pilih Kolam',
-            items: pools,
-            itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
-            value: _selectedPool,
-            onChanged: (pool) {
-              if (pool != null) {
-                setState(() {
-                  _selectedPool = pool;
-                });
-                final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
-                ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
-                _startIotTimer(nodeId);
-              }
-            },
-          ),
-        ],
-      ),
+            const SizedBox(height: 8),
+            AppInputDropdown<Pool>(
+              hint: 'Pilih Kolam',
+              items: filteredPools,
+              itemLabel: (pool) => '${pool.name} - ${pool.categoryLabel}',
+              // Always pass a value that is guaranteed to be in the items list
+              value: effectiveSelectedPool,
+              onChanged: (pool) {
+                if (pool != null) {
+                  setState(() {
+                    _selectedPool = pool;
+                  });
+                  final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
+                  ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+                  _startIotTimer(nodeId);
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -1,7 +1,7 @@
 class ChartIots {
   final String nodeId;
-  final String ph;
-  final String temp;
+  final double ph;
+  final double temp;
   final String createdAt;
 
   ChartIots({

@@ -51,6 +51,7 @@ class SickReportRepositoryImpl implements SickReportRepository {
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
@@ -58,6 +59,7 @@ class SickReportRepositoryImpl implements SickReportRepository {
     XFile image,
   ) async {
     final result = await datasource.createSickReport(
+      poolId,
       originCycleId,
       destinationCycleId,
       reportDate,

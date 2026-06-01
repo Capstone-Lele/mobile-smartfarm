@@ -197,6 +197,10 @@ class _UpdateInventorySubmissionPageState
                       return 'Jumlah harus berupa angka positif';
                     }
 
+                    if (number > 999) {
+                      return 'Jumlah maksimal 999';
+                    }
+
                     return null;
                   },
                 ),

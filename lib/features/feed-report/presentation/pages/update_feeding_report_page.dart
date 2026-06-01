@@ -133,7 +133,11 @@ class _UpdateFeedingReportPageState
 
   Widget _buildFormState(List<Inventory> inventories) {
     final foodInventories = inventories
-        .where((inventory) => inventory.category.toLowerCase() == 'pakan')
+        .where(
+          (inventory) =>
+              inventory.category.toLowerCase() == 'pakan' &&
+              inventory.deletedAt == null,
+        )
         .toList();
 
     final reportDetailState = ref.watch(feedReportDetailNotifierProvider);
@@ -176,7 +180,7 @@ class _UpdateFeedingReportPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInputDropdown<Inventory>(
-                  label: 'Nama Produk Bug',
+                  label: 'Nama Produk',
                   hint: 'Pilih Produk Pakan',
                   items: foodInventories,
                   value: _selectedInventory,
@@ -207,10 +211,11 @@ class _UpdateFeedingReportPageState
                     }
                     return null;
                   },
+                  lastDate: DateTime.now(),
                 ),
                 const SizedBox(height: 16),
                 AppInputText(
-                  label: 'Jumlah',
+                  label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                   hint: 'Jumlah',
                   controller: _quantityCtrl,
                   type: FieldType.number,

@@ -17,7 +17,7 @@ class NotificationDetailModel extends NotificationDetail {
   factory NotificationDetailModel.fromJson(Map<String, dynamic> json) {
     return NotificationDetailModel(
       id: json['id'],
-      poolId: json['pool_id'],
+      poolId: json['poolIId'],
       userId: json['userId'],
       title: json['title'],
       message: json['message'],

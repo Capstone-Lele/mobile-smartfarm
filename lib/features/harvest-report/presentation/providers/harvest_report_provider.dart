@@ -1,4 +1,4 @@
-// Provider Datasource
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/data/datasources/harvest_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/data/repositories/harvest_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report.dart';
@@ -98,10 +98,12 @@ class HarvestReportDetailNotifier
 class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final CreateHarvestReportUsecase _createHarvestReportUsecase;
   final HarvestReportListNotifier _listNotifier;
+  final Ref _ref;
 
   HarvestReportMutationNotifier(
     this._createHarvestReportUsecase,
     this._listNotifier,
+    this._ref,
   ) : super(const AsyncValue.data(null));
 
   // Create Harvest Report
@@ -109,15 +111,19 @@ class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String poolId,
     String cycleId,
     String reportDate,
+    int totalKg,
     int amount,
     XFile image,
+    String? endedAt,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createHarvestReportUsecase.execute(
       cycleId,
       reportDate,
+      totalKg,
       amount,
       image,
+      endedAt,
     );
 
     result.fold(
@@ -130,6 +136,9 @@ class HarvestReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (harvestReport) {
         state = AsyncValue.data(null);
         _listNotifier.getHarvestReports(poolId);
+        // Refresh pool detail and list
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -172,5 +181,6 @@ final harvestReportMutationNotifierProvider =
       return HarvestReportMutationNotifier(
         createHarvestReportUsecase,
         listNotifier,
+        ref,
       );
     });

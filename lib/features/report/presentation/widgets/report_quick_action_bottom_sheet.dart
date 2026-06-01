@@ -7,6 +7,8 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
   final String poolId;
   final String poolName;
   final String cycleId;
+  final String poolCategory;
+  final bool isCycle;
 
   const ReportQuickActionBottomSheet({
     super.key,
@@ -14,6 +16,8 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
     required this.poolId,
     required this.poolName,
     required this.cycleId,
+    required this.poolCategory,
+    required this.isCycle,
   });
 
   @override
@@ -67,82 +71,89 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final isGrowing = poolCategory.contains('growing');
+    final isBreeding = poolCategory.contains('breeding');
+
     if (type == 'daily') {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildQuickActionItem(
-            icon: Icons.restaurant,
-            title: 'Tambah Laporan Pakan',
-            iconColor: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createFeedingReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
+          if (isCycle) ...[
+            _buildQuickActionItem(
+              icon: Icons.restaurant,
+              title: 'Tambah Laporan Pakan',
+              iconColor: AppColors.primary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createFeedingReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+            const Divider(height: 1, color: AppColors.gray),
+            _buildQuickActionItem(
+              icon: Icons.medical_services,
+              title: 'Tambah Laporan Vitamin',
+              iconColor: AppColors.primary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createVitaminReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+            const Divider(height: 1, color: AppColors.gray),
+            _buildQuickActionItem(
+              icon: Icons.dangerous,
+              title: 'Tambah Laporan Kematian',
+              iconColor: AppColors.primary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createMortalityReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+            if (isGrowing || isBreeding) ...[
+              const Divider(height: 1, color: AppColors.gray),
+              _buildQuickActionItem(
+                icon: Icons.error_outline,
+                title: 'Tambah Laporan Sakit',
+                iconColor: AppColors.primary,
+                onTap: () {
+                  Navigator.pop(context);
+                  AppRoutes.pushNamed(
+                    context,
+                    AppRoutes.createSickReport,
+                    arguments: {
+                      'poolId': poolId,
+                      'poolName': poolName,
+                      'cycleId': cycleId,
+                    },
+                  );
                 },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.medical_services,
-            title: 'Tambah Laporan Vitamin',
-            iconColor: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createVitaminReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.dangerous,
-            title: 'Tambah Laporan Kematian',
-            iconColor: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createMortalityReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.error_outline,
-            title: 'Tambah Laporan Sakit',
-            iconColor: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createSickReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
+              ),
+            ],
+            const Divider(height: 1, color: AppColors.gray),
+          ],
           _buildQuickActionItem(
             icon: Icons.water_drop,
             title: 'Tambah Laporan Pembersihan Kolam',
@@ -152,89 +163,134 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
               AppRoutes.pushNamed(
                 context,
                 AppRoutes.createPoolCleaningReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                },
+                arguments: {'poolId': poolId, 'poolName': poolName},
               );
             },
           ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.trending_up,
-            title: 'Tambah Laporan Sampling',
-            iconColor: AppColors.primary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createSamplingReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
+          if (isCycle && (isGrowing || isBreeding)) ...[
+            const Divider(height: 1, color: AppColors.gray),
+            _buildQuickActionItem(
+              icon: Icons.trending_up,
+              title: 'Tambah Laporan Sampling',
+              iconColor: AppColors.primary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createSamplingReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+          ],
+          if (!isCycle) ...[
+            const Divider(height: 1, color: AppColors.gray),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Siklus tidak aktif, laporan harian lainnya tidak bisa ditambahkan.',
+                  style: TextStyle(
+                    color: AppColors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
         ],
       );
     } else {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildQuickActionItem(
-            icon: Icons.add_circle_outline,
-            title: 'Tambah Laporan Tebar Benih',
-            iconColor: AppColors.secondary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createSeedReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.agriculture,
-            title: 'Tambah Laporan Panen',
-            iconColor: AppColors.secondary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createHarvestReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
-          const Divider(height: 1, color: AppColors.gray),
-          _buildQuickActionItem(
-            icon: Icons.swap_horiz,
-            title: 'Tambah Laporan Pindah Kolam',
-            iconColor: AppColors.secondary,
-            onTap: () {
-              Navigator.pop(context);
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.createMovePoolReport,
-                arguments: {
-                  'poolId': poolId,
-                  'poolName': poolName,
-                  'cycleId': cycleId,
-                },
-              );
-            },
-          ),
+          if (isBreeding && !isCycle) ...[
+            _buildQuickActionItem(
+              icon: Icons.add_circle_outline,
+              title: 'Tambah Laporan Tebar Benih',
+              iconColor: AppColors.secondary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createSeedReport,
+                  arguments: {'poolId': poolId, 'poolName': poolName},
+                );
+              },
+            ),
+            const Divider(height: 1, color: AppColors.gray),
+          ],
+          if (isGrowing && isCycle) ...[
+            _buildQuickActionItem(
+              icon: Icons.agriculture,
+              title: 'Tambah Laporan Panen',
+              iconColor: AppColors.secondary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createHarvestReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+            const Divider(height: 1, color: AppColors.gray),
+          ],
+          if (isCycle)
+            _buildQuickActionItem(
+              icon: Icons.swap_horiz,
+              title: 'Tambah Laporan Pindah Kolam',
+              iconColor: AppColors.secondary,
+              onTap: () {
+                Navigator.pop(context);
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.createMovePoolReport,
+                  arguments: {
+                    'poolId': poolId,
+                    'poolName': poolName,
+                    'cycleId': cycleId,
+                  },
+                );
+              },
+            ),
+          if (!isCycle && isGrowing)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'Siklus tidak aktif, silahkan tambahkan laporan pindah kolam ke kolam ini untuk mengaktifkan siklus.',
+                  style: TextStyle(
+                    color: AppColors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          if (!isCycle && isBreeding && type == 'special')
+            const Padding(
+              padding: EdgeInsets.only(top: 8, bottom: 24),
+              child: Center(
+                child: Text(
+                  'Siklus tidak aktif, silahkan tambahkan laporan tebar benih untuk mengaktifkan siklus.',
+                  style: TextStyle(
+                    color: AppColors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
         ],
       );
     }

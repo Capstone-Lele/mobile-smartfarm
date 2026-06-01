@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/data/datasources/sampling_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/data/repositories/sampling_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/entities/sampling_report.dart';
@@ -9,7 +10,6 @@ import 'package:budidaya_lele_mobile/features/sampling-report/domain/usecases/ge
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/usecases/get_sampling_reports_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sampling-report/domain/usecases/update_sampling_report_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 
 // Provider Datasource

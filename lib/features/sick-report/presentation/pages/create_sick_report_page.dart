@@ -63,8 +63,9 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
         .read(sickReportMutationNotifierProvider.notifier)
         .createSickReport(
           widget.poolId,
+          _selectedQuarantinePool!.id!,
           widget.cycleId,
-          _selectedQuarantinePool!.cycleId!,
+          _selectedQuarantinePool!.cycleId ?? '',
           AppFormat.toApiDateTime(_reportDateCtrl.text),
           int.parse(_quantityCtrl.text),
           _selectedImage!,
@@ -164,11 +165,6 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Detail Kolam',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -211,7 +207,10 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Ambang Batas pH', style: TextStyle(fontSize: 15)),
+            const Text(
+              'Ambang Batas Normal pH',
+              style: TextStyle(fontSize: 15),
+            ),
             Text(
               '${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.first : 0} - ${pool.acidityNormal.isNotEmpty ? pool.acidityNormal.last : 0} pH',
               style: const TextStyle(fontSize: 15),
@@ -222,7 +221,10 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Ambang Batas Suhu', style: TextStyle(fontSize: 15)),
+            const Text(
+              'Ambang Batas Normal Suhu',
+              style: TextStyle(fontSize: 15),
+            ),
             Text(
               '${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.first : 0}°C - ${pool.temperatureNormal.isNotEmpty ? pool.temperatureNormal.last : 0}°C',
               style: const TextStyle(fontSize: 15),
@@ -280,6 +282,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
               }
               return null;
             },
+            lastDate: DateTime.now(),
           ),
           const SizedBox(height: 16),
           AppInputText(

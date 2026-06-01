@@ -71,7 +71,7 @@ class ReportActivityItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.black, size: 24),
+              // Icon(Icons.chevron_right, color: Colors.black, size: 24),
             ],
           ),
         ),

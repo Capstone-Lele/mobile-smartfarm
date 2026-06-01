@@ -1,13 +1,9 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_hint_board.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_text.dart';
-import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
-import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
-import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/seed-report/domain/entities/seed_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
@@ -204,45 +200,10 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
                 ),
               ],
               const SizedBox(height: 24),
-              if (user?.role != 'pic') ...[
-                AppButton(
-                  label: 'Hapus',
-                  color: AppColors.red,
-                  onPressed: () {
-                    AppDialog.showConfirmationDialog(
-                      context: context,
-                      color: AppColors.red,
-                      title: 'Hapus Laporan',
-                      message: 'Apakah anda yakin ingin menghapus laporan ini?',
-                      confirmText: 'Iya',
-                      cancelText: 'Tidak',
-                      onConfirm: () async {
-                        await ref
-                            .read(seedReportMutationNotifierProvider.notifier)
-                            .deleteSeedReport(widget.reportId, widget.poolId);
-
-                        final mutationState = ref.read(
-                          seedReportMutationNotifierProvider,
-                        );
-
-                        if (mutationState.hasError) {
-                          AppRoutes.pop(context);
-                          AppSnackbar.error(mutationState.error.toString());
-                        } else {
-                          AppRoutes.pop(context);
-                          AppSnackbar.success('Laporan berhasil dihapus');
-                          AppRoutes.pop(context);
-                        }
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Catatan: Laporan ini tidak dapat diubah.',
-                  style: TextStyle(fontSize: 14, color: Colors.red),
-                ),
-              ],
+              const Text(
+                'Catatan: Laporan ini tidak dapat diubah dan dihapus.',
+                style: TextStyle(fontSize: 14, color: Colors.red),
+              ),
             ],
           ),
         ),

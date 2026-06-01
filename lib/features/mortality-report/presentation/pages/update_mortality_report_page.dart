@@ -149,6 +149,7 @@ class _UpdateMortalityReportPageState
     if (_reportDateCtrl.text.isEmpty) {
       _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
       _quantityCtrl.text = report.quantity.toString();
+      _notesCtrl.text = report.notes ?? '';
     }
 
     final mutationState = ref.watch(mortalityReportMutationNotifierProvider);
@@ -173,6 +174,7 @@ class _UpdateMortalityReportPageState
                 }
                 return null;
               },
+              lastDate: DateTime.now(),
             ),
             const SizedBox(height: 16),
             AppInputText(

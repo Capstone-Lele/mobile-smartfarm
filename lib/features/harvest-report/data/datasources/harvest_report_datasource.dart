@@ -60,8 +60,10 @@ class HarvestReportDatasource {
   Future<Either<Failure, Map<String, dynamic>>> createHarvestReport(
     String cycleId,
     String reportDate,
+    int totalKg,
     int amount,
     XFile image,
+    String? endedAt,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/harvest');
     final token = AppSession.getBearerToken();
@@ -71,7 +73,9 @@ class HarvestReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['cycleId'] = cycleId;
       request.fields['reportDate'] = reportDate;
+      request.fields['totalKg'] = totalKg.toString();
       request.fields['amount'] = amount.toString();
+      request.fields['endedAt'] = endedAt ?? '';
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',
@@ -88,8 +92,7 @@ class HarvestReportDatasource {
       );
 
       final data = AppResponse.data(response);
-      final harvestReport = data['data'];
-      return Right(harvestReport);
+      return Right(data);
     } catch (e) {
       if (e is Failure) return Left(e);
       return Left(FetchFailure(e.toString()));

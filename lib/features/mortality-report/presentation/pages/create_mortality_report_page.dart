@@ -124,6 +124,7 @@ class _CreateMortalityReportPageState
                   }
                   return null;
                 },
+                lastDate: DateTime.now(),
               ),
               const SizedBox(height: 16),
               AppInputText(

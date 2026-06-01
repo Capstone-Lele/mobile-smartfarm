@@ -112,6 +112,9 @@ class _AppInputDateState extends State<AppInputDate> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
+    // Dismiss keyboard if any text field is focused
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final now = DateTime.now();
     final initialDate = _selectedDate ?? widget.initialDate ?? now;
     final firstDate = widget.firstDate ?? DateTime(2000);

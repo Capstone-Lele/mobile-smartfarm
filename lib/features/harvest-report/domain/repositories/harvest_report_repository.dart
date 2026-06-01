@@ -10,7 +10,9 @@ abstract class HarvestReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> createHarvestReport(
     String cycleId,
     String reportDate,
+    int totalKg,
     int amount,
     XFile image,
+    String? endedAt,
   );
 }

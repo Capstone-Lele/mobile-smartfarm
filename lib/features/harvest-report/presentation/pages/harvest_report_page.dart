@@ -6,6 +6,7 @@ import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/domain/entities/harvest_report.dart';
 import 'package:budidaya_lele_mobile/features/harvest-report/presentation/providers/harvest_report_provider.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
       ref
           .read(harvestReportListNotifierProvider.notifier)
           .getHarvestReports(widget.poolId);
+      ref.read(poolDetailNotifierProvider.notifier).getPool(widget.poolId);
     });
   }
 
@@ -47,6 +49,17 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     final reportState = ref.watch(harvestReportListNotifierProvider);
+    final poolDetailAsync = ref.watch(poolDetailNotifierProvider);
+
+    final isCycle = poolDetailAsync.maybeWhen(
+      data: (pool) {
+        if (pool?.category == 'quarantine') {
+          return pool?.cycle == 'treatment';
+        }
+        return pool?.cycle == 'active_cultivation';
+      },
+      orElse: () => widget.isCycle,
+    );
 
     return Scaffold(
       appBar: _buildHeader(context),
@@ -56,6 +69,9 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
             await ref
                 .read(harvestReportListNotifierProvider.notifier)
                 .getHarvestReports(widget.poolId);
+            await ref
+                .read(poolDetailNotifierProvider.notifier)
+                .getPool(widget.poolId);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -77,7 +93,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                       style: const TextStyle(color: AppColors.red),
                     ),
                   ),
-                  data: (data) => _buildSummaryCards(data, user),
+                  data: (data) => _buildSummaryCards(data, user, isCycle),
                 ),
                 const SizedBox(height: 16),
                 AppDateRangeFilter(
@@ -166,7 +182,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(user),
+      floatingActionButton: _buildFloatingActionButton(user, isCycle),
     );
   }
 
@@ -329,7 +345,11 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
     }
   }
 
-  Widget _buildSummaryCards(List<HarvestReport> reports, User? user) {
+  Widget _buildSummaryCards(
+    List<HarvestReport> reports,
+    User? user,
+    bool isCycle,
+  ) {
     final total = reports.length;
     final lastAmount = reports.isNotEmpty ? reports.first.amount : 0;
 
@@ -341,12 +361,12 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
             const SizedBox(width: 8),
             Expanded(child: _buildLastAmountCard(lastAmount)),
             const SizedBox(width: 8),
-            Expanded(child: _buildSiklusCard()),
+            Expanded(child: _buildSiklusCard(isCycle)),
           ],
         ),
       );
     } else {
-      return _buildSiklusFullCard();
+      return _buildSiklusFullCard(isCycle);
     }
   }
 
@@ -425,7 +445,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
     );
   }
 
-  Widget _buildSiklusCard() {
+  Widget _buildSiklusCard(bool isCycle) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
@@ -447,8 +467,8 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
           ),
           const SizedBox(height: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 28,
           ),
         ],
@@ -456,7 +476,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
     );
   }
 
-  Widget _buildSiklusFullCard() {
+  Widget _buildSiklusFullCard(bool isCycle) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -478,8 +498,8 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
           ),
           const SizedBox(width: 8),
           Icon(
-            widget.isCycle ? Icons.check : Icons.close,
-            color: widget.isCycle ? AppColors.green : AppColors.red,
+            isCycle ? Icons.check : Icons.close,
+            color: isCycle ? AppColors.green : AppColors.red,
             size: 24,
           ),
         ],
@@ -487,8 +507,8 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
     );
   }
 
-  Widget _buildFloatingActionButton(User? user) {
-    if (user?.role != 'pic' && widget.isCycle) {
+  Widget _buildFloatingActionButton(User? user, bool isCycle) {
+    if (user?.role != 'pic' && isCycle) {
       return FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: AppColors.secondary,

@@ -252,6 +252,9 @@ class _AppInputImageState extends State<AppInputImage> {
   }
 
   void _showImagePicker(FormFieldState<XFile?> field) {
+    // Dismiss keyboard if any text field is focused
+    FocusManager.instance.primaryFocus?.unfocus();
+
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(

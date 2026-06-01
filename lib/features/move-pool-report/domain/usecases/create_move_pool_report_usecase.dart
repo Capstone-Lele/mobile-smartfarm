@@ -9,18 +9,22 @@ class CreateMovePoolReportUsecase {
   CreateMovePoolReportUsecase(this.repository);
 
   Future<Either<Failure, Map<String, dynamic>>> execute(
+    String poolId,
     String originCycleId,
     String destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) {
     return repository.createMovePoolReport(
+      poolId,
       originCycleId,
       destinationCycleId,
       reportDate,
       quantity,
       image,
+      endedAt,
     );
   }
 }

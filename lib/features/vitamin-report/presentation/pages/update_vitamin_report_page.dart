@@ -133,7 +133,11 @@ class _UpdateVitaminReportPageState
 
   Widget _buildFormState(List<Inventory> inventories) {
     final vitaminInventories = inventories
-        .where((inventory) => inventory.category.toLowerCase() == 'vitamin')
+        .where(
+          (inventory) =>
+              inventory.category.toLowerCase() == 'vitamin' &&
+              inventory.deletedAt == null,
+        )
         .toList();
 
     final reportDetailState = ref.watch(vitaminReportDetailNotifierProvider);
@@ -209,6 +213,7 @@ class _UpdateVitaminReportPageState
 
                     return null;
                   },
+                  lastDate: DateTime.now(),
                 ),
                 const SizedBox(height: 16),
                 AppInputText(
