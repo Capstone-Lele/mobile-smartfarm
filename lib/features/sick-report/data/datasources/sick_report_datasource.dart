@@ -62,6 +62,7 @@ class SickReportDatasource {
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/sick');
     final token = AppSession.getBearerToken();
@@ -71,9 +72,10 @@ class SickReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['poolId'] = poolId;
       request.fields['originCycleId'] = originCycleId;
-      // request.fields['destinationCycleId'] = destinationCycleId;
+      request.fields['destinationCycleId'] = destinationCycleId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
+      request.fields['endedAt'] = endedAt ?? '';
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',

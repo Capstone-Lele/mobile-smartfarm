@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'package:budidaya_lele_mobile/common/widgets/app_date_range_filter.dart';
+import 'package:budidaya_lele_mobile/core/network/app_socket.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_loading.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
@@ -24,38 +24,46 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
   Pool? _selectedPool;
   DateTime? _startDate;
   DateTime? _endDate;
-  Timer? _iotTimer;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(poolListNotifierProvider.notifier).getPools();
-      ref.read(iotListNotifierProvider.notifier).getIots();
-      _startIotTimer();
+    AppSocket.instance.connect();
+    AppSocket.instance.addPoolDataListener(_onPoolData);
+    Future.microtask(() async {
+      await ref.read(poolListNotifierProvider.notifier).getPools();
+      _joinLoadedPools();
+      ref.read(iotListNotifierProvider.notifier).setLoading();
     });
   }
 
   @override
   void dispose() {
-    _iotTimer?.cancel();
+    AppSocket.instance.removePoolDataListener(_onPoolData);
     super.dispose();
   }
 
-  void _startIotTimer() {
-    _iotTimer?.cancel();
-    _iotTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
-      if (mounted && ModalRoute.of(context)?.isCurrent == true) {
-        if (_selectedPool != null) {
-          final nodeId = _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '');
-          ref
-              .read(iotDetailNotifierProvider.notifier)
-              .getIot(nodeId, showLoading: false);
-        } else {
-          ref.read(iotListNotifierProvider.notifier).getIots(showLoading: false);
-        }
+  /// Joins the Socket.IO room of every pool so the "all pools" list can be
+  /// updated in realtime as each node publishes.
+  void _joinLoadedPools() {
+    final pools = ref.read(poolListNotifierProvider).value ?? [];
+    for (final pool in pools) {
+      final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
+      AppSocket.instance.joinPool(nodeId);
+    }
+  }
+
+  void _onPoolData(Map<String, dynamic> data) {
+    if (!mounted) return;
+    // Keep the "all pools" list fresh.
+    ref.read(iotListNotifierProvider.notifier).upsertSocketData(data);
+    // Update the single-pool detail when it matches the current selection.
+    if (_selectedPool != null) {
+      final nodeId = _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '');
+      if (data['node_id'].toString() == nodeId) {
+        ref.read(iotDetailNotifierProvider.notifier).applySocketData(data);
       }
-    });
+    }
   }
 
   void _onPoolChanged(Pool? pool) {
@@ -67,9 +75,8 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
     ref.invalidate(chartIotsNotifierProvider);
     if (pool != null) {
       final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
-      ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
-    } else {
-      ref.read(iotListNotifierProvider.notifier).getIots();
+      AppSocket.instance.joinPool(nodeId);
+      ref.read(iotDetailNotifierProvider.notifier).setLoading(int.tryParse(nodeId) ?? 0);
     }
   }
 
@@ -115,14 +122,13 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
         child: RefreshIndicator(
           onRefresh: () async {
             await ref.read(poolListNotifierProvider.notifier).getPools();
-            await ref.read(iotListNotifierProvider.notifier).getIots();
+            _joinLoadedPools();
 
             if (_selectedPool != null) {
-              final nodeId = _selectedPool!.name.replaceAll(
-                RegExp(r'[^0-9]'),
-                '',
-              );
-              await ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+              final nodeId = _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '');
+              ref.read(iotDetailNotifierProvider.notifier).setLoading(int.tryParse(nodeId) ?? 0);
+            } else {
+              ref.read(iotListNotifierProvider.notifier).setLoading();
             }
 
             if (_startDate != null && _endDate != null) {

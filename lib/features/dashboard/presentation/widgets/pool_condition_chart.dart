@@ -109,7 +109,7 @@ class PoolConditionChart extends ConsumerWidget {
     DateTime startDate,
     DateTime endDate,
   ) {
-    // 1. Group and average data by day
+    // 1. Group and average data by day.
     final Map<String, List<ChartIots>> groupedData = {};
     for (var item in chartData) {
       try {
@@ -122,7 +122,7 @@ class PoolConditionChart extends ConsumerWidget {
 
     final sortedKeys = groupedData.keys.toList()..sort();
 
-    // 2. Map data to FlSpot using day offset from startDate
+    // 2. Map data to FlSpot using day offset from startDate.
     final phSpots = <FlSpot>[];
     final tempSpots = <FlSpot>[];
 
@@ -141,19 +141,34 @@ class PoolConditionChart extends ConsumerWidget {
     }
 
     final totalDays = endDate.difference(startDate).inDays.toDouble();
-    // Hitung interval agar tampil start, middle, end (atau setiap 7-15 hari)
-    double interval = 1;
-    if (totalDays > 0) {
-      if (totalDays <= 7) {
-        interval = 1;
-      } else if (totalDays <= 14) {
-        interval = 7;
-      } else {
-        interval = (totalDays / 2).floorToDouble();
-      }
+    final maxX = totalDays > 0 ? totalDays : 1.0;
+
+    // Interval tanggal adaptif: target ~4-6 label agar tidak terlalu padat
+    // maupun terlalu jarang. Makin panjang rentang, makin renggang ticknya.
+    double xInterval;
+    if (totalDays <= 7) {
+      xInterval = 1; // harian
+    } else if (totalDays <= 14) {
+      xInterval = 2;
+    } else if (totalDays <= 31) {
+      xInterval = 7; // mingguan
+    } else if (totalDays <= 90) {
+      xInterval = 14;
+    } else {
+      xInterval = 30; // bulanan
     }
 
     final dateFormatter = DateFormat('dd/MM');
+
+    // Skala Y menampung kedua seri (pH & Suhu) sekaligus, dibulatkan rapi.
+    final allValues = [...phSpots.map((e) => e.y), ...tempSpots.map((e) => e.y)];
+    final minData = allValues.reduce((a, b) => a < b ? a : b);
+    final maxData = allValues.reduce((a, b) => a > b ? a : b);
+    var minY = ((minData - 2) / 5).floorToDouble() * 5;
+    var maxY = ((maxData + 2) / 5).ceilToDouble() * 5;
+    if (minY < 0) minY = 0;
+    if (maxY <= minY) maxY = minY + 5;
+    final yInterval = ((maxY - minY) / 5).ceilToDouble();
 
     return SizedBox(
       height: 240,
@@ -162,6 +177,7 @@ class PoolConditionChart extends ConsumerWidget {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
+            horizontalInterval: yInterval,
             getDrawingHorizontalLine: (value) => FlLine(
               color: AppColors.gray.withValues(alpha: 0.5),
               strokeWidth: 1,
@@ -179,16 +195,13 @@ class PoolConditionChart extends ConsumerWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 30,
-                interval: interval,
+                interval: xInterval,
                 getTitlesWidget: (value, meta) {
-                  // value adalah day offset
-                  final date = startDate.add(Duration(days: value.toInt()));
-
-                  // Hanya tampilkan label jika berada dalam rentang
+                  // Render label tanggal berkala selama masih dalam rentang.
                   if (value < 0 || value > totalDays) {
                     return const SizedBox.shrink();
                   }
-
+                  final date = startDate.add(Duration(days: value.toInt()));
                   return SideTitleWidget(
                     meta: meta,
                     child: Text(
@@ -205,12 +218,12 @@ class PoolConditionChart extends ConsumerWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                interval: 5,
-                reservedSize: 30,
+                interval: yInterval,
+                reservedSize: 34,
                 getTitlesWidget: (value, meta) => SideTitleWidget(
                   meta: meta,
                   child: Text(
-                    value.toInt().toString(),
+                    value.toStringAsFixed(0),
                     style: const TextStyle(
                       fontSize: 10,
                       color: AppColors.darkGray,
@@ -223,9 +236,29 @@ class PoolConditionChart extends ConsumerWidget {
           borderData: FlBorderData(show: false),
           clipData: const FlClipData.all(),
           minX: 0,
-          maxX: totalDays > 0 ? totalDays : 1,
-          minY: 0,
-          maxY: 45,
+          maxX: maxX,
+          minY: minY,
+          maxY: maxY,
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => AppColors.black.withValues(alpha: 0.8),
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  final isPh = spot.barIndex == 0;
+                  final label = isPh ? 'pH' : 'Suhu';
+                  final unit = isPh ? '' : '°C';
+                  return LineTooltipItem(
+                    '$label: ${spot.y.toStringAsFixed(1)}$unit',
+                    const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                }).toList();
+              },
+            ),
+          ),
           lineBarsData: [
             _buildLineBarData(phSpots, AppColors.primary),
             _buildLineBarData(tempSpots, AppColors.secondary),

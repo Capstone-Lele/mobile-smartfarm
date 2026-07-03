@@ -62,7 +62,7 @@ class MovePoolReportDatasource {
   Future<Either<Failure, Map<String, dynamic>>> createMovePoolReport(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
@@ -76,7 +76,9 @@ class MovePoolReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['poolId'] = poolId;
       request.fields['originCycleId'] = originCycleId;
-      // request.fields['destinationCycleId'] = destinationCycleId;
+      if (destinationCycleId != null && destinationCycleId.isNotEmpty) {
+        request.fields['destinationCycleId'] = destinationCycleId;
+      }
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
       request.fields['endedAt'] = endedAt ?? '';

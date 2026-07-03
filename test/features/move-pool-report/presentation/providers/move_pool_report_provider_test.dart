@@ -20,7 +20,7 @@ class FakeMovePoolReportRepository implements MovePoolReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> Function(
     String,
     String,
-    String,
+    String?,
     String,
     int,
     XFile,
@@ -40,7 +40,7 @@ class FakeMovePoolReportRepository implements MovePoolReportRepository {
     Future<Either<Failure, Map<String, dynamic>>> Function(
       String,
       String,
-      String,
+      String?,
       String,
       int,
       XFile,
@@ -67,7 +67,7 @@ class FakeMovePoolReportRepository implements MovePoolReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> createMovePoolReport(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,

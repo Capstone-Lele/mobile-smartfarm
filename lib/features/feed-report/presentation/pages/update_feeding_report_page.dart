@@ -39,6 +39,7 @@ class _UpdateFeedingReportPageState
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Inventory? _selectedInventory;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _UpdateFeedingReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -180,6 +182,7 @@ class _UpdateFeedingReportPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInputDropdown<Inventory>(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Nama Produk',
                   hint: 'Pilih Produk Pakan',
                   items: foodInventories,
@@ -200,6 +203,7 @@ class _UpdateFeedingReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputDate(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Tanggal Pemberian Pakan',
                   hint: 'Tanggal Pemberian Pakan',
                   type: DateFieldType.dateTime,
@@ -215,6 +219,7 @@ class _UpdateFeedingReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputText(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                   hint: 'Jumlah',
                   controller: _quantityCtrl,
@@ -235,6 +240,7 @@ class _UpdateFeedingReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputImage(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Foto',
                   hint: 'Tambahkan foto pemberian pakan',
                   requiredField: true,

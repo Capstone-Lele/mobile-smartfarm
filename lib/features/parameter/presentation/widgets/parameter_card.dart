@@ -22,6 +22,9 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
   ParameterCardState _state = ParameterCardState.view;
   int _selectedPreset = 0; // 0: Rekomendasi, 1: Ideal, 2: Adaptif
 
+  final _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+
   final TextEditingController _phMaxController = TextEditingController();
   final TextEditingController _phNormalController = TextEditingController();
   final TextEditingController _phMinController = TextEditingController();
@@ -77,7 +80,53 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
     }
   }
 
+  /// Validasi input range (mis. "6.5-8.5" atau "7"). Mengembalikan pesan error
+  /// atau null jika valid. [minBound]/[maxBound] membatasi rentang nilai yang
+  /// diperbolehkan (pH 0-14, suhu 0-100).
+  String? _validateRange(
+    String? value, {
+    required String label,
+    double? minBound,
+    double? maxBound,
+  }) {
+    if (value == null || value.trim().isEmpty) {
+      return '$label harus diisi';
+    }
+
+    final parts = value.split('-');
+    if (parts.length > 2) {
+      return 'Format $label tidak valid (contoh: 6.5-8.5)';
+    }
+
+    final numbers = <double>[];
+    for (final part in parts) {
+      final number = double.tryParse(part.trim());
+      if (number == null) {
+        return 'Format $label harus berupa angka (contoh: 6.5-8.5)';
+      }
+      numbers.add(number);
+    }
+
+    if (numbers.length == 2 && numbers[0] > numbers[1]) {
+      return 'Nilai awal $label tidak boleh lebih besar dari nilai akhir';
+    }
+    if (minBound != null && numbers.any((n) => n < minBound)) {
+      return '$label tidak boleh kurang dari $minBound';
+    }
+    if (maxBound != null && numbers.any((n) => n > maxBound)) {
+      return '$label tidak boleh lebih dari $maxBound';
+    }
+
+    return null;
+  }
+
   void _onSave() async {
+    // Mode custom mengandung input manual, wajib divalidasi dulu.
+    if (_state == ParameterCardState.custom) {
+      setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+      if (!(_formKey.currentState?.validate() ?? false)) return;
+    }
+
     List<double> tempMax, tempNorm, tempMin, phMax, phNorm, phMin;
 
     if (_state == ParameterCardState.select) {
@@ -135,15 +184,23 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
             );
       }
 
-      if (mounted) {
-        // Refresh pool list
-        await ref.read(poolListNotifierProvider.notifier).getPools();
+      if (!mounted) return;
 
-        // Kembali ke view mode
-        setState(() => _state = ParameterCardState.view);
-
-        AppSnackbar.success('Parameter berhasil diperbarui');
+      // Notifier menampung error di state (tidak melempar), jadi cek manual.
+      final mutationState = ref.read(parameterMutationNotifierProvider);
+      if (mutationState.hasError) {
+        AppSnackbar.error('Gagal menyimpan: ${mutationState.error}');
+        return;
       }
+
+      // Tampilkan sukses & kembali ke view mode SEBELUM refresh. getPools()
+      // memicu ParameterPage menampilkan loading spinner yang men-dispose card
+      // ini, sehingga apa pun setelah await tidak akan tereksekusi.
+      setState(() => _state = ParameterCardState.view);
+      AppSnackbar.success('Parameter berhasil diperbarui');
+
+      // Refresh pool list (card ini akan dibuat ulang dalam mode view).
+      await ref.read(poolListNotifierProvider.notifier).getPools();
     } catch (e) {
       if (mounted) {
         AppSnackbar.error('Gagal menyimpan: ${e.toString()}');
@@ -348,7 +405,10 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
         AppButton(
           label: 'Lainnya (Custom)',
           color: AppColors.secondary,
-          onPressed: () => setState(() => _state = ParameterCardState.custom),
+          onPressed: () => setState(() {
+            _autovalidateMode = AutovalidateMode.disabled;
+            _state = ParameterCardState.custom;
+          }),
         ),
         const SizedBox(height: 12),
         Row(
@@ -510,76 +570,122 @@ class _ParameterCardState extends ConsumerState<ParameterCard> {
   Widget _buildCustomMode() {
     final isLoading = ref.watch(parameterMutationNotifierProvider).isLoading;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Parameter Suhu',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'Suhu Max (Bahaya Atas)',
-          hint: 'Contoh: 32-40',
-          controller: _tempMaxController,
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'Suhu Normal',
-          hint: 'Contoh: 25-32',
-          controller: _tempNormalController,
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'Suhu Min (Bahaya Bawah)',
-          hint: 'Contoh: 0-24',
-          controller: _tempMinController,
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Parameter pH',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'pH Max (Bahaya Atas)',
-          hint: 'Contoh: 8.6-14',
-          controller: _phMaxController,
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'pH Normal',
-          hint: 'Contoh: 6.5-8.5',
-          controller: _phNormalController,
-        ),
-        const SizedBox(height: 8),
-        AppInputText(
-          label: 'pH Min (Bahaya Bawah)',
-          hint: 'Contoh: 0-6.4',
-          controller: _phMinController,
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                label: 'Simpan',
-                onPressed: _onSave,
-                isLoading: isLoading,
-              ),
+    return Form(
+      key: _formKey,
+      autovalidateMode: _autovalidateMode,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Parameter Suhu',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'Suhu Max (Bahaya Atas)',
+            hint: 'Contoh: 32-40',
+            controller: _tempMaxController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'Suhu Max',
+              minBound: 0,
+              maxBound: 100,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppButton(
-                label: 'Kembali',
-                isOutlined: true,
-                onPressed: () =>
-                    setState(() => _state = ParameterCardState.select),
-              ),
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'Suhu Normal',
+            hint: 'Contoh: 25-32',
+            controller: _tempNormalController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'Suhu Normal',
+              minBound: 0,
+              maxBound: 100,
             ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'Suhu Min (Bahaya Bawah)',
+            hint: 'Contoh: 0-24',
+            controller: _tempMinController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'Suhu Min',
+              minBound: 0,
+              maxBound: 100,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Parameter pH',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'pH Max (Bahaya Atas)',
+            hint: 'Contoh: 8.6-14',
+            controller: _phMaxController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'pH Max',
+              minBound: 0,
+              maxBound: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'pH Normal',
+            hint: 'Contoh: 6.5-8.5',
+            controller: _phNormalController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'pH Normal',
+              minBound: 0,
+              maxBound: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          AppInputText(
+            label: 'pH Min (Bahaya Bawah)',
+            hint: 'Contoh: 0-6.4',
+            controller: _phMinController,
+            autovalidateMode: _autovalidateMode,
+            validator: (value) => _validateRange(
+              value,
+              label: 'pH Min',
+              minBound: 0,
+              maxBound: 14,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Simpan',
+                  onPressed: _onSave,
+                  isLoading: isLoading,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppButton(
+                  label: 'Kembali',
+                  isOutlined: true,
+                  onPressed: () =>
+                      setState(() => _state = ParameterCardState.select),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

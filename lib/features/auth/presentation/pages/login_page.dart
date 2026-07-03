@@ -18,6 +18,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void dispose() {
@@ -27,6 +28,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -91,6 +93,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 50),
                     AppInputText(
+                      autovalidateMode: _autovalidateMode,
                       label: 'Email Address',
                       hint: 'alex@gmail.com',
                       controller: _emailCtrl,
@@ -108,6 +111,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     AppInputText(
+                      autovalidateMode: _autovalidateMode,
                       label: 'Password',
                       hint: '#Sn123hsn@',
                       controller: _passwordCtrl,

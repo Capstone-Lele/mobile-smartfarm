@@ -30,6 +30,7 @@ class CreateSamplingReportPage extends ConsumerStatefulWidget {
 class _CreateSamplingReportPageState
     extends ConsumerState<CreateSamplingReportPage> {
   final _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _averageWeightCtrl = TextEditingController();
@@ -44,6 +45,7 @@ class _CreateSamplingReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -109,6 +111,7 @@ class _CreateSamplingReportPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppInputDate(
+                autovalidateMode: _autovalidateMode,
                 label: 'Tanggal Sampling',
                 hint: 'Tanggal Sampling',
                 type: DateFieldType.dateTime,
@@ -124,6 +127,7 @@ class _CreateSamplingReportPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Jumlah',
                 hint: 'Jumlah',
                 controller: _quantityCtrl,
@@ -142,6 +146,7 @@ class _CreateSamplingReportPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Rata-rata Berat (gram)',
                 hint: 'Rata-rata Berat',
                 controller: _averageWeightCtrl,
@@ -160,6 +165,7 @@ class _CreateSamplingReportPageState
               ),
               const SizedBox(height: 16),
               AppInputImage(
+                autovalidateMode: _autovalidateMode,
                 label: 'Foto',
                 hint: 'Tambahkan foto sampling',
                 requiredField: true,

@@ -89,7 +89,7 @@ class UserDatasource {
       );
 
       final data = AppResponse.data(response);
-      final user = data['data'][0];
+      final user = data;
       return Right(user);
     } catch (e) {
       if (e is Failure) return Left(e);

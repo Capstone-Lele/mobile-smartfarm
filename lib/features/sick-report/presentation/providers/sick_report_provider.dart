@@ -1,3 +1,4 @@
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/data/datasources/sick_report_datasource.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/data/repositories/sick_report_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
@@ -90,9 +91,13 @@ class SickReportDetailNotifier
 class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final CreateSickReportUsecase _createSickReportUsecase;
   final SickReportListNotifier _listNotifier;
+  final Ref _ref;
 
-  SickReportMutationNotifier(this._createSickReportUsecase, this._listNotifier)
-    : super(const AsyncValue.data(null));
+  SickReportMutationNotifier(
+    this._createSickReportUsecase,
+    this._listNotifier,
+    this._ref,
+  ) : super(const AsyncValue.data(null));
 
   // Create Sick Report
   Future<void> createSickReport(
@@ -103,6 +108,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createSickReportUsecase.execute(
@@ -112,6 +118,7 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       reportDate,
       quantity,
       image,
+      endedAt,
     );
 
     result.fold(
@@ -124,6 +131,9 @@ class SickReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (sickReport) {
         state = AsyncValue.data(null);
         _listNotifier.getSickReports(poolId);
+        // Refresh pool detail and list
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -156,5 +166,9 @@ final sickReportMutationNotifierProvider =
       final createSickReportUsecase = ref.read(createSickReportUseCaseProvider);
       final listNotifier = ref.read(sickReportListNotifierProvider.notifier);
 
-      return SickReportMutationNotifier(createSickReportUsecase, listNotifier);
+      return SickReportMutationNotifier(
+        createSickReportUsecase,
+        listNotifier,
+        ref,
+      );
     });

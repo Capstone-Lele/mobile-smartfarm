@@ -35,7 +35,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     Future.microtask(() {
       ref.read(poolListNotifierProvider.notifier).getPools();
       ref.read(activityLogListNotifierProvider.notifier).getActivityLogs();
-      ref.read(totalReportsNotifierProvider.notifier).getTotalReports(1);
+      ref.read(totalReportsNotifierProvider.notifier).getTotalReports(DateTime.now().month);
     });
   }
 
@@ -44,6 +44,19 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final poolsAsync = ref.watch(poolListNotifierProvider);
     final activityLogsAsync = ref.watch(activityLogListNotifierProvider);
     final user = ref.watch(userProvider);
+
+    // Sinkronkan pool terpilih dengan data terbaru agar status siklus ikut
+    // terupdate setelah menambah laporan yang menutup siklus (mis. kematian).
+    poolsAsync.whenData((pools) {
+      if (_selectedPool != null) {
+        for (final pool in pools) {
+          if (pool.id == _selectedPool!.id) {
+            _selectedPool = pool;
+            break;
+          }
+        }
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -57,11 +70,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             if (_selectedPool != null) {
               await ref
                   .read(totalReportsByPoolNotifierProvider.notifier)
-                  .getTotalReportsByPool(_selectedPool!.id, 1);
+                  .getTotalReportsByPool(_selectedPool!.id, DateTime.now().month);
             } else {
               await ref
                   .read(totalReportsNotifierProvider.notifier)
-                  .getTotalReports(1);
+                  .getTotalReports(DateTime.now().month);
             }
           },
           child: SingleChildScrollView(
@@ -183,11 +196,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               if (pool != null) {
                 ref
                     .read(totalReportsByPoolNotifierProvider.notifier)
-                    .getTotalReportsByPool(pool.id, 1);
+                    .getTotalReportsByPool(pool.id, DateTime.now().month);
               } else {
                 ref
                     .read(totalReportsNotifierProvider.notifier)
-                    .getTotalReports(1);
+                    .getTotalReports(DateTime.now().month);
               }
             },
           ),
@@ -324,6 +337,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final String category = _selectedPool?.category ?? '';
     final isGrowing = category.contains('growing');
     final isBreeding = category.contains('breeding');
+    final isQuarantine = category == 'quarantine';
 
     final bool isCycle = category == 'quarantine'
         ? _selectedPool!.cycle == 'treatment'
@@ -338,38 +352,40 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         crossAxisSpacing: 8,
         childAspectRatio: 1,
         children: [
-          ReportMenuCard(
-            icon: Icons.restaurant,
-            label: 'Laporan Pakan',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.feedingReport,
-                arguments: {
-                  'cycleId': _selectedPool!.cycleId,
-                  'isCycle': isCycle,
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
-          ReportMenuCard(
-            icon: Icons.medical_services,
-            label: 'Laporan Vitamin',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.vitaminReport,
-                arguments: {
-                  'cycleId': _selectedPool!.cycleId,
-                  'isCycle': isCycle,
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
+          if (!isQuarantine) ...[
+            ReportMenuCard(
+              icon: Icons.restaurant,
+              label: 'Laporan Pakan',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.feedingReport,
+                  arguments: {
+                    'cycleId': _selectedPool!.cycleId,
+                    'isCycle': isCycle,
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
+            ReportMenuCard(
+              icon: Icons.medical_services,
+              label: 'Laporan Vitamin',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.vitaminReport,
+                  arguments: {
+                    'cycleId': _selectedPool!.cycleId,
+                    'isCycle': isCycle,
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
+          ],
           ReportMenuCard(
             icon: Icons.dangerous,
             label: 'Laporan Kematian',
@@ -403,21 +419,22 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 );
               },
             ),
-          ReportMenuCard(
-            icon: Icons.water_drop,
-            label: 'Laporan Pembersihan',
-            onTap: () {
-              AppRoutes.pushNamed(
-                context,
-                AppRoutes.poolCleaningReport,
-                arguments: {
-                  'isCycle': isCycle,
-                  'poolId': _selectedPool!.id,
-                  'poolName': _selectedPool!.name,
-                },
-              );
-            },
-          ),
+          if (!isQuarantine)
+            ReportMenuCard(
+              icon: Icons.water_drop,
+              label: 'Laporan Pembersihan',
+              onTap: () {
+                AppRoutes.pushNamed(
+                  context,
+                  AppRoutes.poolCleaningReport,
+                  arguments: {
+                    'isCycle': isCycle,
+                    'poolId': _selectedPool!.id,
+                    'poolName': _selectedPool!.name,
+                  },
+                );
+              },
+            ),
           if (isGrowing || isBreeding)
             ReportMenuCard(
               icon: Icons.trending_up,

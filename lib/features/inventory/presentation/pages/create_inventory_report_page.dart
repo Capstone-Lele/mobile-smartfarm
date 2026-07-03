@@ -29,6 +29,7 @@ class _CreateInventoryReportPageState
   final _notesCtrl = TextEditingController();
   XFile? _selectedImage;
   Inventory? _selectedInventory;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _CreateInventoryReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -58,6 +60,7 @@ class _CreateInventoryReportPageState
           _selectedImage!,
           _notesCtrl.text,
         );
+    print("Selected Inventory ID: ${_selectedInventory!.id}");
 
     final mutationState = ref.read(inventoryReportMutationNotifierProvider);
 
@@ -132,15 +135,19 @@ class _CreateInventoryReportPageState
           loading: () => _buildLoadingState(),
           error: (err, stack) => _buildErrorState(err),
           data: (allInventories) {
+            final materialInventories = allInventories
+                .where((inv) => inv.category.toLowerCase() == 'material')
+                .toList();
             return Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppInputDropdown(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Nama Produk',
                     hint: 'Pilh Produk',
-                    items: allInventories,
+                    items: materialInventories,
                     itemLabel: (item) => item.product,
                     requiredField: true,
                     onChanged: (value) {
@@ -157,6 +164,7 @@ class _CreateInventoryReportPageState
                   ),
                   const SizedBox(height: 16),
                   AppInputDate(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Tanggal Pemakaian Inventaris',
                     hint: 'Tanggal Pemakaian Inventaris',
                     type: DateFieldType.dateTime,
@@ -172,7 +180,8 @@ class _CreateInventoryReportPageState
                   ),
                   const SizedBox(height: 16),
                   AppInputText(
-                    label: 'Jumlah (${_selectedInventory?.unit ?? ""}) ',
+                    autovalidateMode: _autovalidateMode,
+                    label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                     hint: 'Jumlah',
                     controller: _quantityCtrl,
                     type: FieldType.number,
@@ -192,6 +201,7 @@ class _CreateInventoryReportPageState
                   ),
                   SizedBox(height: 16),
                   AppInputImage(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Foto',
                     hint: 'Tambahkan foto Laporan Inventaris',
                     requiredField: true,
@@ -203,6 +213,7 @@ class _CreateInventoryReportPageState
                   ),
                   SizedBox(height: 16),
                   AppInputText(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Catatan',
                     hint: 'Catatan',
                     controller: _notesCtrl,

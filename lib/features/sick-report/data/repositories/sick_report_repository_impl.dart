@@ -57,6 +57,7 @@ class SickReportRepositoryImpl implements SickReportRepository {
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     final result = await datasource.createSickReport(
       poolId,
@@ -65,6 +66,7 @@ class SickReportRepositoryImpl implements SickReportRepository {
       reportDate,
       quantity,
       image,
+      endedAt,
     );
 
     return result.fold((failure) => Left(failure), (data) {

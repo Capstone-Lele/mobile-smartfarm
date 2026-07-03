@@ -23,6 +23,7 @@ class _CreateInventorySubmissionPageState
   final _quantityCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   Inventory? _selectedInventory;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _CreateInventorySubmissionPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -132,6 +134,7 @@ class _CreateInventorySubmissionPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppInputDropdown(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Nama Produk',
                     hint: 'Pilh Produk',
                     items: allInventories,
@@ -151,6 +154,7 @@ class _CreateInventorySubmissionPageState
                   ),
                   const SizedBox(height: 16),
                   AppInputText(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Jumlah ${_selectedInventory?.unit ?? ""}',
                     hint: 'Jumlah',
                     controller: _quantityCtrl,
@@ -166,15 +170,12 @@ class _CreateInventorySubmissionPageState
                         return 'Jumlah harus berupa angka positif';
                       }
 
-                      if (number > 999) {
-                        return 'Jumlah maksimal 999';
-                      }
-
                       return null;
                     },
                   ),
                   SizedBox(height: 16),
                   AppInputText(
+                    autovalidateMode: _autovalidateMode,
                     label: 'Catatan',
                     hint: 'Catatan',
                     controller: _notesCtrl,

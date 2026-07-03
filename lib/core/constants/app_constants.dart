@@ -8,4 +8,7 @@ class AppConstants {
   static final baseURL = '$_host/api';
 
   static final baseImageURL = '$_host';
+
+  // Socket.IO server runs on the same host as the REST API (without /api)
+  static final socketURL = '$_host';
 }

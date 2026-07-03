@@ -17,6 +17,7 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   final _oldPasswordCtrl = TextEditingController();
   final _newPasswordCtrl = TextEditingController();
   final _confirmPasswordCtrl = TextEditingController();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void dispose() {
@@ -27,6 +28,7 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -86,6 +88,7 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
           child: Column(
             children: [
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Password Lama',
                 hint: 'Password Lama',
                 controller: _oldPasswordCtrl,
@@ -95,12 +98,16 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
                   if (value == null || value.isEmpty) {
                     return 'Password lama harus diisi';
                   }
+                  if (value.length < 8) {
+                    return 'Password minimal 8 karakter';
+                  }
 
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Password Baru',
                 hint: 'Password Baru',
                 controller: _newPasswordCtrl,
@@ -110,12 +117,16 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
                   if (value == null || value.isEmpty) {
                     return 'Password baru harus diisi';
                   }
+                  if (value.length < 8) {
+                    return 'Password minimal 8 karakter';
+                  }
 
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Konfirmasi Password',
                 hint: 'Konfirmasi Password',
                 controller: _confirmPasswordCtrl,

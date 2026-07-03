@@ -63,12 +63,13 @@ class AppFormat {
     }
   }
 
-  /// Format to API DateTime: yyyy-MM-dd HH:mm:ss
+  /// Format to API DateTime UTC: yyyy-MM-ddTHH:mm:ss.000Z
   static String toApiDateTime(String? uiDateTime) {
     if (uiDateTime == null || uiDateTime.isEmpty) return '';
     try {
-      final date = DateFormat('dd-MM-yyyy HH:mm').parse(uiDateTime);
-      return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
+      final localDate = DateFormat('dd-MM-yyyy HH:mm').parseStrict(uiDateTime);
+      final utcDate = localDate.toUtc();
+      return DateFormat("yyyy-MM-dd'T'HH:mm:ss.000'Z'").format(utcDate);
     } catch (e) {
       return uiDateTime;
     }

@@ -14,5 +14,6 @@ abstract class SickReportRepository {
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   );
 }

@@ -32,6 +32,7 @@ class _UpdatePoolCleaningReportPageState
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
   XFile? _selectedImage;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _UpdatePoolCleaningReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -152,6 +154,7 @@ class _UpdatePoolCleaningReportPageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppInputDate(
+              autovalidateMode: _autovalidateMode,
               label: 'Tanggal Pembersihan Kolam',
               hint: 'Tanggal Pembersihan Kolam',
               type: DateFieldType.dateTime,
@@ -167,6 +170,7 @@ class _UpdatePoolCleaningReportPageState
             ),
             const SizedBox(height: 16),
             AppInputImage(
+              autovalidateMode: _autovalidateMode,
               label: 'Foto',
               hint: 'Tambahkan foto pembersihan kolam',
               requiredField: true,

@@ -8,6 +8,7 @@ import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/d
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/get_mortality_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/get_mortality_reports_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/update_mortality_report_usecase.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
@@ -114,6 +115,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
   final DeleteMortalityReportUsecase _deleteMortalityReportUsecase;
   final MortalityReportListNotifier _listNotifier;
   final MortalityReportDetailNotifier _detailNotifier;
+  final Ref _ref;
 
   MortalityReportMutationNotifier(
     this._createMortalityReportUsecase,
@@ -121,6 +123,7 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     this._deleteMortalityReportUsecase,
     this._listNotifier,
     this._detailNotifier,
+    this._ref,
   ) : super(const AsyncValue.data(null));
 
   // Create Mortality Report
@@ -153,6 +156,10 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (mortalityReport) {
         state = AsyncValue.data(null);
         _listNotifier.getMortalityReports(poolId);
+        // Refresh pool detail and list agar status siklus ikut terupdate
+        // ketika laporan kematian menutup siklus di backend.
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -186,6 +193,9 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
         state = AsyncValue.data(null);
         _listNotifier.getMortalityReports(poolId);
         _detailNotifier.getMortalityReport(id);
+        // Refresh pool detail and list agar status siklus ikut terupdate.
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -205,6 +215,9 @@ class MortalityReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
       (data) {
         state = AsyncValue.data(null);
         _listNotifier.getMortalityReports(poolId);
+        // Refresh pool detail and list agar status siklus ikut terupdate.
+        _ref.read(poolDetailNotifierProvider.notifier).getPool(poolId);
+        _ref.read(poolListNotifierProvider.notifier).getPools();
       },
     );
   }
@@ -263,5 +276,6 @@ final mortalityReportMutationNotifierProvider =
         deleteMortalityReportUsecase,
         listNotifier,
         detailNotifier,
+        ref,
       );
     });

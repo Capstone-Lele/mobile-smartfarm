@@ -180,7 +180,7 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
           ),
         ),
       ),
-      floatingActionButton: _buildFloatingActionButton(user),
+      floatingActionButton: _buildFloatingActionButton(user, isCycle),
     );
   }
 
@@ -505,8 +505,8 @@ class _SeedReportPageState extends ConsumerState<SeedReportPage> {
     );
   }
 
-  Widget _buildFloatingActionButton(User? user) {
-    if (user?.role != 'pic') {
+  Widget _buildFloatingActionButton(User? user, bool isCycle) {
+    if (user?.role != 'pic' && !isCycle) {
       return FloatingActionButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: AppColors.secondary,

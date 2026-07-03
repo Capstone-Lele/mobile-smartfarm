@@ -33,6 +33,7 @@ class _HarvestReportDetailPageState
     extends ConsumerState<HarvestReportDetailPage> {
   final _formKey = GlobalKey<FormState>();
   final _reportDateCtrl = TextEditingController();
+  final _weightAmountCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _userCtrl = TextEditingController();
 
@@ -45,6 +46,7 @@ class _HarvestReportDetailPageState
   @override
   void dispose() {
     _reportDateCtrl.dispose();
+    _weightAmountCtrl.dispose();
     _amountCtrl.dispose();
     super.dispose();
   }
@@ -122,6 +124,7 @@ class _HarvestReportDetailPageState
     }
 
     _reportDateCtrl.text = AppFormat.toUiDate(report.reportDate);
+    _weightAmountCtrl.text = report.totalKg.toString();
     _amountCtrl.text = report.amount.toString();
     _userCtrl.text = report.user.toString();
 
@@ -143,7 +146,16 @@ class _HarvestReportDetailPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
-                label: 'Jumlah Panen (KG)',
+                label: 'Jumlah Berat Panen (KG)',
+                hint: 'Jumlah Berat Panen',
+                controller: _weightAmountCtrl,
+                type: FieldType.number,
+                requiredField: true,
+                readOnly: true,
+              ),
+              const SizedBox(height: 16),
+              AppInputText(
+                label: 'Jumlah Panen (Ekor)',
                 hint: 'Jumlah Panen',
                 controller: _amountCtrl,
                 type: FieldType.number,
@@ -168,12 +180,13 @@ class _HarvestReportDetailPageState
                   requiredField: true,
                   readOnly: true,
                 ),
+              ] else ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Catatan: Laporan ini tidak dapat diubah atau dihapus kembali.',
+                  style: TextStyle(fontSize: 14, color: Colors.red),
+                ),
               ],
-              const SizedBox(height: 16),
-              const Text(
-                'Catatan: Laporan ini tidak dapat diubah atau dihapus kembali.',
-                style: TextStyle(fontSize: 14, color: Colors.red),
-              ),
             ],
           ),
         ),

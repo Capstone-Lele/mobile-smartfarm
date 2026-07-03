@@ -3,6 +3,7 @@ import 'package:budidaya_lele_mobile/features/schedule/data/repositories/auto_fi
 import 'package:budidaya_lele_mobile/features/schedule/domain/entities/auto_fill.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/repositories/auto_fill_repository.dart';
 import 'package:budidaya_lele_mobile/features/schedule/domain/usecases/get_auto_fills_usecase.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -24,8 +25,9 @@ final getAutoFillsUseCaseProvider = Provider<GetAutoFillsUsecase>((ref) {
 // Notifier Provider
 class AutoFillListNotifier extends StateNotifier<AsyncValue<List<AutoFill>>> {
   final GetAutoFillsUsecase _getAutoFillsUsecase;
+  final Ref _ref;
 
-  AutoFillListNotifier(this._getAutoFillsUsecase)
+  AutoFillListNotifier(this._getAutoFillsUsecase, this._ref)
     : super(const AsyncValue.data([]));
 
   // Get all auto fills
@@ -38,7 +40,16 @@ class AutoFillListNotifier extends StateNotifier<AsyncValue<List<AutoFill>>> {
         failure.message ?? 'Terjadi kesalahan',
         StackTrace.current,
       );
-    }, (autoFills) => state = AsyncValue.data(autoFills));
+    }, (autoFills) {
+      // Backend mengembalikan semua petugas berakses kolam, termasuk user yang
+      // sudah dihapus dan PIC yang sedang login. Saring keduanya: hanya petugas
+      // aktif (deletedAt == null) dan bukan diri sendiri yang boleh dipilih.
+      final currentUserId = _ref.read(userProvider)?.id;
+      final filtered = autoFills
+          .where((a) => a.deletedAt == null && a.id != currentUserId)
+          .toList();
+      state = AsyncValue.data(filtered);
+    });
   }
 }
 
@@ -51,5 +62,5 @@ final autoFillListNotifierProvider =
     >((ref) {
       final getAutoFillsUsecase = ref.read(getAutoFillsUseCaseProvider);
 
-      return AutoFillListNotifier(getAutoFillsUsecase);
+      return AutoFillListNotifier(getAutoFillsUsecase, ref);
     });

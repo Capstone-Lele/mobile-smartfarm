@@ -123,6 +123,7 @@ HarvestReportDetail _makeDetail({String id = 'harvest-1'}) =>
       id: id,
       cycleId: 'cycle-1',
       reportDate: '2024-06-15',
+      totalKg: '50',
       amount: 500,
       image: 'https://example.com/harvest.jpg',
       createdAt: '2024-06-15T00:00:00.000Z',
@@ -164,38 +165,43 @@ void main() {
       expect(data.first.cycleCondition, 'Selesai');
     });
 
-    test('harvestReportListNotifierProvider should be initialized with AsyncData([])', () {
-      final container = ProviderContainer(
-        overrides: [
-          getHarvestReportsUseCaseProvider.overrideWithValue(
-            GetHarvestReportsUsecase(fakeRepository),
-          ),
-        ],
-      );
+    test(
+      'harvestReportListNotifierProvider should be initialized with AsyncData([])',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            getHarvestReportsUseCaseProvider.overrideWithValue(
+              GetHarvestReportsUsecase(fakeRepository),
+            ),
+          ],
+        );
 
-      final state = container.read(harvestReportListNotifierProvider);
+        final state = container.read(harvestReportListNotifierProvider);
 
-      expect(state.hasValue, true);
-      expect(state.value, isEmpty);
-    });
+        expect(state.hasValue, true);
+        expect(state.value, isEmpty);
+      },
+    );
 
-    test('getHarvestReports should emit error state on network failure', () async {
-      // Arrange
-      fakeRepository.setupGetList(
-        (poolId) async =>
-            Left<Failure, List<HarvestReport>>(FetchFailure('Network error')),
-      );
+    test(
+      'getHarvestReports should emit error state on network failure',
+      () async {
+        // Arrange
+        fakeRepository.setupGetList(
+          (poolId) async =>
+              Left<Failure, List<HarvestReport>>(FetchFailure('Network error')),
+        );
 
-      // Act
-      await notifier.getHarvestReports('pool-1');
+        // Act
+        await notifier.getHarvestReports('pool-1');
 
-      // Assert
-      expect(notifier.state, isA<AsyncError>());
-      final error = (notifier.state as AsyncError).error;
-      expect(error.toString(), contains('Network error'));
-    });
+        // Assert
+        expect(notifier.state, isA<AsyncError>());
+        final error = (notifier.state as AsyncError).error;
+        expect(error.toString(), contains('Network error'));
+      },
+    );
   });
-
 
   group('HarvestReportDetailNotifier', () {
     late HarvestReportDetailNotifier notifier;
@@ -224,37 +230,42 @@ void main() {
       expect(detail.reportDate, '2024-06-15');
     });
 
-    test('harvestReportDetailNotifierProvider should be initialized with AsyncData(null)', () {
-      final container = ProviderContainer(
-        overrides: [
-          getHarvestReportUseCaseProvider.overrideWithValue(
-            GetHarvestReportUsecase(fakeRepository),
-          ),
-        ],
-      );
+    test(
+      'harvestReportDetailNotifierProvider should be initialized with AsyncData(null)',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            getHarvestReportUseCaseProvider.overrideWithValue(
+              GetHarvestReportUsecase(fakeRepository),
+            ),
+          ],
+        );
 
-      final state = container.read(harvestReportDetailNotifierProvider);
+        final state = container.read(harvestReportDetailNotifierProvider);
 
-      expect(state.hasValue, true);
-      expect(state.value, null);
-    });
+        expect(state.hasValue, true);
+        expect(state.value, null);
+      },
+    );
 
-    test('getHarvestReport should emit error state on network failure', () async {
-      // Arrange
-      fakeRepository.setupGet(
-        (id) async => Left<Failure, HarvestReportDetail>(
-          FetchFailure('Network error'),
-        ),
-      );
+    test(
+      'getHarvestReport should emit error state on network failure',
+      () async {
+        // Arrange
+        fakeRepository.setupGet(
+          (id) async =>
+              Left<Failure, HarvestReportDetail>(FetchFailure('Network error')),
+        );
 
-      // Act
-      await notifier.getHarvestReport('harvest-1');
+        // Act
+        await notifier.getHarvestReport('harvest-1');
 
-      // Assert
-      expect(notifier.state, isA<AsyncError>());
-      final error = (notifier.state as AsyncError).error;
-      expect(error.toString(), contains('Network error'));
-    });
+        // Assert
+        expect(notifier.state, isA<AsyncError>());
+        final error = (notifier.state as AsyncError).error;
+        expect(error.toString(), contains('Network error'));
+      },
+    );
   });
 
   group('HarvestReportMutationNotifier', () {
@@ -283,36 +294,33 @@ void main() {
 
     tearDown(() => container.dispose());
 
-    test(
-      'createHarvestReport should return data on success',
-      () async {
-        // Arrange
-        fakeRepository.setupCreate(
-          (cycleId, reportDate, totalKg, amount, image, endedAt) async =>
-              Right<Failure, Map<String, dynamic>>({'id': 'harvest-new'}),
-        );
-        fakeRepository.setupGetList(
-          (poolId) async => Right<Failure, List<HarvestReport>>([]),
-        );
+    test('createHarvestReport should return data on success', () async {
+      // Arrange
+      fakeRepository.setupCreate(
+        (cycleId, reportDate, totalKg, amount, image, endedAt) async =>
+            Right<Failure, Map<String, dynamic>>({'id': 'harvest-new'}),
+      );
+      fakeRepository.setupGetList(
+        (poolId) async => Right<Failure, List<HarvestReport>>([]),
+      );
 
-        // Act
-        await container
-            .read(harvestReportMutationNotifierProvider.notifier)
-            .createHarvestReport(
-              'pool-1',
-              'cycle-1',
-              '2024-06-15',
-              100,
-              500,
-              XFile('harvest.jpg'),
-              '2024-06-15',
-            );
+      // Act
+      await container
+          .read(harvestReportMutationNotifierProvider.notifier)
+          .createHarvestReport(
+            'pool-1',
+            'cycle-1',
+            '2024-06-15',
+            100,
+            500,
+            XFile('harvest.jpg'),
+            '2024-06-15',
+          );
 
-        // Assert
-        final state = container.read(harvestReportMutationNotifierProvider);
-        expect(state, isA<AsyncData<void>>());
-      },
-    );
+      // Assert
+      final state = container.read(harvestReportMutationNotifierProvider);
+      expect(state, isA<AsyncData<void>>());
+    });
 
     test(
       'createHarvestReport should refresh harvest list after success',

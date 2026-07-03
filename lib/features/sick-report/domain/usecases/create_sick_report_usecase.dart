@@ -15,6 +15,7 @@ class CreateSickReportUsecase {
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) {
     return repository.createSickReport(
       poolId,
@@ -23,6 +24,7 @@ class CreateSickReportUsecase {
       reportDate,
       quantity,
       image,
+      endedAt,
     );
   }
 }

@@ -12,7 +12,7 @@ import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_p
 import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
 import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/presentation/utils/dashboard_utils.dart';
-import 'dart:async';
+import 'package:budidaya_lele_mobile/core/network/app_socket.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,11 +25,13 @@ class DashboardPage extends ConsumerStatefulWidget {
 
 class _DashboardPageState extends ConsumerState<DashboardPage> {
   Pool? _selectedPool;
-  Timer? _iotTimer;
+  String? _currentNodeId;
 
   @override
   void initState() {
     super.initState();
+    AppSocket.instance.connect();
+    AppSocket.instance.addPoolDataListener(_onPoolData);
     Future.microtask(() {
       ref.read(poolListNotifierProvider.notifier).getPools();
     });
@@ -37,19 +39,26 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   @override
   void dispose() {
-    _iotTimer?.cancel();
+    AppSocket.instance.removePoolDataListener(_onPoolData);
     super.dispose();
   }
 
-  void _startIotTimer(String nodeId) {
-    _iotTimer?.cancel();
-    _iotTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
-      if (mounted && ModalRoute.of(context)?.isCurrent == true) {
-        ref
-            .read(iotDetailNotifierProvider.notifier)
-            .getIot(nodeId, showLoading: false);
-      }
-    });
+  void _onPoolData(Map<String, dynamic> data) {
+    if (!mounted || _currentNodeId == null) return;
+    if (data['node_id'].toString() == _currentNodeId) {
+      ref.read(iotDetailNotifierProvider.notifier).applySocketData(data);
+    }
+  }
+
+  /// Switches the realtime subscription to [nodeId] and shows a loading state
+  /// until the first `pool-data` event for that node arrives.
+  void _listenPool(String nodeId) {
+    if (_currentNodeId != null && _currentNodeId != nodeId) {
+      AppSocket.instance.leavePool(_currentNodeId!);
+    }
+    _currentNodeId = nodeId;
+    AppSocket.instance.joinPool(nodeId);
+    ref.read(iotDetailNotifierProvider.notifier).setLoading(int.tryParse(nodeId) ?? 0);
   }
 
   @override
@@ -72,7 +81,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 RegExp(r'[^0-9]'),
                 '',
               );
-              await ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
+              _listenPool(nodeId);
             }
           },
           child: SingleChildScrollView(
@@ -167,9 +176,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       );
                     },
                     data: (iot) {
-                      print(
-                        'Received IoT data: nodeId=${iot?.nodeId}, ph=${iot?.ph}, temp=${iot?.temp}, receivedAt=${iot?.receivedAt}',
-                      );
                       final tempValue = iot?.temp ?? 0.0;
                       final phValue = iot?.ph ?? 0.0;
 
@@ -289,8 +295,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 RegExp(r'[^0-9]'),
                 '',
               );
-              ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
-              _startIotTimer(nodeId);
+              _listenPool(nodeId);
             }
           });
         }
@@ -319,8 +324,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     _selectedPool = pool;
                   });
                   final nodeId = pool.name.replaceAll(RegExp(r'[^0-9]'), '');
-                  ref.read(iotDetailNotifierProvider.notifier).getIot(nodeId);
-                  _startIotTimer(nodeId);
+                  _listenPool(nodeId);
                 }
               },
             ),
@@ -394,10 +398,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               ? AppColors.red
               : DashboardUtils.getStatusColor(phStatus),
         ),
-        const DashboardSummaryCard(
-          title: 'Status Alat Pakan',
-          value: 'OFF',
-          backgroundColor: AppColors.red,
+        DashboardSummaryCard(
+          title: 'Status Alat IoT',
+          value: DashboardUtils.isDeviceActive(iot) ? 'ON' : 'OFF',
+          backgroundColor: DashboardUtils.isDeviceActive(iot)
+              ? AppColors.green
+              : AppColors.red,
         ),
         DashboardSummaryCard(
           title: 'Suhu Kolam',

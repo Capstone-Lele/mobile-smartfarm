@@ -198,12 +198,13 @@ class _SeedReportDetailPageState extends ConsumerState<SeedReportDetailPage> {
                   requiredField: true,
                   readOnly: true,
                 ),
+              ] else ...[
+                const SizedBox(height: 24),
+                const Text(
+                  'Catatan: Laporan ini tidak dapat diubah dan dihapus.',
+                  style: TextStyle(fontSize: 14, color: Colors.red),
+                ),
               ],
-              const SizedBox(height: 24),
-              const Text(
-                'Catatan: Laporan ini tidak dapat diubah dan dihapus.',
-                style: TextStyle(fontSize: 14, color: Colors.red),
-              ),
             ],
           ),
         ),

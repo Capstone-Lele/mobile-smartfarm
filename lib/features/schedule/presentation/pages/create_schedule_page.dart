@@ -28,6 +28,7 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
 
   Pool? _selectedPool;
   AutoFill? _selectedAutoFill;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
     switch (widget.scheduleType) {
       case 'cleaning':
@@ -202,6 +204,9 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
     };
 
     final isLoading = mutationState.isLoading;
+    final selectablePools = poolList
+        .where((pool) => pool.category != 'quarantine')
+        .toList();
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -212,10 +217,11 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppInputDropdown<Pool>(
+                autovalidateMode: _autovalidateMode,
                 label: 'Nama Kolam',
                 hint: 'Pilih Kolam',
                 value: _selectedPool,
-                items: poolList,
+                items: selectablePools,
                 itemLabel: (pool) => pool.name,
                 requiredField: true,
                 onChanged: _onPoolSelected,
@@ -228,6 +234,7 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
               ),
               const SizedBox(height: 16),
               AppInputDropdown<AutoFill>(
+                autovalidateMode: _autovalidateMode,
                 label: 'Nama Petugas',
                 hint: petugasAsyncHint,
                 value: _selectedAutoFill,
@@ -250,6 +257,7 @@ class _CreateSchedulePageState extends ConsumerState<CreateSchedulePage> {
               ),
               const SizedBox(height: 16),
               AppInputDate(
+                autovalidateMode: _autovalidateMode,
                 label: 'Tanggal Jadwal',
                 hint: 'Pilih Tanggal',
                 type: DateFieldType.dateTime,

@@ -4,6 +4,7 @@ class HarvestReportDetail {
   final String id;
   final String cycleId;
   final String reportDate;
+  final String totalKg;
   final int amount;
   final String image;
   final String createdAt;
@@ -16,6 +17,7 @@ class HarvestReportDetail {
     required this.id,
     required this.cycleId,
     required this.reportDate,
+    required this.totalKg,
     required this.amount,
     required this.image,
     required this.createdAt,

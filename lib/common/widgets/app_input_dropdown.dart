@@ -170,7 +170,7 @@ class _AppInputDropdownState<T> extends State<AppInputDropdown<T>> {
                 },
           validator: widget.validator,
           autovalidateMode:
-              widget.autovalidateMode ?? AutovalidateMode.onUserInteraction,
+              widget.autovalidateMode ?? AutovalidateMode.disabled,
           dropdownStyleData: DropdownStyleData(
             maxHeight: 250,
             decoration: BoxDecoration(

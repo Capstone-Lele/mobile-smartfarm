@@ -6,14 +6,13 @@ import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
-import 'package:budidaya_lele_mobile/features/inventory/domain/entities/category.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission.dart';
-import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/category_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_report_provider.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_submission_provider.dart';
+import 'package:budidaya_lele_mobile/features/inventory/presentation/utils/inventory_category_util.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_card.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_report_card.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/widgets/inventory_submission_card.dart';
@@ -43,7 +42,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       ref
           .read(inventoryReportListNotifierProvider.notifier)
           .getInventoryReports();
-      ref.read(categoryListNotifierProvider.notifier).getCategories();
     });
   }
 
@@ -52,13 +50,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     switch (selectedTab) {
       case 0:
         await ref.read(inventoryListNotifierProvider.notifier).getInventories();
-        await ref.read(categoryListNotifierProvider.notifier).getCategories();
         break;
       case 1:
         await ref
             .read(inventorySubmissionListNotifierProvider.notifier)
             .getInventorySubmissions();
-        await ref.read(categoryListNotifierProvider.notifier).getCategories();
         break;
       case 2:
         await ref
@@ -76,7 +72,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     final inventoryState = ref.watch(inventoryListNotifierProvider);
     final submissionState = ref.watch(inventorySubmissionListNotifierProvider);
     final reportState = ref.watch(inventoryReportListNotifierProvider);
-    final categoryState = ref.watch(categoryListNotifierProvider);
+
+    // Kategori diambil dari key `category` pada list inventaris (bukan endpoint
+    // category terpisah), lalu dibuat unik untuk dijadikan filter chip.
+    final categoryNames = inventoryState.maybeWhen(
+      data: (inventories) =>
+          InventoryCategoryUtil.deriveCategoryNames(inventories),
+      orElse: () => <String>[],
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -174,43 +177,31 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    categoryState.when(
-                      loading: () => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Row(
-                          children: List.generate(3, (index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AppLoading(
-                                width: 60,
-                                height: 32,
-                                borderRadius: 20,
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      error: (error, stack) => Center(
-                        child: Text(
-                          error.toString(),
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      data: (categories) {
-                        final categoryNames = [
-                          "Semua",
-                          ...categories.map((c) => c.name),
-                        ];
-                        return AppCategoryFilter(
-                          categories: categoryNames,
-                          selectedIndex: selectedCategory,
-                          onCategoryChanged: (index) {
-                            ref.read(inventoryCategoryProvider.notifier).state =
-                                index;
-                          },
-                        );
-                      },
-                    ),
+                    inventoryState.isLoading
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row(
+                              children: List.generate(3, (index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: AppLoading(
+                                    width: 60,
+                                    height: 32,
+                                    borderRadius: 20,
+                                  ),
+                                );
+                              }),
+                            ),
+                          )
+                        : AppCategoryFilter(
+                            categories: ["Semua", ...categoryNames],
+                            selectedIndex: selectedCategory,
+                            onCategoryChanged: (index) {
+                              ref
+                                  .read(inventoryCategoryProvider.notifier)
+                                  .state = index;
+                            },
+                          ),
                     const SizedBox(height: 16),
                   ],
 
@@ -231,9 +222,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
                   // Lists
                   if (selectedTab == 0)
-                    _buildInventoryList(inventoryState, categoryState)
+                    _buildInventoryList(inventoryState, categoryNames)
                   else if (selectedTab == 1)
-                    _buildSubmissionList(submissionState, categoryState)
+                    _buildSubmissionList(submissionState, categoryNames)
                   else
                     _buildReportList(reportState),
                 ],
@@ -494,7 +485,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
   Widget _buildInventoryList(
     AsyncValue<List<Inventory>> state,
-    AsyncValue<List<Category>> categoryState,
+    List<String> categoryNames,
   ) {
     final selectedCategory = ref.watch(inventoryCategoryProvider);
 
@@ -520,16 +511,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               if (item.deletedAt != null) return false;
               if (selectedCategory == 0) return true;
 
-              // Ambil dari categoryState parameter
-              if (categoryState.hasValue) {
-                final categories = categoryState.value ?? [];
-                if (selectedCategory > 0 &&
-                    selectedCategory <= categories.length) {
-                  final selectedCategoryName =
-                      categories[selectedCategory - 1].name;
-                  return item.category.toLowerCase() ==
-                      selectedCategoryName.toLowerCase();
-                }
+              // Ambil nama kategori dari daftar kategori hasil turunan list
+              // inventaris.
+              if (selectedCategory > 0 &&
+                  selectedCategory <= categoryNames.length) {
+                final selectedCategoryName =
+                    categoryNames[selectedCategory - 1];
+                return item.category.toLowerCase() ==
+                    selectedCategoryName.toLowerCase();
               }
               return false;
             })
@@ -610,7 +599,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
 
   Widget _buildSubmissionList(
     AsyncValue<List<InventorySubmission>> state,
-    AsyncValue<List<Category>> categoryState,
+    List<String> categoryNames,
   ) {
     final selectedCategory = ref.watch(inventoryCategoryProvider);
 
@@ -635,16 +624,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             .where((item) {
               if (selectedCategory == 0) return true;
 
-              // Ambil dari categoryState parameter
-              if (categoryState.hasValue) {
-                final categories = categoryState.value ?? [];
-                if (selectedCategory > 0 &&
-                    selectedCategory <= categories.length) {
-                  final selectedCategoryName =
-                      categories[selectedCategory - 1].name;
-                  return item.category.toLowerCase() ==
-                      selectedCategoryName.toLowerCase();
-                }
+              // Ambil nama kategori dari daftar kategori hasil turunan list
+              // inventaris.
+              if (selectedCategory > 0 &&
+                  selectedCategory <= categoryNames.length) {
+                final selectedCategoryName =
+                    categoryNames[selectedCategory - 1];
+                return item.category.toLowerCase() ==
+                    selectedCategoryName.toLowerCase();
               }
               return false;
             })

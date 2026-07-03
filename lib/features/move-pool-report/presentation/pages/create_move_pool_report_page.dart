@@ -42,6 +42,7 @@ class _CreateMovePoolReportPageState
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Pool? _selectedDestinationPool;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -63,7 +64,9 @@ class _CreateMovePoolReportPageState
     final quantity = int.parse(_quantityCtrl.text);
     final poolDetail = ref.read(poolDetailNotifierProvider).value;
 
-    final endedAt = quantity == poolDetail?.currentQuantity
+    final endedAt =
+        poolDetail?.category != 'quarantine' &&
+            quantity == poolDetail?.currentQuantity
         ? AppFormat.toApiDateTime(
             DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now()),
           )
@@ -75,7 +78,7 @@ class _CreateMovePoolReportPageState
           widget.poolId,
           _selectedDestinationPool!.id,
           widget.cycleId,
-          _selectedDestinationPool!.cycleId ?? '',
+          _selectedDestinationPool!.cycleId,
           AppFormat.toApiDateTime(_reportDateCtrl.text),
           int.parse(_quantityCtrl.text),
           _selectedImage!,
@@ -93,12 +96,14 @@ class _CreateMovePoolReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     final quantity = int.parse(_quantityCtrl.text);
     final poolDetail = ref.read(poolDetailNotifierProvider).value;
 
-    if (quantity == poolDetail?.currentQuantity) {
+    if (poolDetail?.category != 'quarantine' &&
+        quantity == poolDetail?.currentQuantity) {
       AppDialog.showConfirmationDialog(
         context: context,
         title: 'Akhiri Siklus?',
@@ -320,6 +325,7 @@ class _CreateMovePoolReportPageState
           ),
           const SizedBox(height: 12),
           AppInputDropdown<Pool>(
+            autovalidateMode: _autovalidateMode,
             label: 'Tujuan Kolam',
             hint: 'Pilih Kolam Tujuan',
             items: filteredPoolList,
@@ -339,6 +345,7 @@ class _CreateMovePoolReportPageState
           ),
           const SizedBox(height: 16),
           AppInputDate(
+            autovalidateMode: _autovalidateMode,
             label: 'Tanggal Pindah Kolam',
             hint: 'Tanggal Pindah Kolam',
             type: DateFieldType.dateTime,
@@ -355,6 +362,7 @@ class _CreateMovePoolReportPageState
           ),
           const SizedBox(height: 16),
           AppInputText(
+            autovalidateMode: _autovalidateMode,
             label: 'Jumlah Ikan Pindah (Ekor)',
             hint: 'Jumlah Ikan Pindah',
             controller: _quantityCtrl,
@@ -373,6 +381,7 @@ class _CreateMovePoolReportPageState
           ),
           const SizedBox(height: 16),
           AppInputImage(
+            autovalidateMode: _autovalidateMode,
             label: 'Foto',
             hint: 'Tambahkan foto pindah kolam',
             requiredField: true,

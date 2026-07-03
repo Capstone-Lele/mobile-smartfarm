@@ -2,12 +2,13 @@ import 'package:budidaya_lele_mobile/core/error/failure.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/entities/mortality_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/repositories/mortality_report_repository.dart';
-import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/create_mortality_report_usecase.dart';
-import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/delete_mortality_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/get_mortality_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/get_mortality_reports_usecase.dart';
-import 'package:budidaya_lele_mobile/features/mortality-report/domain/usecases/update_mortality_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/mortality-report/presentation/providers/mortality_report_provider.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool_detail.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/repositories/pool_repository.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -127,6 +128,30 @@ class FakeMortalityReportRepository implements MortalityReportRepository {
     String id,
   ) {
     if (_deleteCallback != null) return _deleteCallback!(id);
+    return Future.value(Left(FetchFailure('Not setup')));
+  }
+}
+
+class FakePoolRepository implements PoolRepository {
+  Future<Either<Failure, List<Pool>>> Function()? _getPoolsCallback;
+  Future<Either<Failure, PoolDetail>> Function(String)? _getPoolCallback;
+
+  void setupGetPools(Future<Either<Failure, List<Pool>>> Function() callback) =>
+      _getPoolsCallback = callback;
+
+  void setupGetPool(
+    Future<Either<Failure, PoolDetail>> Function(String) callback,
+  ) => _getPoolCallback = callback;
+
+  @override
+  Future<Either<Failure, List<Pool>>> getPools() {
+    if (_getPoolsCallback != null) return _getPoolsCallback!();
+    return Future.value(Right<Failure, List<Pool>>([]));
+  }
+
+  @override
+  Future<Either<Failure, PoolDetail>> getPool(String id) {
+    if (_getPoolCallback != null) return _getPoolCallback!(id);
     return Future.value(Left(FetchFailure('Not setup')));
   }
 }
@@ -307,24 +332,33 @@ void main() {
   });
 
   group('MortalityReportMutationNotifier', () {
-    late MortalityReportListNotifier listNotifier;
-    late MortalityReportDetailNotifier detailNotifier;
+    late FakePoolRepository fakePoolRepository;
+    late ProviderContainer container;
     late MortalityReportMutationNotifier mutationNotifier;
 
     setUp(() {
-      listNotifier = MortalityReportListNotifier(
-        GetMortalityReportsUsecase(fakeRepository),
+      fakePoolRepository = FakePoolRepository();
+      fakePoolRepository.setupGetPools(
+        () async => Right<Failure, List<Pool>>([]),
       );
-      detailNotifier = MortalityReportDetailNotifier(
-        GetMortalityReportUsecase(fakeRepository),
+      fakePoolRepository.setupGetPool(
+        (id) async => Left<Failure, PoolDetail>(FetchFailure('Not setup')),
       );
-      mutationNotifier = MortalityReportMutationNotifier(
-        CreateMortalityReportUsecase(fakeRepository),
-        UpdateMortalityReportUsecase(fakeRepository),
-        DeleteMortalityReportUsecase(fakeRepository),
-        listNotifier,
-        detailNotifier,
+
+      container = ProviderContainer(
+        overrides: [
+          mortalityReportRepositoryProvider.overrideWithValue(fakeRepository),
+          poolRepositoryProvider.overrideWithValue(fakePoolRepository),
+        ],
       );
+
+      mutationNotifier = container.read(
+        mortalityReportMutationNotifierProvider.notifier,
+      );
+    });
+
+    tearDown(() {
+      container.dispose();
     });
 
     test('createMortalityReport should return data on success', () async {
