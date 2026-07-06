@@ -122,24 +122,23 @@ class FCMService {
     }
   }
 
-  // NOTE: Fungsi cadangan untuk debugging notifikasi. Uncomment bila perlu
-  // memaksa membuat token FCM baru (hapus token saat ini -> langsung invalid
-  // di Firebase, lalu ambil token baru).
-  //
-  // static Future<String?> regenerateToken() async {
-  //   try {
-  //     FirebaseMessaging messaging = FirebaseMessaging.instance;
-  //     await messaging.deleteToken();
-  //     final token = await messaging.getToken();
-  //     return token;
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
+  // Memaksa membuat token FCM baru: hapus token saat ini (langsung invalid di
+  // Firebase) lalu ambil token baru yang pasti segar. Dipakai saat startup
+  // sebagai workaround sementara untuk token yang "nyangkut" (mati di sisi
+  // Firebase tapi masih di-cache SDK di device).
+  static Future<String?> regenerateToken() async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      await messaging.deleteToken();
+      final token = await messaging.getToken();
+      return token;
+    } catch (e) {
+      return null;
+    }
+  }
 
   /// FCM dapat merotasi token kapan saja (setelah jangka waktu tertentu,
-  /// reinstall, clear data, restore, dll). Tanpa mendengarkan event ini,
-  /// backend akan tetap memakai token lama yang sudah mati ("nyangkut").
+  /// reinstall, clear data, restore, dll).
   /// [onRefresh] dipanggil dengan token baru agar bisa didaftarkan ulang.
   static void listenTokenRefresh(
     Future<void> Function(String token) onRefresh,

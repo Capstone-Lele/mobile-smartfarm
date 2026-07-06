@@ -34,9 +34,9 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
 
-    // Sinkronkan token FCM terkini ke backend setiap app dibuka (bila sudah
-    // login). Sesi login persisten, sehingga tanpa ini token yang dirotasi
-    // saat app mati tidak pernah terdaftar ulang dan token lama "nyangkut".
+    // Paksa token FCM segar setiap app dibuka (bila sudah login). Workaround
+    // sementara untuk token yang "nyangkut": token lama dihapus lalu dibuat
+    // baru, sehingga token yang sudah mati di sisi Firebase tidak dipakai lagi.
     _syncFcmToken();
 
     // Daftarkan ulang token FCM ke backend setiap kali token dirotasi selagi
@@ -46,7 +46,9 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   Future<void> _syncFcmToken() async {
     if (!AppSession.isUserLoggedIn) return;
-    final token = await FCMService.getToken();
+    // Regenerate (hapus + buat baru), bukan getToken(), agar token yang
+    // di-cache SDK tapi sudah mati di Firebase tidak dipakai lagi.
+    final token = await FCMService.regenerateToken();
     if (token == null) return;
     await _registerToken(token);
   }

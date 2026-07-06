@@ -26,7 +26,11 @@ class SamplingPredictionChart extends StatelessWidget {
       final report = sortedReports[i];
       final weight = double.tryParse(report.averageWeight) ?? 0.0;
       actualSpots.add(FlSpot(i.toDouble(), weight));
-      actualDates.add(DateTime.tryParse(report.reportDate) ?? DateTime.now());
+      // Buang komponen jam/menit — prediksi ADG dihitung per hari kalender,
+      // sehingga selisih hari tidak terpotong oleh jam sampling.
+      final parsed = DateTime.tryParse(report.reportDate)?.toLocal() ??
+          DateTime.now();
+      actualDates.add(DateTime(parsed.year, parsed.month, parsed.day));
     }
 
     // Prediksi panen menggunakan ADG (Average Daily Gain):
@@ -175,6 +179,30 @@ class SamplingPredictionChart extends StatelessWidget {
             height: 240,
             child: LineChart(
               LineChartData(
+                lineTouchData: LineTouchData(
+                  handleBuiltInTouches: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => AppColors.darkGray,
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        final index = spot.x.toInt();
+                        final dateStr = (index >= 0 && index < allDates.length)
+                            ? DateFormat('dd/MM/yyyy').format(allDates[index])
+                            : '-';
+                        final isPrediction = spot.x > actualSpots.last.x;
+                        final label = isPrediction ? 'Prediksi' : 'Aktual';
+                        return LineTooltipItem(
+                          '$label\n$dateStr\n${spot.y.toStringAsFixed(1)} g',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
