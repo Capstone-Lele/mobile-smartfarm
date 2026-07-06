@@ -1,3 +1,8 @@
+// NOTE: Import cadangan untuk tombol generate token FCM (debugging).
+// Uncomment bersama tombol & handler di bawah bila diperlukan.
+// import 'package:budidaya_lele_mobile/common/services/fcm_service.dart';
+// import 'package:budidaya_lele_mobile/common/widgets/app_snackbar.dart';
+// import 'package:budidaya_lele_mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_segmented_control.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
@@ -114,6 +119,19 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
                       orElse: () => _buildHeader(context, 0),
                     ),
                     const SizedBox(height: 16),
+                    // NOTE: Tombol cadangan untuk generate token FCM baru
+                    // (debugging notifikasi). Uncomment bersama handler
+                    // `_regenerateToken` & import di atas bila diperlukan.
+                    //
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   child: OutlinedButton.icon(
+                    //     onPressed: () => _regenerateToken(),
+                    //     icon: const Icon(Icons.refresh),
+                    //     label: const Text('Generate Token FCM Baru'),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
                     AppSegmentedControl(
                       children: const ['Sensor', 'Laporan', 'Pemeliharaan'],
                       selectedIndex: selectedCategoryIndex,
@@ -280,6 +298,27 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
       ),
     );
   }
+
+  // NOTE: Handler cadangan untuk generate token FCM baru (debugging).
+  // Uncomment bersama tombol di atas segmented control & import di atas.
+  //
+  // Future<void> _regenerateToken() async {
+  //   AppSnackbar.info('Membuat token FCM baru...');
+  //   final token = await FCMService.regenerateToken();
+  //   if (token == null) {
+  //     AppSnackbar.error('Gagal membuat token baru');
+  //     return;
+  //   }
+  //   // ignore: avoid_print
+  //   print('FCM Token (baru): $token');
+  //   final deviceInfo = await FCMService.getDeviceInfo();
+  //   await ref.read(registerTokenUseCaseProvider).execute(
+  //         token,
+  //         deviceInfo['name'] ?? 'Unknown Device',
+  //         deviceInfo['type'] ?? 'android',
+  //       );
+  //   AppSnackbar.success('Token baru dibuat & didaftarkan. Cek log.');
+  // }
 
   void _showSettings() {
     showModalBottomSheet(

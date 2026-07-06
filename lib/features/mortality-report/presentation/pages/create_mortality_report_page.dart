@@ -35,6 +35,7 @@ class _CreateMortalityReportPageState
   final _quantityCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   XFile? _selectedImage;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void dispose() {
@@ -45,6 +46,7 @@ class _CreateMortalityReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     final user = ref.read(userProvider);
@@ -113,6 +115,7 @@ class _CreateMortalityReportPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppInputDate(
+                autovalidateMode: _autovalidateMode,
                 label: 'Tanggal Kematian',
                 hint: 'Tanggal Kematian',
                 type: DateFieldType.date,
@@ -128,6 +131,7 @@ class _CreateMortalityReportPageState
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Jumlah Kematian (ekor)',
                 hint: 'Jumlah Kematian',
                 controller: _quantityCtrl,
@@ -146,6 +150,7 @@ class _CreateMortalityReportPageState
               ),
               const SizedBox(height: 16),
               AppInputImage(
+                autovalidateMode: _autovalidateMode,
                 label: 'Foto',
                 hint: 'Tambahkan foto kematian ikan lele',
                 requiredField: true,
@@ -157,13 +162,20 @@ class _CreateMortalityReportPageState
               ),
               SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Catatan',
                 hint: 'Catatan',
                 controller: _notesCtrl,
                 type: FieldType.text,
                 maxLines: 5,
                 minLines: 3,
-                requiredField: false,
+                requiredField: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Catatan harus diisi';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
               AppButton(

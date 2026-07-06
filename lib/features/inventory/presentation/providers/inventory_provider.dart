@@ -49,7 +49,12 @@ class InventoryListNotifier extends StateNotifier<AsyncValue<List<Inventory>>> {
         );
       },
       (inventories) {
-        state = AsyncValue.data(inventories);
+        // Backend tetap mengembalikan inventory yang sudah dihapus (soft
+        // delete), jadi saring agar hanya yang deletedAt == null yang tampil.
+        final activeInventories = inventories
+            .where((item) => item.deletedAt == null)
+            .toList();
+        state = AsyncValue.data(activeInventories);
       },
     );
   }

@@ -75,7 +75,9 @@ class HarvestReportDatasource {
       request.fields['reportDate'] = reportDate;
       request.fields['totalKg'] = totalKg.toString();
       request.fields['amount'] = amount.toString();
-      request.fields['endedAt'] = endedAt ?? '';
+      if (endedAt != null && endedAt.isNotEmpty) {
+        request.fields['endedAt'] = endedAt;
+      }
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',

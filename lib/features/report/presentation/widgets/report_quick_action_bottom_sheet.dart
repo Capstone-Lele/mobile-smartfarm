@@ -73,12 +73,14 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     final isGrowing = poolCategory.contains('growing');
     final isBreeding = poolCategory.contains('breeding');
+    final isQuarantine = poolCategory == 'quarantine';
 
     if (type == 'daily') {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isCycle) ...[
+      final items = <Widget>[];
+
+      if (isCycle) {
+        if (!isQuarantine) {
+          items.add(
             _buildQuickActionItem(
               icon: Icons.restaurant,
               title: 'Tambah Laporan Pakan',
@@ -96,7 +98,8 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
                 );
               },
             ),
-            const Divider(height: 1, color: AppColors.gray),
+          );
+          items.add(
             _buildQuickActionItem(
               icon: Icons.medical_services,
               title: 'Tambah Laporan Vitamin',
@@ -114,16 +117,38 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
                 );
               },
             ),
-            const Divider(height: 1, color: AppColors.gray),
+          );
+        }
+        items.add(
+          _buildQuickActionItem(
+            icon: Icons.dangerous,
+            title: 'Tambah Laporan Kematian',
+            iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createMortalityReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
+          ),
+        );
+        if (isGrowing || isBreeding) {
+          items.add(
             _buildQuickActionItem(
-              icon: Icons.dangerous,
-              title: 'Tambah Laporan Kematian',
+              icon: Icons.error_outline,
+              title: 'Tambah Laporan Sakit',
               iconColor: AppColors.primary,
               onTap: () {
                 Navigator.pop(context);
                 AppRoutes.pushNamed(
                   context,
-                  AppRoutes.createMortalityReport,
+                  AppRoutes.createSickReport,
                   arguments: {
                     'poolId': poolId,
                     'poolName': poolName,
@@ -132,28 +157,12 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
                 );
               },
             ),
-            if (isGrowing || isBreeding) ...[
-              const Divider(height: 1, color: AppColors.gray),
-              _buildQuickActionItem(
-                icon: Icons.error_outline,
-                title: 'Tambah Laporan Sakit',
-                iconColor: AppColors.primary,
-                onTap: () {
-                  Navigator.pop(context);
-                  AppRoutes.pushNamed(
-                    context,
-                    AppRoutes.createSickReport,
-                    arguments: {
-                      'poolId': poolId,
-                      'poolName': poolName,
-                      'cycleId': cycleId,
-                    },
-                  );
-                },
-              ),
-            ],
-            const Divider(height: 1, color: AppColors.gray),
-          ],
+          );
+        }
+      }
+
+      if (!isQuarantine) {
+        items.add(
           _buildQuickActionItem(
             icon: Icons.water_drop,
             title: 'Tambah Laporan Pembersihan Kolam',
@@ -167,28 +176,41 @@ class ReportQuickActionBottomSheet extends StatelessWidget {
               );
             },
           ),
-          if (isCycle && (isGrowing || isBreeding)) ...[
-            const Divider(height: 1, color: AppColors.gray),
-            _buildQuickActionItem(
-              icon: Icons.trending_up,
-              title: 'Tambah Laporan Sampling',
-              iconColor: AppColors.primary,
-              onTap: () {
-                Navigator.pop(context);
-                AppRoutes.pushNamed(
-                  context,
-                  AppRoutes.createSamplingReport,
-                  arguments: {
-                    'poolId': poolId,
-                    'poolName': poolName,
-                    'cycleId': cycleId,
-                  },
-                );
-              },
-            ),
+        );
+      }
+
+      if (isCycle && (isGrowing || isBreeding)) {
+        items.add(
+          _buildQuickActionItem(
+            icon: Icons.trending_up,
+            title: 'Tambah Laporan Sampling',
+            iconColor: AppColors.primary,
+            onTap: () {
+              Navigator.pop(context);
+              AppRoutes.pushNamed(
+                context,
+                AppRoutes.createSamplingReport,
+                arguments: {
+                  'poolId': poolId,
+                  'poolName': poolName,
+                  'cycleId': cycleId,
+                },
+              );
+            },
+          ),
+        );
+      }
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.gray),
+            items[i],
           ],
           if (!isCycle) ...[
-            const Divider(height: 1, color: AppColors.gray),
+            if (items.isNotEmpty)
+              const Divider(height: 1, color: AppColors.gray),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Center(

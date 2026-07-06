@@ -8,6 +8,7 @@ import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_routers.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_submission_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_submission_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -123,6 +124,10 @@ class _InventorySubmissionDetailPageState
     _notesCtrl.text = inventorySubmission.notes ?? '';
     _userCtrl.text = inventorySubmission.user;
 
+    // Hanya pengaju sendiri yang boleh mengubah/menghapus pengajuannya.
+    final currentUserId = ref.watch(userProvider)?.id;
+    final isOwner = currentUserId == inventorySubmission.userId;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -192,7 +197,7 @@ class _InventorySubmissionDetailPageState
                 readOnly: true,
               ),
               const SizedBox(height: 24),
-              if (inventorySubmission.status == 'pending') ...[
+              if (inventorySubmission.status == 'pending' && isOwner) ...[
                 AppButton(
                   label: 'Ubah',
                   onPressed: () {

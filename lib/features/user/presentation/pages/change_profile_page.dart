@@ -20,6 +20,7 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   XFile? _profileImage;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -153,6 +155,7 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
               ),
               const SizedBox(height: 32),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Email Address',
                 hint: 'alex@gmail.com',
                 controller: _emailCtrl,
@@ -162,6 +165,7 @@ class _ChangeProfilePageState extends ConsumerState<ChangeProfilePage> {
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Nama Lengkap',
                 hint: 'Nama Lengkap',
                 controller: _nameCtrl,

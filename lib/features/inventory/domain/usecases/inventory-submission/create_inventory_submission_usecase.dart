@@ -11,7 +11,7 @@ class CreateInventorySubmissionUsecase {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) {
     return repository.createInventorySubmission(
       inventoryId,

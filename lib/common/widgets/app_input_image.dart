@@ -100,7 +100,7 @@ class _AppInputImageState extends State<AppInputImage> {
                 return null;
               },
           autovalidateMode:
-              widget.autovalidateMode ?? AutovalidateMode.onUserInteraction,
+              widget.autovalidateMode ?? AutovalidateMode.disabled,
           builder: (field) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

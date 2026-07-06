@@ -36,6 +36,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
   final _initialAverageWeightCtrl = TextEditingController();
   XFile? _selectedImage;
   bool _isWarningShown = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     final poolDetail = ref.read(poolDetailNotifierProvider).value;
@@ -156,6 +158,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppInputDate(
+                autovalidateMode: _autovalidateMode,
                 label: 'Tanggal Tebar Benih',
                 hint: 'Tanggal Tebar Benih',
                 type: DateFieldType.dateTime,
@@ -171,6 +174,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Jumlah Benih Awal (ekor)',
                 hint: 'Jumlah Benih Awal',
                 controller: _initialQuantityCtrl,
@@ -189,6 +193,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Jumlah Lele Saat ini (ekor)',
                 hint: 'Jumlah Lele Saat ini',
                 controller: _currentQuantityCtrl,
@@ -207,6 +212,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               ),
               const SizedBox(height: 16),
               AppInputText(
+                autovalidateMode: _autovalidateMode,
                 label: 'Bobot Rata-rata Awal (gram)',
                 hint: 'Bobot Rata-rata Awal',
                 controller: _initialAverageWeightCtrl,
@@ -225,6 +231,7 @@ class _CreateSeedReportPageState extends ConsumerState<CreateSeedReportPage> {
               ),
               const SizedBox(height: 16),
               AppInputImage(
+                autovalidateMode: _autovalidateMode,
                 label: 'Foto',
                 hint: 'Tambahkan foto tebar benih',
                 requiredField: true,

@@ -53,10 +53,11 @@ class SickReportRepositoryImpl implements SickReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) async {
     final result = await datasource.createSickReport(
       poolId,
@@ -65,6 +66,7 @@ class SickReportRepositoryImpl implements SickReportRepository {
       reportDate,
       quantity,
       image,
+      endedAt,
     );
 
     return result.fold((failure) => Left(failure), (data) {

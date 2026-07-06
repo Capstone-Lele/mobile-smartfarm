@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_status_badge.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/iot.dart';
 
 enum ParamStatus { normal, warning, danger }
 
 class DashboardUtils {
+  /// Alat IoT dianggap ON ketika mengirim data ph dan suhu.
+  static bool isDeviceActive(Iot? iot) {
+    if (iot == null) return false;
+    return iot.ph > 0 && iot.temp > 0;
+  }
+
+  /// Alat pengukur pH dianggap ON ketika mengirim data ph.
+  static bool isPhActive(Iot? iot) => iot != null && iot.ph > 0;
+
+  /// Alat pengukur suhu dianggap ON ketika mengirim data suhu.
+  static bool isTempActive(Iot? iot) => iot != null && iot.temp > 0;
+
   static ParamStatus getParamStatus(
     double value,
     List<double> minRange,

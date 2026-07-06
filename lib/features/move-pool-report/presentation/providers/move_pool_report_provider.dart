@@ -110,7 +110,7 @@ class MovePoolReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String poolId,
     String destinationPoolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,

@@ -1,4 +1,5 @@
 import 'package:budidaya_lele_mobile/common/widgets/app_button.dart';
+import 'package:budidaya_lele_mobile/common/widgets/app_dialog.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_date.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_dropdown.dart';
 import 'package:budidaya_lele_mobile/common/widgets/app_input_image.dart';
@@ -15,6 +16,7 @@ import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 class CreateSickReportPage extends ConsumerStatefulWidget {
   final String cycleId;
@@ -39,6 +41,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
   Pool? _selectedQuarantinePool;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -56,8 +59,15 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
     super.dispose();
   }
 
-  Future<void> _onSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _processSubmit() async {
+    final quantity = int.parse(_quantityCtrl.text);
+    final poolDetail = ref.read(poolDetailNotifierProvider).value;
+
+    final endedAt = quantity == poolDetail?.currentQuantity
+        ? AppFormat.toApiDateTime(
+            DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now()),
+          )
+        : null;
 
     await ref
         .read(sickReportMutationNotifierProvider.notifier)
@@ -67,8 +77,9 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           widget.cycleId,
           _selectedQuarantinePool!.cycleId ?? '',
           AppFormat.toApiDateTime(_reportDateCtrl.text),
-          int.parse(_quantityCtrl.text),
+          quantity,
           _selectedImage!,
+          endedAt,
         );
 
     final mutationState = ref.read(sickReportMutationNotifierProvider);
@@ -77,6 +88,32 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
     } else {
       AppSnackbar.success('Laporan berhasil ditambahkan');
       AppRoutes.pop(context);
+    }
+  }
+
+  Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+    if (!_formKey.currentState!.validate()) return;
+
+    final quantity = int.parse(_quantityCtrl.text);
+    final poolDetail = ref.read(poolDetailNotifierProvider).value;
+
+    if (quantity == poolDetail?.currentQuantity) {
+      AppDialog.showConfirmationDialog(
+        context: context,
+        title: 'Akhiri Siklus?',
+        message:
+            'Siklus akan diakhiri karena semua ikan di kolam dipindahkan ke karantina. Lanjutkan?',
+        confirmText: 'Ya, Lanjutkan',
+        cancelText: 'Batal',
+        color: Colors.orange,
+        onConfirm: () async {
+          Navigator.pop(context);
+          await _processSubmit();
+        },
+      );
+    } else {
+      await _processSubmit();
     }
   }
 
@@ -252,6 +289,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ),
           const SizedBox(height: 12),
           AppInputDropdown<Pool>(
+            autovalidateMode: _autovalidateMode,
             label: 'Kolam Karantina',
             hint: 'Pilih Kolam Karantina',
             items: filteredPoolList,
@@ -271,6 +309,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ),
           const SizedBox(height: 16),
           AppInputDate(
+            autovalidateMode: _autovalidateMode,
             label: 'Tanggal Ikan Sakit',
             hint: 'Tanggal Ikan Sakit',
             type: DateFieldType.dateTime,
@@ -286,6 +325,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ),
           const SizedBox(height: 16),
           AppInputText(
+            autovalidateMode: _autovalidateMode,
             label: 'Jumlah Ikan Sakit',
             hint: 'Jumlah',
             controller: _quantityCtrl,
@@ -304,6 +344,7 @@ class _CreateSickReportPageState extends ConsumerState<CreateSickReportPage> {
           ),
           const SizedBox(height: 16),
           AppInputImage(
+            autovalidateMode: _autovalidateMode,
             label: 'Foto',
             hint: 'Tambahkan foto ikan sakit',
             requiredField: true,

@@ -43,7 +43,12 @@ class PoolListNotifier extends StateNotifier<AsyncValue<List<Pool>>> {
         failure.message ?? 'Terjadi Kesalahan',
         StackTrace.current,
       );
-    }, (pools) => state = AsyncValue.data(pools));
+    }, (pools) {
+      // Backend tetap mengembalikan kolam yang sudah dihapus (soft delete),
+      // jadi saring agar hanya yang deletedAt == null yang tampil.
+      final activePools = pools.where((pool) => pool.deletedAt == null).toList();
+      state = AsyncValue.data(activePools);
+    });
   }
 }
 

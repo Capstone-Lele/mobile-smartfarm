@@ -61,7 +61,7 @@ class InventoryReportDatasource {
     String reportDate,
     int quantity,
     XFile image,
-    String? notes,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/note/inventory');
     final token = AppSession.getBearerToken();
@@ -72,7 +72,7 @@ class InventoryReportDatasource {
       request.fields['inventoryId'] = inventoryId;
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
-      request.fields['notes'] = notes ?? '';
+      request.fields['notes'] = notes;
 
       request.files.add(
         await http.MultipartFile.fromPath(

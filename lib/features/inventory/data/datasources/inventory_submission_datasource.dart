@@ -58,7 +58,7 @@ class InventorySubmissionDatasource {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submission');
     final token = AppSession.getBearerToken();
@@ -69,7 +69,7 @@ class InventorySubmissionDatasource {
       request.fields['inventoryId'] = inventoryId;
       request.fields['quantity'] = quantity.toString();
       request.fields['transactionType'] = transactionType;
-      request.fields['notes'] = notes ?? '';
+      request.fields['notes'] = notes;
 
       final streamedResponse = await request.send();
       final response = await safeRequest(
@@ -93,25 +93,24 @@ class InventorySubmissionDatasource {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submission/$id');
     final token = AppSession.getBearerToken();
 
     try {
+      var request = http.MultipartRequest('PUT', url);
+      request.headers.addAll(AppRequest.header(token));
+      request.fields['inventoryId'] = inventoryId;
+      request.fields['quantity'] = quantity.toString();
+      request.fields['transactionType'] = transactionType;
+      request.fields['notes'] = notes;
+
+      final streamedResponse = await request.send();
       final response = await safeRequest(
-        () => http
-            .put(
-              url,
-              headers: AppRequest.header(token),
-              body: {
-                'inventoryId': inventoryId,
-                'quantity': quantity.toString(),
-                'transactionType': transactionType,
-                'notes': notes,
-              },
-            )
-            .timeout(const Duration(seconds: 10)),
+        () => http.Response.fromStream(
+          streamedResponse,
+        ).timeout(const Duration(seconds: 10)),
       );
 
       final data = AppResponse.data(response);

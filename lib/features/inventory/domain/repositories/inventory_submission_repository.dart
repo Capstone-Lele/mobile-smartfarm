@@ -12,14 +12,14 @@ abstract class InventorySubmissionRepository {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   );
   Future<Either<Failure, Map<String, dynamic>>> updateInventorySubmission(
     String id,
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   );
   Future<Either<Failure, Map<String, dynamic>>> deleteInventorySubmission(
     String id,

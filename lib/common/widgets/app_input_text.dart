@@ -89,7 +89,7 @@ class _AppInputState extends State<AppInputText> {
           readOnly: widget.readOnly,
           validator: widget.validator,
           autovalidateMode:
-              widget.autovalidateMode ?? AutovalidateMode.onUserInteraction,
+              widget.autovalidateMode ?? AutovalidateMode.disabled,
           onChanged: widget.onChanged,
           maxLength: widget.maxLength,
           decoration: InputDecoration(

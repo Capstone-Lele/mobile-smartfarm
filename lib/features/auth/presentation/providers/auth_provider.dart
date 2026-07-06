@@ -60,7 +60,7 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
         // Simpan token ke session storage
         await AppSession.setBearerToken(user.token);
         await _ref.read(userInfoNotifierProvider.notifier).getUserInfo();
-
+        
         // Register FCM token setelah login berhasil
         await _registerFcmToken();
 
@@ -72,7 +72,9 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> _registerFcmToken() async {
     try {
-      final fcmToken = await FCMService.getToken();
+      // Paksa token segar saat login (workaround token "nyangkut"): hapus
+      // token lama yang mungkin sudah mati di Firebase lalu buat token baru.
+      final fcmToken = await FCMService.regenerateToken();
       if (fcmToken == null) return;
       print('FCM Token: $fcmToken');
       final deviceInfo = await FCMService.getDeviceInfo();

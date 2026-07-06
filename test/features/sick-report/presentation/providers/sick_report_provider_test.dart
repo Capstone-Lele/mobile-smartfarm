@@ -1,8 +1,11 @@
 import 'package:budidaya_lele_mobile/core/error/failure.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/entities/pool_detail.dart';
+import 'package:budidaya_lele_mobile/features/pool/domain/repositories/pool_repository.dart';
+import 'package:budidaya_lele_mobile/features/pool/presentation/providers/pool_provider.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/entities/sick_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/repositories/sick_report_repository.dart';
-import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/create_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_report_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/domain/usecases/get_sick_reports_usecase.dart';
 import 'package:budidaya_lele_mobile/features/sick-report/presentation/providers/sick_report_provider.dart';
@@ -17,10 +20,11 @@ class FakeSickReportRepository implements SickReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> Function(
     String,
     String,
-    String,
+    String?,
     String,
     int,
     XFile,
+    String?,
   )?
   _createCallback;
 
@@ -36,10 +40,11 @@ class FakeSickReportRepository implements SickReportRepository {
     Future<Either<Failure, Map<String, dynamic>>> Function(
       String,
       String,
-      String,
+      String?,
       String,
       int,
       XFile,
+      String?,
     )
     callback,
   ) => _createCallback = callback;
@@ -60,10 +65,11 @@ class FakeSickReportRepository implements SickReportRepository {
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
+    String? endedAt,
   ) {
     if (_createCallback != null) {
       return _createCallback!(
@@ -73,8 +79,33 @@ class FakeSickReportRepository implements SickReportRepository {
         reportDate,
         quantity,
         image,
+        endedAt,
       );
     }
+    return Future.value(Left(FetchFailure('Not setup')));
+  }
+}
+
+class FakePoolRepository implements PoolRepository {
+  Future<Either<Failure, List<Pool>>> Function()? _getPoolsCallback;
+  Future<Either<Failure, PoolDetail>> Function(String)? _getPoolCallback;
+
+  void setupGetPools(Future<Either<Failure, List<Pool>>> Function() callback) =>
+      _getPoolsCallback = callback;
+
+  void setupGetPool(
+    Future<Either<Failure, PoolDetail>> Function(String) callback,
+  ) => _getPoolCallback = callback;
+
+  @override
+  Future<Either<Failure, List<Pool>>> getPools() {
+    if (_getPoolsCallback != null) return _getPoolsCallback!();
+    return Future.value(Right<Failure, List<Pool>>([]));
+  }
+
+  @override
+  Future<Either<Failure, PoolDetail>> getPool(String id) {
+    if (_getPoolCallback != null) return _getPoolCallback!(id);
     return Future.value(Left(FetchFailure('Not setup')));
   }
 }
@@ -247,21 +278,21 @@ void main() {
   });
 
   group('SickReportMutationNotifier', () {
-    late SickReportListNotifier listNotifier;
-    late SickReportMutationNotifier mutationNotifier;
+    late FakePoolRepository fakePoolRepository;
 
     setUp(() {
-      listNotifier = SickReportListNotifier(
-        GetSickReportsUsecase(fakeRepository),
-      );
-      mutationNotifier = SickReportMutationNotifier(
-        CreateSickReportUsecase(fakeRepository),
-        listNotifier,
-      );
+      fakePoolRepository = FakePoolRepository();
     });
 
     test('createSickReport should return data on success', () async {
       // Arrange
+      final container = ProviderContainer(
+        overrides: [
+          sickReportRepositoryProvider.overrideWithValue(fakeRepository),
+          poolRepositoryProvider.overrideWithValue(fakePoolRepository),
+        ],
+      );
+
       fakeRepository.setupCreate(
         (
           poolId,
@@ -270,10 +301,21 @@ void main() {
           reportDate,
           quantity,
           image,
+          endedAt,
         ) async => Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
       );
       fakeRepository.setupGetList(
         (poolId) async => Right<Failure, List<SickReport>>([]),
+      );
+      fakePoolRepository.setupGetPools(
+        () async => Right<Failure, List<Pool>>([]),
+      );
+      fakePoolRepository.setupGetPool(
+        (id) async => Left<Failure, PoolDetail>(FetchFailure('Not setup')),
+      );
+
+      final mutationNotifier = container.read(
+        sickReportMutationNotifierProvider.notifier,
       );
 
       // Act
@@ -285,49 +327,28 @@ void main() {
         '2024-06-01',
         15,
         XFile('image.jpg'),
+        null,
       );
 
       // Assert
       expect(mutationNotifier.state, isA<AsyncData<void>>());
     });
 
-    test('createSickReport should refresh list after success', () async {
-      // Arrange
-      var listRefreshed = false;
-      fakeRepository.setupCreate(
-        (
-          poolId,
-          originCycleId,
-          destinationCycleId,
-          reportDate,
-          quantity,
-          image,
-        ) async => Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
-      );
-      fakeRepository.setupGetList((poolId) async {
-        listRefreshed = true;
-        return Right<Failure, List<SickReport>>([_makeReport()]);
-      });
-
-      // Act
-      await mutationNotifier.createSickReport(
-        'pool-1',
-        'pool-2',
-        'cycle-1',
-        'cycle-2',
-        '2024-06-01',
-        15,
-        XFile('image.jpg'),
-      );
-
-      // Assert
-      expect(listRefreshed, true);
-    });
-
     test(
-      'createSickReport should emit error state on network failure',
+      'createSickReport should refresh list and pool after success',
       () async {
         // Arrange
+        var listRefreshed = false;
+        var poolsRefreshed = false;
+        var poolDetailRefreshed = false;
+
+        final container = ProviderContainer(
+          overrides: [
+            sickReportRepositoryProvider.overrideWithValue(fakeRepository),
+            poolRepositoryProvider.overrideWithValue(fakePoolRepository),
+          ],
+        );
+
         fakeRepository.setupCreate(
           (
             poolId,
@@ -336,9 +357,24 @@ void main() {
             reportDate,
             quantity,
             image,
-          ) async => Left<Failure, Map<String, dynamic>>(
-            FetchFailure('Network error'),
-          ),
+            endedAt,
+          ) async => Right<Failure, Map<String, dynamic>>({'id': 'sick-new'}),
+        );
+        fakeRepository.setupGetList((poolId) async {
+          listRefreshed = true;
+          return Right<Failure, List<SickReport>>([_makeReport()]);
+        });
+        fakePoolRepository.setupGetPools(() async {
+          poolsRefreshed = true;
+          return Right<Failure, List<Pool>>([]);
+        });
+        fakePoolRepository.setupGetPool((id) async {
+          poolDetailRefreshed = true;
+          return Left<Failure, PoolDetail>(FetchFailure('Not setup'));
+        });
+
+        final mutationNotifier = container.read(
+          sickReportMutationNotifierProvider.notifier,
         );
 
         // Act
@@ -350,6 +386,61 @@ void main() {
           '2024-06-01',
           15,
           XFile('image.jpg'),
+          null,
+        );
+
+        // Assert
+        expect(listRefreshed, true);
+        expect(poolsRefreshed, true);
+        expect(poolDetailRefreshed, true);
+      },
+    );
+
+    test(
+      'createSickReport should emit error state on network failure',
+      () async {
+        // Arrange
+        final container = ProviderContainer(
+          overrides: [
+            sickReportRepositoryProvider.overrideWithValue(fakeRepository),
+            poolRepositoryProvider.overrideWithValue(fakePoolRepository),
+          ],
+        );
+
+        fakeRepository.setupCreate(
+          (
+            poolId,
+            originCycleId,
+            destinationCycleId,
+            reportDate,
+            quantity,
+            image,
+            endedAt,
+          ) async => Left<Failure, Map<String, dynamic>>(
+            FetchFailure('Network error'),
+          ),
+        );
+        fakePoolRepository.setupGetPools(
+          () async => Right<Failure, List<Pool>>([]),
+        );
+        fakePoolRepository.setupGetPool(
+          (id) async => Left<Failure, PoolDetail>(FetchFailure('Not setup')),
+        );
+
+        final mutationNotifier = container.read(
+          sickReportMutationNotifierProvider.notifier,
+        );
+
+        // Act
+        await mutationNotifier.createSickReport(
+          'pool-1',
+          'pool-2',
+          'cycle-1',
+          'cycle-2',
+          '2024-06-01',
+          15,
+          XFile('image.jpg'),
+          null,
         );
 
         // Assert

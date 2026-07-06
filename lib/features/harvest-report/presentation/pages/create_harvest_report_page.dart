@@ -34,6 +34,7 @@ class CreateHarvestReportPage extends ConsumerStatefulWidget {
 class _CreateHarvestReportPageState
     extends ConsumerState<CreateHarvestReportPage> {
   final _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
   final _reportDateCtrl = TextEditingController();
   final _weightAmountCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
@@ -56,6 +57,7 @@ class _CreateHarvestReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     final quantity = int.parse(_amountCtrl.text);
@@ -265,6 +267,7 @@ class _CreateHarvestReportPageState
           ),
           const SizedBox(height: 12),
           AppInputDate(
+            autovalidateMode: _autovalidateMode,
             label: 'Tanggal Panen',
             hint: 'Tanggal Panen',
             type: DateFieldType.date,
@@ -281,6 +284,7 @@ class _CreateHarvestReportPageState
           ),
           const SizedBox(height: 16),
           AppInputText(
+            autovalidateMode: _autovalidateMode,
             label: 'Jumlah Berat Panen (KG)',
             hint: 'Jumlah Berat Panen',
             controller: _weightAmountCtrl,
@@ -299,6 +303,7 @@ class _CreateHarvestReportPageState
           ),
           const SizedBox(height: 16),
           AppInputText(
+            autovalidateMode: _autovalidateMode,
             label: 'Jumlah Panen (Ekor)',
             hint: 'Jumlah Panen',
             controller: _amountCtrl,
@@ -308,6 +313,7 @@ class _CreateHarvestReportPageState
           ),
           const SizedBox(height: 16),
           AppInputImage(
+            autovalidateMode: _autovalidateMode,
             label: 'Foto',
             hint: 'Tambahkan foto panen',
             requiredField: true,

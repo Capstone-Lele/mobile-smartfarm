@@ -7,6 +7,8 @@ import 'package:budidaya_lele_mobile/core/constants/app_colors.dart';
 import 'package:budidaya_lele_mobile/core/utils/app_format.dart';
 import 'package:budidaya_lele_mobile/features/inventory/domain/entities/inventory_report_detail.dart';
 import 'package:budidaya_lele_mobile/features/inventory/presentation/providers/inventory_report_provider.dart';
+import 'package:budidaya_lele_mobile/features/user/domain/entities/user.dart';
+import 'package:budidaya_lele_mobile/features/user/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,6 +53,7 @@ class _InventoryReportDetailPageState
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
     final inventoryReportAsync = ref.watch(
       inventoryReportDetailNotifierProvider,
     );
@@ -59,7 +62,7 @@ class _InventoryReportDetailPageState
       body: inventoryReportAsync.when(
         loading: () => _buildLoadingState(),
         error: (err, stack) => _buildErrorState(err),
-        data: (report) => _buildFormState(report),
+        data: (report) => _buildFormState(report, user),
       ),
     );
   }
@@ -105,7 +108,7 @@ class _InventoryReportDetailPageState
     );
   }
 
-  Widget _buildFormState(InventoryReportDetail? report) {
+  Widget _buildFormState(InventoryReportDetail? report, User? user) {
     if (report == null) {
       return const Center(child: Text('Laporan inventaris tidak ditemukan'));
     }
@@ -179,10 +182,12 @@ class _InventoryReportDetailPageState
                 readOnly: true,
               ),
               const SizedBox(height: 24),
-              Text(
-                'Laporan inventaris bersifat permanen dan tidak dapat di ubah/hapus',
-                style: TextStyle(fontSize: 15, color: AppColors.red),
-              ),
+              if (user?.role != 'pic') ...[
+                Text(
+                  'Laporan inventaris bersifat permanen dan tidak dapat di ubah/hapus',
+                  style: TextStyle(fontSize: 15, color: AppColors.red),
+                ),
+              ],
             ],
           ),
         ),

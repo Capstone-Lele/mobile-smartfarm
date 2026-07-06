@@ -67,7 +67,7 @@ class PoolDetail {
       case 'treatment':
         return 'Pengobatan';
       default:
-        return 'Cycle Belum Aktif';
+        return 'Siklus Belum Aktif';
     }
   }
 }

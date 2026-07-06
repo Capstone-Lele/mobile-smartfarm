@@ -191,7 +191,7 @@ void main() {
       );
       fakeRepository.setupGetList(() async => Right<Failure, List<InventoryReport>>([]));
 
-      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), null);
+      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), 'Notes');
 
       expect(mutationNotifier.state, isA<AsyncData<void>>());
     });
@@ -207,7 +207,7 @@ void main() {
         return Right<Failure, List<InventoryReport>>([]);
       });
 
-      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), null);
+      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), 'Notes');
 
       expect(listRefreshed, true);
     });
@@ -218,7 +218,7 @@ void main() {
             Left<Failure, Map<String, dynamic>>(FetchFailure('Network error')),
       );
 
-      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), null);
+      await mutationNotifier.createInventoryReport('inv-1', '2024-09-01', 20, XFile('img.jpg'), 'Notes');
 
       expect(mutationNotifier.state, isA<AsyncError>());
       final error = (mutationNotifier.state as AsyncError).error;

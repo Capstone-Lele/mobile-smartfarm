@@ -35,6 +35,7 @@ class UpdateVitaminReportPage extends ConsumerStatefulWidget {
 class _UpdateVitaminReportPageState
     extends ConsumerState<UpdateVitaminReportPage> {
   final _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
   final _reportDateCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   XFile? _selectedImage;
@@ -59,6 +60,7 @@ class _UpdateVitaminReportPageState
   }
 
   Future<void> _onSubmit() async {
+    setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     if (!_formKey.currentState!.validate()) return;
 
     await ref
@@ -181,6 +183,7 @@ class _UpdateVitaminReportPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInputDropdown<Inventory>(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Nama Produk',
                   hint: 'Pilih Produk Vitamin',
                   items: vitaminInventories,
@@ -201,6 +204,7 @@ class _UpdateVitaminReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputDate(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Tanggal Pemberian Vitamin',
                   hint: 'Tanggal Pemberian Vitamin',
                   type: DateFieldType.dateTime,
@@ -217,6 +221,7 @@ class _UpdateVitaminReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputText(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Jumlah',
                   hint: 'Jumlah',
                   controller: _quantityCtrl,
@@ -237,6 +242,7 @@ class _UpdateVitaminReportPageState
                 ),
                 const SizedBox(height: 16),
                 AppInputImage(
+                  autovalidateMode: _autovalidateMode,
                   label: 'Foto',
                   hint: 'Tambahkan foto pemberian vitamin',
                   requiredField: true,

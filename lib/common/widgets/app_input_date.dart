@@ -186,7 +186,7 @@ class _AppInputDateState extends State<AppInputDate> {
           readOnly: true,
           validator: widget.validator,
           autovalidateMode:
-              widget.autovalidateMode ?? AutovalidateMode.onUserInteraction,
+              widget.autovalidateMode ?? AutovalidateMode.disabled,
           onTap: widget.readOnly ? null : () => _selectDate(context),
           decoration: InputDecoration(
             hintText: widget.hint,

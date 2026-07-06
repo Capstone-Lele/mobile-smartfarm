@@ -33,6 +33,8 @@ class Schedule {
   }
 
   DateTime get scheduleDateParsed {
-    return DateTime.parse(scheduleDate);
+    // Backend mengirim timestamp UTC. Konversi ke waktu lokal (WIB) dulu agar
+    // pengelompokan Hari Ini / Kemarin / Mendatang memakai tanggal yang benar.
+    return DateTime.parse(scheduleDate).toLocal();
   }
 }

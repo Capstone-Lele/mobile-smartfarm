@@ -51,7 +51,14 @@ class FCMService {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
-    await _localNotifications.initialize(initializationSettings);
+    await _localNotifications.initialize(
+      initializationSettings,
+      // Notifikasi lokal (banner saat app foreground) di-tap -> buka halaman
+      // list notifikasi, sama seperti tap notifikasi dari system tray.
+      onDidReceiveNotificationResponse: (details) {
+        AppRoutes.navigatorKey.currentState?.pushNamed(AppRoutes.notification);
+      },
+    );
 
     // Create the channel on Android
     await _localNotifications
@@ -113,6 +120,34 @@ class FCMService {
     } catch (e) {
       return null;
     }
+  }
+
+  // Memaksa membuat token FCM baru: hapus token saat ini (langsung invalid di
+  // Firebase) lalu ambil token baru yang pasti segar. Dipakai saat startup
+  // sebagai workaround sementara untuk token yang "nyangkut" (mati di sisi
+  // Firebase tapi masih di-cache SDK di device).
+  static Future<String?> regenerateToken() async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      await messaging.deleteToken();
+      final token = await messaging.getToken();
+      return token;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// FCM dapat merotasi token kapan saja (setelah jangka waktu tertentu,
+  /// reinstall, clear data, restore, dll).
+  /// [onRefresh] dipanggil dengan token baru agar bisa didaftarkan ulang.
+  static void listenTokenRefresh(
+    Future<void> Function(String token) onRefresh,
+  ) {
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+      try {
+        await onRefresh(token);
+      } catch (_) {}
+    });
   }
 
   static Future<Map<String, String>> getDeviceInfo() async {

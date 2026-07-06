@@ -11,7 +11,7 @@ class CreateMovePoolReportUsecase {
   Future<Either<Failure, Map<String, dynamic>>> execute(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,

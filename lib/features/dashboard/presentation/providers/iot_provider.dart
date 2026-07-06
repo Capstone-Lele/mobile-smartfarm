@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:budidaya_lele_mobile/features/dashboard/data/datasources/iot_datasource.dart';
+import 'package:budidaya_lele_mobile/features/dashboard/data/models/iot_model.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/data/repositories/iot_repository_impl.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/chart_iots.dart';
 import 'package:budidaya_lele_mobile/features/dashboard/domain/entities/iot.dart';
@@ -36,6 +38,7 @@ final getChartIotsUseCaseProvider = Provider<GetChartIotsUsecase>((ref) {
 
 class IotListNotifier extends StateNotifier<AsyncValue<List<Iot>>> {
   final GetIotsUsecase _getIotsUsecase;
+  Timer? _fallbackTimer;
 
   IotListNotifier(this._getIotsUsecase) : super(const AsyncValue.data([]));
 
@@ -57,10 +60,44 @@ class IotListNotifier extends StateNotifier<AsyncValue<List<Iot>>> {
       },
     );
   }
+
+  @override
+  void dispose() {
+    _fallbackTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Set loading dan jadwalkan fallback ke list kosong setelah 5 detik
+  /// jika tidak ada event socket yang masuk.
+  void setLoading() {
+    _fallbackTimer?.cancel();
+    state = const AsyncValue.loading();
+    _fallbackTimer = Timer(const Duration(seconds: 5), () {
+      if (state.isLoading) {
+        state = const AsyncValue.data([]);
+      }
+    });
+  }
+
+  /// Inserts or replaces (by nodeId) a single pool's realtime reading.
+  void upsertSocketData(Map<String, dynamic> json) {
+    _fallbackTimer?.cancel();
+    final incoming = IotModel.fromSocket(json);
+    final current = state.value ?? <Iot>[];
+    final updated = [...current];
+    final index = updated.indexWhere((e) => e.nodeId == incoming.nodeId);
+    if (index >= 0) {
+      updated[index] = incoming;
+    } else {
+      updated.add(incoming);
+    }
+    state = AsyncValue.data(updated);
+  }
 }
 
 class IotDetailNotifier extends StateNotifier<AsyncValue<Iot?>> {
   final GetIotUsecase _getIotUsecase;
+  Timer? _fallbackTimer;
 
   IotDetailNotifier(this._getIotUsecase) : super(const AsyncValue.data(null));
 
@@ -81,6 +118,32 @@ class IotDetailNotifier extends StateNotifier<AsyncValue<Iot?>> {
         state = AsyncValue.data(iot);
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _fallbackTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Set loading dan jadwalkan fallback ke nilai 0 setelah 5 detik
+  /// jika tidak ada event socket yang masuk.
+  void setLoading(int nodeId) {
+    _fallbackTimer?.cancel();
+    state = const AsyncValue.loading();
+    _fallbackTimer = Timer(const Duration(seconds: 5), () {
+      if (state.isLoading) {
+        state = AsyncValue.data(
+          IotModel(nodeId: nodeId, ph: 0.0, temp: 0.0, receivedAt: ''),
+        );
+      }
+    });
+  }
+
+  /// Replaces the current pool's reading with a realtime `pool-data` payload.
+  void applySocketData(Map<String, dynamic> json) {
+    _fallbackTimer?.cancel();
+    state = AsyncValue.data(IotModel.fromSocket(json));
   }
 }
 

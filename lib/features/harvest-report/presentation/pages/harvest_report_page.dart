@@ -133,7 +133,7 @@ class _HarvestReportPageState extends ConsumerState<HarvestReportPage> {
                     final filteredData = data.where((report) {
                       if (_startDate != null && _endDate != null) {
                         try {
-                          final parsed = DateTime.parse(report.date);
+                          final parsed = DateTime.parse(report.date).toLocal();
                           final dateOnly = DateTime(
                             parsed.year,
                             parsed.month,
