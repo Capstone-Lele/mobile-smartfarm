@@ -29,53 +29,70 @@ class SamplingPredictionChart extends StatelessWidget {
       actualDates.add(DateTime.tryParse(report.reportDate) ?? DateTime.now());
     }
 
-    // Hitung regresi linear jika data >= 3
-    final bool canPredict = sortedReports.length >= 3;
+    // Prediksi panen menggunakan ADG (Average Daily Gain):
+    // ADG = (berat_terakhir - berat_awal) / selisih_hari, lalu diekstrapolasi
+    // secara linear dari sampel terakhir hingga mencapai target panen.
+    const targetWeight = 750.0;
+    const maxPredictionPoints = 20;
+
+    final bool hasEnoughData = sortedReports.length >= 2;
     final predictedSpots = <FlSpot>[];
     final predictedDates = <DateTime>[];
     DateTime? estimatedHarvestDate;
+    double adg = 0;
+    String? predictionMessage;
 
-    if (canPredict) {
+    if (hasEnoughData) {
       final n = sortedReports.length;
-      double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-
-      for (int i = 0; i < n; i++) {
-        final x = i.toDouble();
-        final y = actualSpots[i].y;
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumX2 += x * x;
-      }
-
-      final slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-      final intercept = (sumY - slope * sumX) / n;
-
-      // Hitung rata-rata interval hari
+      final firstWeight = actualSpots.first.y;
+      final lastWeight = actualSpots.last.y;
       final totalDays = actualDates.last.difference(actualDates.first).inDays;
-      final avgIntervalDays = (totalDays / (n - 1)).round().clamp(1, 30); // Minimal 1 hari
 
-      const targetWeight = 750.0;
-      const maxPredictionPoints = 20;
+      if (totalDays <= 0) {
+        predictionMessage =
+            'Data sampling harus pada tanggal berbeda untuk prediksi.';
+      } else {
+        // ADG dalam gram per hari.
+        adg = (lastWeight - firstWeight) / totalDays;
 
-      // Hubungkan garis aktual terakhir dengan garis prediksi pertama
-      predictedSpots.add(actualSpots.last);
-      predictedDates.add(actualDates.last);
+        if (lastWeight >= targetWeight) {
+          // Target sudah tercapai pada sampel terakhir.
+          estimatedHarvestDate = actualDates.last;
+        } else if (adg <= 0) {
+          predictionMessage =
+              'Berat rata-rata tidak bertambah, estimasi panen belum tersedia.';
+        } else {
+          // Jarak hari antar titik prediksi mengikuti rata-rata interval sampling.
+          final avgIntervalDays = (totalDays / (n - 1)).round().clamp(1, 30);
 
-      for (int i = 1; i <= maxPredictionPoints; i++) {
-        final x = (n - 1 + i).toDouble();
-        final yPred = slope * x + intercept;
-        final predDate = actualDates.last.add(Duration(days: avgIntervalDays * i));
+          // Sambungkan garis aktual terakhir dengan garis prediksi.
+          predictedSpots.add(actualSpots.last);
+          predictedDates.add(actualDates.last);
 
-        predictedSpots.add(FlSpot(x, yPred));
-        predictedDates.add(predDate);
+          for (int i = 1; i <= maxPredictionPoints; i++) {
+            final x = (n - 1 + i).toDouble();
+            final daysFromLast = avgIntervalDays * i;
+            final yPred = lastWeight + adg * daysFromLast;
+            final predDate = actualDates.last.add(
+              Duration(days: daysFromLast),
+            );
 
-        if (yPred >= targetWeight) {
-          estimatedHarvestDate = predDate;
-          break;
+            predictedSpots.add(FlSpot(x, yPred));
+            predictedDates.add(predDate);
+
+            if (yPred >= targetWeight) break;
+          }
+
+          // Estimasi tanggal panen presisi berdasarkan ADG.
+          final daysNeeded = ((targetWeight - lastWeight) / adg).ceil();
+          estimatedHarvestDate = actualDates.last.add(
+            Duration(days: daysNeeded),
+          );
         }
       }
     }
+
+    final bool canPredict = predictedSpots.isNotEmpty;
 
     final allSpots = [...actualSpots, ...predictedSpots];
     final allDates = [...actualDates, ...predictedDates.skip(1)]; // skip duplicate last actual date
@@ -83,6 +100,13 @@ class SamplingPredictionChart extends StatelessWidget {
     final double maxX = allSpots.isEmpty ? 0 : allSpots.map((s) => s.x).reduce((a, b) => a > b ? a : b);
     final double maxY = allSpots.isEmpty ? 0 : allSpots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
     final double yAxisMax = maxY > 750 ? maxY + 50 : 800.0;
+
+    // Tampilkan maksimal ~6 label tanggal di sumbu X. Interval bulat agar label
+    // hanya jatuh tepat pada indeks tertentu dan tidak saling menimpa.
+    final int totalPoints = allDates.length;
+    final int bottomInterval = totalPoints <= 6
+        ? 1
+        : (totalPoints / 6).ceil();
 
     final dateFormatter = DateFormat('dd/MM');
 
@@ -111,7 +135,12 @@ class SamplingPredictionChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          if (canPredict && estimatedHarvestDate != null)
+          if (!hasEnoughData)
+            Text(
+              'Butuh minimal 2 data untuk prediksi ADG. Saat ini: ${sortedReports.length} data.',
+              style: const TextStyle(fontSize: 12, color: AppColors.red),
+            )
+          else if (estimatedHarvestDate != null) ...[
             Text(
               'Estimasi Panen: ${DateFormat('dd MMMM yyyy').format(estimatedHarvestDate)}',
               style: const TextStyle(
@@ -119,22 +148,16 @@ class SamplingPredictionChart extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: AppColors.green,
               ),
-            )
-          else if (canPredict)
-            const Text(
-              'Target panen (750g) belum tercapai dalam horizon prediksi.',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.red,
-              ),
-            )
-          else
+            ),
+            const SizedBox(height: 2),
             Text(
-              'Butuh minimal 3 data untuk prediksi. Saat ini: ${sortedReports.length} data.',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.red,
-              ),
+              'ADG (Average Daily Gain): ${adg.toStringAsFixed(1)} g/hari',
+              style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+            ),
+          ] else
+            Text(
+              predictionMessage ?? 'Prediksi panen belum tersedia.',
+              style: const TextStyle(fontSize: 12, color: AppColors.red),
             ),
           const SizedBox(height: 16),
           Row(
@@ -172,15 +195,23 @@ class SamplingPredictionChart extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 30,
-                      interval: (maxX / 5).ceilToDouble().clamp(1.0, maxX > 0 ? maxX : 1.0),
+                      reservedSize: 44,
+                      interval: bottomInterval.toDouble(),
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
-                        if (index < 0 || index >= allDates.length) {
+                        // Hanya render label pada indeks bulat yang tepat &
+                        // yang jatuh pada kelipatan interval, agar tidak ada
+                        // dua label berdempetan.
+                        if (value != index.toDouble() ||
+                            index < 0 ||
+                            index >= allDates.length ||
+                            index % bottomInterval != 0) {
                           return const SizedBox.shrink();
                         }
                         return SideTitleWidget(
                           meta: meta,
+                          angle: -0.6,
+                          space: 8,
                           child: Text(
                             dateFormatter.format(allDates[index]),
                             style: const TextStyle(

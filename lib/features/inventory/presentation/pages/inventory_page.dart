@@ -526,7 +526,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               // Filter berdasarkan date range
               if (_startDate != null && _endDate != null) {
                 try {
-                  final parsed = DateTime.parse(item.updatedAt);
+                  final parsed = DateTime.parse(item.updatedAt).toLocal();
                   final dateOnly = DateTime(
                     parsed.year,
                     parsed.month,
@@ -639,7 +639,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               // Filter berdasarkan date range
               if (_startDate != null && _endDate != null) {
                 try {
-                  final parsed = DateTime.parse(item.updatedAt);
+                  final parsed = DateTime.parse(item.updatedAt).toLocal();
                   final dateOnly = DateTime(
                     parsed.year,
                     parsed.month,
@@ -730,7 +730,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         final filtered = data.where((report) {
           if (_startDate != null && _endDate != null) {
             try {
-              final parsed = DateTime.parse(report.reportDate);
+              final parsed = DateTime.parse(report.reportDate).toLocal();
               final dateOnly = DateTime(parsed.year, parsed.month, parsed.day);
               final start = DateTime(
                 _startDate!.year,

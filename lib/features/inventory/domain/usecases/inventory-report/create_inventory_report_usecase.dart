@@ -13,7 +13,7 @@ class CreateInventoryReportUsecase {
     String reportDate,
     int quantity,
     XFile image,
-    String? notes,
+    String notes,
   ) {
     return repository.createInventoryReport(
       inventoryId,

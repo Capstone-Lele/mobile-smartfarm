@@ -80,26 +80,32 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
     }
   }
 
+  /// Ambil data chart untuk rentang [start]–[end] sesuai kolam terpilih
+  /// (atau semua kolam bila belum memilih).
+  void _fetchChart(DateTime start, DateTime end) {
+    final nodeId = _selectedPool != null
+        ? _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '')
+        : '0';
+
+    final startStr = DateFormat('dd-MM-yyyy').format(start);
+    final endStr = DateFormat('dd-MM-yyyy').format(end);
+
+    ref
+        .read(chartIotsNotifierProvider.notifier)
+        .getChartIots(
+          nodeId,
+          AppFormat.toApiDate(startStr),
+          AppFormat.toApiDate(endStr),
+        );
+  }
+
   void _onDateRangeChanged(DateTime? start, DateTime? end) {
     setState(() {
       _startDate = start;
       _endDate = end;
     });
     if (start != null && end != null) {
-      final nodeId = _selectedPool != null
-          ? _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '')
-          : '0';
-
-      final startStr = DateFormat('dd-MM-yyyy').format(start);
-      final endStr = DateFormat('dd-MM-yyyy').format(end);
-
-      ref
-          .read(chartIotsNotifierProvider.notifier)
-          .getChartIots(
-            nodeId,
-            AppFormat.toApiDate(startStr),
-            AppFormat.toApiDate(endStr),
-          );
+      _fetchChart(start, end);
     }
   }
 
@@ -132,19 +138,7 @@ class _PoolConditionPageState extends ConsumerState<PoolConditionPage> {
             }
 
             if (_startDate != null && _endDate != null) {
-              final nodeId = _selectedPool != null
-                  ? _selectedPool!.name.replaceAll(RegExp(r'[^0-9]'), '')
-                  : '0';
-
-              final startStr = DateFormat('dd-MM-yyyy').format(_startDate!);
-              final endStr = DateFormat('dd-MM-yyyy').format(_endDate!);
-              await ref
-                  .read(chartIotsNotifierProvider.notifier)
-                  .getChartIots(
-                    nodeId,
-                    AppFormat.toApiDate(startStr),
-                    AppFormat.toApiDate(endStr),
-                  );
+              _fetchChart(_startDate!, _endDate!);
             }
           },
           child: SingleChildScrollView(

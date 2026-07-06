@@ -60,7 +60,6 @@ class _CreateInventoryReportPageState
           _selectedImage!,
           _notesCtrl.text,
         );
-    print("Selected Inventory ID: ${_selectedInventory!.id}");
 
     final mutationState = ref.read(inventoryReportMutationNotifierProvider);
 
@@ -220,7 +219,13 @@ class _CreateInventoryReportPageState
                     type: FieldType.text,
                     maxLines: 5,
                     minLines: 3,
-                    requiredField: false,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Catatan harus diisi';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 24),
                   AppButton(

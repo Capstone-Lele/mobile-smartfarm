@@ -60,7 +60,7 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
         // Simpan token ke session storage
         await AppSession.setBearerToken(user.token);
         await _ref.read(userInfoNotifierProvider.notifier).getUserInfo();
-
+        
         // Register FCM token setelah login berhasil
         await _registerFcmToken();
 

@@ -12,7 +12,7 @@ class UpdateInventorySubmissionUsecase {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) {
     return repository.updateInventorySubmission(
       id,

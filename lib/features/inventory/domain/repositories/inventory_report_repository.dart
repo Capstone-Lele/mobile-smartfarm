@@ -12,6 +12,6 @@ abstract class InventoryReportRepository {
     String reportDate,
     int quantity,
     XFile image,
-    String? notes,
+    String notes,
   );
 }

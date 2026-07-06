@@ -119,7 +119,9 @@ class _SamplingReportPageState extends ConsumerState<SamplingReportPage> {
                     final filteredData = data.where((report) {
                       if (_startDate != null && _endDate != null) {
                         try {
-                          final parsed = DateTime.parse(report.reportDate);
+                          final parsed = DateTime.parse(
+                            report.reportDate,
+                          ).toLocal();
                           final dateOnly = DateTime(
                             parsed.year,
                             parsed.month,

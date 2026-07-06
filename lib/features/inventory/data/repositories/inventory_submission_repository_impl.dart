@@ -61,7 +61,7 @@ class InventorySubmissionRepositoryImpl
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     final result = await datasource.createInventorySubmission(
       inventoryId,
@@ -81,7 +81,7 @@ class InventorySubmissionRepositoryImpl
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     final result = await datasource.updateInventorySubmission(
       id,

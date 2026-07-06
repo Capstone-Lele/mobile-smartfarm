@@ -143,20 +143,10 @@ class PoolConditionChart extends ConsumerWidget {
     final totalDays = endDate.difference(startDate).inDays.toDouble();
     final maxX = totalDays > 0 ? totalDays : 1.0;
 
-    // Interval tanggal adaptif: target ~4-6 label agar tidak terlalu padat
-    // maupun terlalu jarang. Makin panjang rentang, makin renggang ticknya.
-    double xInterval;
-    if (totalDays <= 7) {
-      xInterval = 1; // harian
-    } else if (totalDays <= 14) {
-      xInterval = 2;
-    } else if (totalDays <= 31) {
-      xInterval = 7; // mingguan
-    } else if (totalDays <= 90) {
-      xInterval = 14;
-    } else {
-      xInterval = 30; // bulanan
-    }
+    // Label sumbu X: bagi rentang jadi 4 bagian => maksimal ~5 label yang
+    // jaraknya selalu rata (awal, ¼, ½, ¾, akhir). Dengan begini tanggal akhir
+    // selalu punya slot sendiri sehingga tidak pernah menimpa label sebelumnya.
+    final xInterval = totalDays > 0 ? totalDays / 4 : 1.0;
 
     final dateFormatter = DateFormat('dd/MM');
 
@@ -194,16 +184,20 @@ class PoolConditionChart extends ConsumerWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 30,
+                reservedSize: 42,
                 interval: xInterval,
                 getTitlesWidget: (value, meta) {
-                  // Render label tanggal berkala selama masih dalam rentang.
-                  if (value < 0 || value > totalDays) {
+                  // Render label tanggal selama masih dalam rentang (toleransi
+                  // kecil agar label akhir tidak hilang karena pembulatan).
+                  if (value < 0 || value > totalDays + 0.5) {
                     return const SizedBox.shrink();
                   }
                   final date = startDate.add(Duration(days: value.toInt()));
                   return SideTitleWidget(
                     meta: meta,
+                    space: 8,
+                    // Dimiringkan agar label tidak saling menimpa di ujung.
+                    angle: -0.6, // ~ -34°
                     child: Text(
                       dateFormatter.format(date),
                       style: const TextStyle(
@@ -240,15 +234,40 @@ class PoolConditionChart extends ConsumerWidget {
           minY: minY,
           maxY: maxY,
           lineTouchData: LineTouchData(
+            // Garis vertikal (crosshair) di titik yang di-tap.
+            getTouchedSpotIndicator: (barData, spotIndexes) {
+              return spotIndexes.map((index) {
+                return TouchedSpotIndicatorData(
+                  const FlLine(color: AppColors.darkGray, strokeWidth: 1),
+                  FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, bar, i) =>
+                        FlDotCirclePainter(
+                          radius: 5,
+                          color: bar.color ?? AppColors.primary,
+                          strokeWidth: 2,
+                          strokeColor: Colors.white,
+                        ),
+                  ),
+                );
+              }).toList();
+            },
             touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => AppColors.black.withValues(alpha: 0.8),
+              getTooltipColor: (_) => AppColors.black.withValues(alpha: 0.85),
               getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) {
+                return touchedSpots.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final spot = entry.value;
                   final isPh = spot.barIndex == 0;
                   final label = isPh ? 'pH' : 'Suhu';
                   final unit = isPh ? '' : '°C';
+                  // Tampilkan tanggal sekali (di baris pertama tooltip).
+                  final date = startDate.add(Duration(days: spot.x.toInt()));
+                  final datePrefix = index == 0
+                      ? '${DateFormat('dd/MM/yyyy').format(date)}\n'
+                      : '';
                   return LineTooltipItem(
-                    '$label: ${spot.y.toStringAsFixed(1)}$unit',
+                    '$datePrefix$label: ${spot.y.toStringAsFixed(1)}$unit',
                     const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -287,11 +306,17 @@ class PoolConditionChart extends ConsumerWidget {
   }
 
   LineChartBarData _buildLineBarData(List<FlSpot> spots, Color color) {
+    // Kalau data cuma 1-2 hari, garis penghubung menyesatkan (seolah ada tren
+    // padahal cuma sedikit titik). Tampilkan sebagai titik saja. Untuk 3+ titik
+    // pakai garis lurus (bukan melengkung) agar jujur: hanya menghubungkan data
+    // yang benar-benar ada.
+    final showLine = spots.length >= 3;
+
     return LineChartBarData(
       spots: spots,
-      isCurved: true,
-      color: color,
-      barWidth: 2,
+      isCurved: false,
+      color: showLine ? color : Colors.transparent,
+      barWidth: showLine ? 2 : 0,
       isStrokeCapRound: true,
       dotData: FlDotData(
         show: true,

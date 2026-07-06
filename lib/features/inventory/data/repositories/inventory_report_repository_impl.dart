@@ -55,7 +55,7 @@ class InventoryReportRepositoryImpl implements InventoryReportRepository {
     String reportDate,
     int quantity,
     XFile image,
-    String? notes,
+    String notes,
   ) async {
     final result = await datasource.createInventoryReport(
       inventoryId,

@@ -182,7 +182,13 @@ class _CreateInventorySubmissionPageState
                     type: FieldType.text,
                     maxLines: 5,
                     minLines: 3,
-                    requiredField: false,
+                    requiredField: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Catatan harus diisi';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 24),
                   AppButton(

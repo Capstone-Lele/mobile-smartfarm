@@ -58,7 +58,7 @@ class SickReportDatasource {
   Future<Either<Failure, Map<String, dynamic>>> createSickReport(
     String poolId,
     String originCycleId,
-    String destinationCycleId,
+    String? destinationCycleId,
     String reportDate,
     int quantity,
     XFile image,
@@ -72,10 +72,14 @@ class SickReportDatasource {
       request.headers.addAll(AppRequest.header(token));
       request.fields['poolId'] = poolId;
       request.fields['originCycleId'] = originCycleId;
-      request.fields['destinationCycleId'] = destinationCycleId;
+      if (destinationCycleId != null && destinationCycleId.isNotEmpty) {
+        request.fields['destinationCycleId'] = destinationCycleId;
+      } 
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
-      request.fields['endedAt'] = endedAt ?? '';
+      if (endedAt != null && endedAt.isNotEmpty) {
+        request.fields['endedAt'] = endedAt;
+      }
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',

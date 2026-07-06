@@ -58,7 +58,7 @@ class InventorySubmissionDatasource {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submission');
     final token = AppSession.getBearerToken();
@@ -69,7 +69,7 @@ class InventorySubmissionDatasource {
       request.fields['inventoryId'] = inventoryId;
       request.fields['quantity'] = quantity.toString();
       request.fields['transactionType'] = transactionType;
-      request.fields['notes'] = notes ?? '';
+      request.fields['notes'] = notes;
 
       final streamedResponse = await request.send();
       final response = await safeRequest(
@@ -93,7 +93,7 @@ class InventorySubmissionDatasource {
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     Uri url = Uri.parse('${AppConstants.baseURL}/inventory/submission/$id');
     final token = AppSession.getBearerToken();
@@ -104,7 +104,7 @@ class InventorySubmissionDatasource {
       request.fields['inventoryId'] = inventoryId;
       request.fields['quantity'] = quantity.toString();
       request.fields['transactionType'] = transactionType;
-      request.fields['notes'] = notes ?? '';
+      request.fields['notes'] = notes;
 
       final streamedResponse = await request.send();
       final response = await safeRequest(

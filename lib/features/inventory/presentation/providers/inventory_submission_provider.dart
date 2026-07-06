@@ -125,7 +125,7 @@ class InventorySubmissionMutationNotifier
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createInventorySubmissionUsecase.execute(
@@ -155,7 +155,7 @@ class InventorySubmissionMutationNotifier
     String inventoryId,
     int quantity,
     String transactionType,
-    String? notes,
+    String notes,
   ) async {
     state = const AsyncValue.loading();
     final result = await _updateInventorySubmissionUsecase.execute(

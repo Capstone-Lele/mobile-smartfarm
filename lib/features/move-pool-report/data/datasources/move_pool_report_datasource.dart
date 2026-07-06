@@ -81,8 +81,9 @@ class MovePoolReportDatasource {
       }
       request.fields['reportDate'] = reportDate;
       request.fields['quantity'] = quantity.toString();
-      request.fields['endedAt'] = endedAt ?? '';
-
+      if (endedAt != null && endedAt.isNotEmpty) {
+        request.fields['endedAt'] = endedAt;
+      }
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',

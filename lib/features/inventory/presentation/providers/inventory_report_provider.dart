@@ -109,7 +109,7 @@ class InventoryReportMutationNotifier extends StateNotifier<AsyncValue<void>> {
     String reportDate,
     int quantity,
     XFile image,
-    String? notes,
+    String notes,
   ) async {
     state = const AsyncValue.loading();
     final result = await _createInventoryReportUsecase.execute(
